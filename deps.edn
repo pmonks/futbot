@@ -17,7 +17,7 @@
 ;
 
 {:deps {org.clojure/clojure   #:mvn {:version "1.10.1"}
-        org.suskalo/discljord #:mvn {:version "0.2.8"}
+        org.suskalo/discljord #:mvn {:version "0.2.9"}
         cheshire              #:mvn {:version "5.10.0"}}
  :aliases
    { ; clj -Acheck
