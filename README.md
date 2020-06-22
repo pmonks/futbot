@@ -1,8 +1,8 @@
 [![Build Status](https://github.com/pmonks/futbot/workflows/build/badge.svg)](https://github.com/pmonks/futbot/actions?query=workflow%3Abuild)
 [![Open Issues](https://img.shields.io/github/issues/pmonks/futbot.svg)](https://github.com/pmonks/futbot/issues)
-[![License](https://img.shields.io/github/license/pmonks/futbot.svg)](https://github.com/pmonks/futbot/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/pmonks/futbot.svg)](https://github.com/pmonks/futbot/blob/main/LICENSE)
 
-<img alt="futbot logo" align="right" src="https://github.com/pmonks/futbot/blob/master/futbot.png?raw=true"/>
+<img alt="futbot logo" align="right" src="https://github.com/pmonks/futbot/blob/main/futbot.png?raw=true"/>
 
 # futbot
 
@@ -14,11 +14,11 @@ TODO!
 
 ## Contributor Information
 
-[Contributing Guidelines](https://github.com/pmonks/futbot/blob/master/.github/CONTRIBUTING.md)
+[Contributing Guidelines](https://github.com/pmonks/futbot/blob/main/.github/CONTRIBUTING.md)
 
 [Bug Tracker](https://github.com/pmonks/futbot/issues)
 
-[Code of Conduct](https://github.com/pmonks/futbot/blob/master/.github/CODE_OF_CONDUCT.md)
+[Code of Conduct](https://github.com/pmonks/futbot/blob/main/.github/CODE_OF_CONDUCT.md)
 
 ## License
 
