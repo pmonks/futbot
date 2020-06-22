@@ -12,3 +12,4 @@ pom.xml.asc
 .shell_history
 *.log
 uberjar/
+config.edn
