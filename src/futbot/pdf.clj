@@ -1,0 +1,79 @@
+;
+; Copyright © 2020 Peter Monks
+;
+; Licensed under the Apache License, Version 2.0 (the "License");
+; you may not use this file except in compliance with the License.
+; You may obtain a copy of the License at
+;
+;     http://www.apache.org/licenses/LICENSE-2.0
+;
+; Unless required by applicable law or agreed to in writing, software
+; distributed under the License is distributed on an "AS IS" BASIS,
+; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+; See the License for the specific language governing permissions and
+; limitations under the License.
+;
+; SPDX-License-Identifier: Apache-2.0
+;
+
+(ns futbot.pdf
+  (:require [clojure.string  :as s]
+            [clojure.java.io :as io]
+            [java-time       :as tm]
+            [clj-pdf.core    :as pdf]))
+
+(defn generate-daily-schedule-pdf-data-structure
+  [day days-matches]
+  [{:title         (str "Soccer Matches - " (tm/format "yyyy-MM-dd" day))
+    :creator       "futbot"
+    :author        "futbot"
+    :size          "a4"
+    :right-margin  25
+    :bottom-margin 25
+    :left-margin   25
+    :top-margin    25
+    :font          {:family :helvetica
+                    :size   10}}
+
+    [:heading (str "Matches scheduled for " (tm/format "EEEE LLLL d, yyyy" day) ":")]
+
+    (loop [last-utc-date     nil
+           current-match     (first days-matches)
+           remaining-matches (rest days-matches)
+           result            (atom [:table {:cell-border    true
+                                            :no-split-rows? true
+                                            :leading        10
+                                            :header         [{:background-color [200 200 200]} "Competition" "Home Team" "Away Team"]}])]
+      (if current-match
+        (do
+          ; Control-break row when we see a new utc-date
+          (if (not= last-utc-date (:utc-date current-match))
+            (let [utc-date-txt    (tm/format "h:mm a" (tm/zoned-date-time (:utc-date current-match)))
+                  utc-date-txt-qs (java.net.URLEncoder/encode utc-date-txt "UTF-8")]
+              (swap! result conj [[:cell {:colspan 3}
+                                  "Scheduled start "
+                                  [:anchor {:style {:style "underline" :color [0 123 255]}
+                                            :target (str "https://www.thetimezoneconverter.com/?t=" utc-date-txt-qs "&tz=UTC")}
+                                           (str utc-date-txt " UTC")]
+                                  ":"]])))
+
+          ; Regular data row
+          (swap! result conj [(get-in current-match [:competition :name] "Unknown")
+                              (get-in current-match [:home-team :name]   "Unknown")
+                              (get-in current-match [:away-team :name]   "Unknown")])
+
+          (recur (:utc-date current-match)
+                 (first remaining-matches)
+                 (rest  remaining-matches)
+                 result))
+        @result))])
+
+(defn generate-daily-schedule
+  [day days-matches]
+  (if (pos? (count days-matches))
+    (let [pdf-data         (generate-daily-schedule-pdf-data-structure day days-matches)
+          temp-pdf-file    (doto (java.io.File/createTempFile "futbot-tmp-" ".pdf") (.deleteOnExit))]
+      (with-open [temp-pdf-file-os (io/output-stream temp-pdf-file)]
+        (pdf/pdf pdf-data
+                 temp-pdf-file-os))
+      temp-pdf-file)))

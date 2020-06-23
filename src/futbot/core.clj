@@ -24,7 +24,7 @@
             [java-time             :as tm]
             [chime.core            :as chime]
             [futbot.football-data  :as fd]
-            [futbot.template       :as tem]
+            [futbot.pdf            :as pdf]
             [discljord.connections :as dic]
             [discljord.messaging   :as dim]))
 
@@ -57,20 +57,19 @@
   "Generates and posts the daily-schedule (as an HTML attachment) to the Discord channel identified by daily-schedule-discord-channel-id."
   []
   (try
-    (let [now                 (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
-          now-date-str        (tm/format "yyyy-MM-dd" now)
-          todays-matches      (fd/matches-on-day football-data-api-token now)]
+    (let [today          (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+          today-str      (tm/format "yyyy-MM-dd" today)
+          todays-matches (fd/matches-on-day football-data-api-token today)]
       (if (seq todays-matches)
-        (let [daily-schedule-html (tem/render "daily-schedule.ftl"
-                                              {:day     now-date-str
-                                               :matches todays-matches})]
-          (dim/create-message! discord-message-channel
-                               daily-schedule-discord-channel-id
-                               :content (str "Scheduled matches for: " now-date-str)
-                               :stream {:content (io/input-stream daily-schedule-html) :filename (str "daily-schedule-" now-date-str ".html")}))
+        (let [pdf-file (pdf/generate-daily-schedule today todays-matches)]
+          (with-open [pdf-file-is (io/input-stream pdf-file)]
+            (dim/create-message! discord-message-channel
+                                 daily-schedule-discord-channel-id
+                                 :content (str "Here are the scheduled matches for " today-str ":")
+                                 :stream {:content pdf-file-is :filename (str "daily-schedule-" today-str ".pdf")})))
         (dim/create-message! discord-message-channel
                              daily-schedule-discord-channel-id
-                             :content (str "Sadly there are no ⚽️ matches scheduled for today (" now-date-str "). 😢"))))))
+                             :content (str "Sadly there are no ⚽️ matches scheduled for today (" today-str "). 😢"))))))
 
 (defstate daily-schedule-job
           :start (chime/chime-at every-day-at-midnight-UTC

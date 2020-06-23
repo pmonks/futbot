@@ -31,9 +31,10 @@
         aero                           #:mvn {:version "1.1.6"}
         mount                          #:mvn {:version "0.1.16"}
         jarohen/chime                  #:mvn {:version "0.3.2"}
-        org.suskalo/discljord          #:mvn {:version "0.2.9"}
+        org.suskalo/discljord          #:mvn {:version "1.0.0-RC1"}
         http-kit/http-kit              #:mvn {:version "2.4.0-alpha6"}
         cheshire                       #:mvn {:version "5.10.0"}
+        clj-pdf                        #:mvn {:version "2.5.1"}
         pmonks/freemarker-clj          {:git/url "https://github.com/pmonks/freemarker-clj" :sha "ae179dfd16dfa84e9ed00b04566eaa0d393d5695"}   ; Note: Temporary until https://github.com/grinnbearit/freemarker-clj/pull/10 gets merged
        }
  :aliases
