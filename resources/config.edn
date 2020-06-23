@@ -5,6 +5,8 @@
   :discord-api-token          #env DISCORD_API_TOKEN
   :discord-event-channel-size #or [#env DISCORD_EVENT_CHANNEL_SIZE 100]
 
+  :daily-schedule-discord-channel-id #env DAILY-SCHEDULE-DISCORD-CHANNEL-ID
+
   ; For details, see https://github.com/rhuss/jolokia/blob/master/agent/jvm/src/main/resources/default-jolokia-agent.properties
   ; Note: All keys and values MUST be strings - this is a Jolokia requirement
   :jolokia-config {

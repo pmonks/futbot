@@ -17,38 +17,62 @@
 ;
 
 (ns futbot.core
-  (:require [mount.core           :as mnt :refer [defstate]]
-            [futbot.config        :as cfg]
-            [java-time            :as tm]
-            [chime.core           :as chime]
-            [futbot.football-data :as fd]
-            [futbot.template      :as tem]))
+  (:require [clojure.java.io       :as io]
+            [clojure.core.async    :as async]
+            [mount.core            :as mnt :refer [defstate]]
+            [futbot.config         :as cfg]
+            [java-time             :as tm]
+            [chime.core            :as chime]
+            [futbot.football-data  :as fd]
+            [futbot.template       :as tem]
+            [discljord.connections :as dic]
+            [discljord.messaging   :as dim]))
 
 (defstate football-data-api-token
           :start (:football-data-api-token cfg/config))
+
+(defstate discord-api-token
+          :start (:discord-api-token cfg/config))
+
+(defstate discord-event-channel
+          :start (async/chan (:discord-event-channel-size cfg/config))
+          :stop  (async/close! discord-event-channel))
+
+(defstate discord-connection-channel
+          :start (dic/connect-bot! discord-api-token discord-event-channel)
+          :stop  (dic/disconnect-bot! discord-connection-channel))
+
+(defstate discord-message-channel
+          :start (dim/start-connection! discord-api-token)
+          :stop  (dim/stop-connection! discord-message-channel))
+
+(defstate daily-schedule-discord-channel-id
+          :start (:daily-schedule-discord-channel-id cfg/config))
 
 (def tomorrow-at-midnight-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days)))
 (def every-day-at-midnight-UTC (chime/periodic-seq (tm/instant tomorrow-at-midnight-UTC)
                                                    (tm/period 1 :days)))
 
-;                                                   (-> (java.time.LocalTime/of 0 0 0)
-;                                                          (.adjustInto (java.time.ZonedDateTime/now (java.time.ZoneId/of "Etc/UTC")))
-;                                                          .toInstant)
-;                                                   (java.time.Period/ofDays 1)))
-
-(defn daily-schedule
+(defn post-daily-schedule!
+  "Generates and posts the daily-schedule (as an HTML attachment) to the Discord channel identified by daily-schedule-discord-channel-id."
   []
   (try
-    (let [todays-matches     (fd/matches-on-day football-data-api-token)
-          daily-schedule-msg (tem/render "daily-schedule.ftl"
-                                         {:day     (tm/format "yyyy-MM-dd" (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time)))
-                                          :matches todays-matches
-                                          })]
-      ;####TEST!!!!
-      (println daily-schedule-msg))))
-
+    (let [now                 (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+          now-date-str        (tm/format "yyyy-MM-dd" now)
+          todays-matches      (fd/matches-on-day football-data-api-token now)]
+      (if (seq todays-matches)
+        (let [daily-schedule-html (tem/render "daily-schedule.ftl"
+                                              {:day     now-date-str
+                                               :matches todays-matches})]
+          (dim/create-message! discord-message-channel
+                               daily-schedule-discord-channel-id
+                               :content (str "Scheduled matches for: " now-date-str)
+                               :stream {:content (io/input-stream daily-schedule-html) :filename (str "daily-schedule-" now-date-str ".html")}))
+        (dim/create-message! discord-message-channel
+                             daily-schedule-discord-channel-id
+                             :content (str "Sadly there are no ⚽️ matches scheduled for today (" now-date-str "). 😢"))))))
 
 (defstate daily-schedule-job
           :start (chime/chime-at every-day-at-midnight-UTC
-                                 daily-schedule)
+                                 post-daily-schedule!)
           :stop (.close ^java.lang.AutoCloseable daily-schedule-job))
