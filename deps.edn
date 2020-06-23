@@ -16,7 +16,8 @@
 ; SPDX-License-Identifier: Apache-2.0
 ;
 
-{:deps {org.clojure/clojure            #:mvn {:version "1.10.1"}
+{:paths ["src" "resources"]
+ :deps {org.clojure/clojure            #:mvn {:version "1.10.1"}
         org.clojars.pmonks/clj-2253    #:mvn {:version "0.1.0"}
         org.clojure/tools.logging      #:mvn {:version "1.1.0"}
         ch.qos.logback/logback-classic #:mvn {:version "1.2.3"}
@@ -33,7 +34,7 @@
         org.suskalo/discljord          #:mvn {:version "0.2.9"}
         http-kit/http-kit              #:mvn {:version "2.4.0-alpha6"}
         cheshire                       #:mvn {:version "5.10.0"}
-        pmonks/freemarker-clj          {:git/url "https://github.com/pmonks/freemarker-clj" :sha "ae179dfd16dfa84e9ed00b04566eaa0d393d5695"}   ; Note: Temporarily until https://github.com/grinnbearit/freemarker-clj/pull/10 gets merged
+        pmonks/freemarker-clj          {:git/url "https://github.com/pmonks/freemarker-clj" :sha "ae179dfd16dfa84e9ed00b04566eaa0d393d5695"}   ; Note: Temporary until https://github.com/grinnbearit/freemarker-clj/pull/10 gets merged
        }
  :aliases
    { ; clj -Acheck

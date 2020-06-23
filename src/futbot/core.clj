@@ -17,12 +17,14 @@
 ;
 
 (ns futbot.core
-  (:require [mount.core    :as mnt :refer [defstate]]
-            [futbot.config :as cfg]
-            [java-time     :as tm]
-            [chime.core    :as chime]))
+  (:require [mount.core           :as mnt :refer [defstate]]
+            [futbot.config        :as cfg]
+            [java-time            :as tm]
+            [chime.core           :as chime]
+            [futbot.football-data :as fd]
+            [futbot.template      :as tem]))
 
-(defstate football-token
+(defstate football-data-api-token
           :start (:football-data-api-token cfg/config))
 
 (def tomorrow-at-midnight-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days)))
@@ -36,7 +38,15 @@
 
 (defn daily-schedule
   []
-  (println "####TEST! Daily schedule!"))
+  (try
+    (let [todays-matches     (fd/matches-on-day football-data-api-token)
+          daily-schedule-msg (tem/render "daily-schedule.ftl"
+                                         {:day     (tm/format "yyyy-MM-dd" (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time)))
+                                          :matches todays-matches
+                                          })]
+      ;####TEST!!!!
+      (println daily-schedule-msg))))
+
 
 (defstate daily-schedule-job
           :start (chime/chime-at every-day-at-midnight-UTC

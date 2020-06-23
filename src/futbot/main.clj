@@ -47,7 +47,7 @@
 
 (defn- error-message
   [errors]
-  (str "The following errors occurred while parsing your command:\n\n"
+  (str "The following errors occurred while parsing the command line:\n\n"
        (s/join \newline errors)))
 
 (defn- exit

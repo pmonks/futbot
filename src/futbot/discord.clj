@@ -39,3 +39,8 @@
 (defstate message-channel
           :start (dim/start-connection! token)
           :stop  (dim/stop-connection! message-channel))
+
+(defn send-message
+  ([msg] (send-message msg nil))
+  ([msg attachment]
+    (println "####TODO: IMPLEMENT ME!")))

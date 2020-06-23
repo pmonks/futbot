@@ -25,7 +25,6 @@
 
 (def api-host "https://api.football-data.org")
 
-;(def endpoint-todays-matches  "/v2/matches")
 (def endpoint-matches-on-date "/v2/matches/?dateFrom=%s&dateTo=%s")
 (def endpoint-match-details   "/v2/matches/%d")
 
@@ -52,12 +51,13 @@
                        clojurise-json-key))))
 
 (defn matches-on-day
-  "Returns a list of all matches visible to the given token, on the given day (defaults to today UTC if not otherwise specified)."
+  "Returns a list of all matches visible to the given token, on the given day (defaults to today UTC if not otherwise specified), sorted by date/time and competition."
   ([token] (matches-on-day token (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))))
-  ([token ^java.time.temporal.Temporal day]
-    (let [day-as-string (format "yyyy-MM-dd" day)
+  ([token day]
+    (let [day-as-string (tm/format "yyyy-MM-dd" day)
           api-call      (format endpoint-matches-on-date day-as-string day-as-string)]
-      (:matches (football-data-api-call api-call token)))))
+      (sort-by #(str (:utc-date %) "-" (:name (:competition %)))
+               (filter #(= (:status %) "SCHEDULED") (:matches (football-data-api-call api-call token)))))))
 
 (defn match
   "Returns match details for "
