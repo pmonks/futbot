@@ -56,6 +56,7 @@
   ([token day]
     (let [day-as-string (tm/format "yyyy-MM-dd" day)
           api-call      (format endpoint-matches-on-date day-as-string day-as-string)]
+      (log/debug (str "Calling " api-call))
       (sort-by #(str (:utc-date %) "-" (:name (:competition %)))
                (filter #(= (:status %) "SCHEDULED") (:matches (football-data-api-call api-call token)))))))
 

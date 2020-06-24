@@ -19,6 +19,7 @@
 (ns futbot.core
   (:require [clojure.java.io       :as io]
             [clojure.core.async    :as async]
+            [clojure.tools.logging :as log]
             [mount.core            :as mnt :refer [defstate]]
             [futbot.config         :as cfg]
             [java-time             :as tm]
@@ -54,8 +55,9 @@
                                                    (tm/period 1 :days)))
 
 (defn post-daily-schedule!
-  "Generates and posts the daily-schedule (as an HTML attachment) to the Discord channel identified by daily-schedule-discord-channel-id."
-  []
+  "Generates and posts the daily-schedule (as an attachment) to the Discord channel identified by daily-schedule-discord-channel-id."
+  [time]
+  (log/debug "Daily schedule job started...")
   (try
     (let [today          (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
           today-str      (tm/format "yyyy-MM-dd" today)
@@ -69,7 +71,10 @@
                                  :stream {:content pdf-file-is :filename (str "daily-schedule-" today-str ".pdf")})))
         (dim/create-message! discord-message-channel
                              daily-schedule-discord-channel-id
-                             :content (str "Sadly there are no ⚽️ matches scheduled for today (" today-str "). 😢"))))))
+                             :content (str "Sadly there are no ⚽️ matches scheduled for today (" today-str "). 😢"))))
+    (catch Exception e
+      (log/error e "Unexpected exception while generating daily schedule")))
+  (log/debug "Daily schedule job finished"))
 
 (defstate daily-schedule-job
           :start (chime/chime-at every-day-at-midnight-UTC

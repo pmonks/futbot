@@ -38,7 +38,9 @@
         pmonks/freemarker-clj          {:git/url "https://github.com/pmonks/freemarker-clj" :sha "ae179dfd16dfa84e9ed00b04566eaa0d393d5695"}   ; Note: Temporary until https://github.com/grinnbearit/freemarker-clj/pull/10 gets merged
        }
  :aliases
-   { ; clj -Acheck
+   {; clj -Arun -c /path/to/config.edn
+    :run      {:main-opts ["-m" "futbot.main"]}
+    ; clj -Acheck
     :check    {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git" :sha "a2f4d4cb6ef347bff420edb66629e41d530b9668"}}
                :main-opts  ["-m" "clj-check.check"]}
     ; clj -Aoutdated

@@ -17,13 +17,14 @@
 ;
 
 (ns futbot.pdf
-  (:require [clojure.string  :as s]
-            [clojure.java.io :as io]
-            [java-time       :as tm]
-            [clj-pdf.core    :as pdf]))
+  (:require [clojure.string        :as s]
+            [clojure.java.io       :as io]
+            [clojure.tools.logging :as log]
+            [java-time             :as tm]
+            [clj-pdf.core          :as pdf]))
 
 (defn generate-daily-schedule-pdf-data-structure
-  [day days-matches]
+  [day matches]
   [{:title         (str "Soccer Matches - " (tm/format "yyyy-MM-dd" day))
     :creator       "futbot"
     :author        "futbot"
@@ -38,8 +39,8 @@
     [:heading (str "Matches scheduled for " (tm/format "EEEE LLLL d, yyyy" day) ":")]
 
     (loop [last-utc-date     nil
-           current-match     (first days-matches)
-           remaining-matches (rest days-matches)
+           current-match     (first matches)
+           remaining-matches (rest matches)
            result            (atom [:table {:cell-border    true
                                             :no-split-rows? true
                                             :leading        10
@@ -49,7 +50,7 @@
           ; Control-break row when we see a new utc-date
           (if (not= last-utc-date (:utc-date current-match))
             (let [utc-date-txt    (tm/format "h:mm a" (tm/zoned-date-time (:utc-date current-match)))
-                  utc-date-txt-qs (java.net.URLEncoder/encode utc-date-txt "UTF-8")]
+                  utc-date-txt-qs (java.net.URLEncoder/encode ^String utc-date-txt "UTF-8")]
               (swap! result conj [[:cell {:colspan 3}
                                   "Scheduled start "
                                   [:anchor {:style {:style "underline" :color [0 123 255]}
@@ -69,9 +70,10 @@
         @result))])
 
 (defn generate-daily-schedule
-  [day days-matches]
-  (if (pos? (count days-matches))
-    (let [pdf-data         (generate-daily-schedule-pdf-data-structure day days-matches)
+  [day matches]
+  (log/debug (str "Daily schedule PDF generation started for " (tm/format "yyyy-MM-dd" day) ": " (count matches) " matches."))
+  (if (pos? (count matches))
+    (let [pdf-data         (generate-daily-schedule-pdf-data-structure day matches)
           temp-pdf-file    (doto (java.io.File/createTempFile "futbot-tmp-" ".pdf") (.deleteOnExit))]
       (with-open [temp-pdf-file-os (io/output-stream temp-pdf-file)]
         (pdf/pdf pdf-data
