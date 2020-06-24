@@ -35,7 +35,6 @@
         http-kit/http-kit              #:mvn {:version "2.4.0-alpha6"}
         cheshire                       #:mvn {:version "5.10.0"}
         clj-pdf                        #:mvn {:version "2.5.1"}
-        pmonks/freemarker-clj          {:git/url "https://github.com/pmonks/freemarker-clj" :sha "ae179dfd16dfa84e9ed00b04566eaa0d393d5695"}   ; Note: Temporary until https://github.com/grinnbearit/freemarker-clj/pull/10 gets merged
        }
  :aliases
    {; clj -Arun -c /path/to/config.edn
