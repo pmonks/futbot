@@ -2,7 +2,7 @@
 <!--
   This is a partial POM that only contains project metadata that deps.edn doesn't contain.
 
-  To obtain a usable POM (i.e. with dependencies included), run `clojure -Srepro -Spom`, and use the output of that command instead of this POM.
+  To obtain a usable POM (i.e. with dependencies included), run `clojure -Srepro -Spom`, and use the file produced by that command instead of this one.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
