@@ -40,11 +40,15 @@
           :stop  (async/close! discord-event-channel))
 
 (defstate discord-connection-channel
-          :start (dic/connect-bot! discord-api-token discord-event-channel)
+          :start (if-let [connection (dic/connect-bot! discord-api-token discord-event-channel)]
+                   connection
+                   (throw (ex-info "Failed to connect bot to Discord" {})))
           :stop  (dic/disconnect-bot! discord-connection-channel))
 
 (defstate discord-message-channel
-          :start (dim/start-connection! discord-api-token)
+          :start (if-let [connection (dim/start-connection! discord-api-token)]
+                   connection
+                   (throw (ex-info "Failed to connect to Discord message channel" {})))
           :stop  (dim/stop-connection! discord-message-channel))
 
 (defstate daily-schedule-discord-channel-id
