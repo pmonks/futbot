@@ -35,7 +35,6 @@
     <url>https://github.com/pmonks/futbot</url>
     <connection>scm:git:git://github.com/pmonks/futbot.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/pmonks/futbot.git</developerConnection>
-    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
