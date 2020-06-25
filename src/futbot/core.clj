@@ -54,10 +54,6 @@
 (defstate daily-schedule-discord-channel-id
           :start (:daily-schedule-discord-channel-id cfg/config))
 
-(def tomorrow-at-midnight-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days)))
-(def every-day-at-midnight-UTC (chime/periodic-seq (tm/instant tomorrow-at-midnight-UTC)
-                                                   (tm/period 1 :days)))
-
 (defn post-daily-schedule!
   "Generates and posts the daily-schedule (as an attachment) to the Discord channel identified by daily-schedule-discord-channel-id."
   [time]
@@ -67,12 +63,12 @@
           today-str      (tm/format "yyyy-MM-dd" today)
           todays-matches (fd/matches-on-day football-data-api-token today)]
       (if (seq todays-matches)
-        (let [pdf-file (pdf/generate-daily-schedule today todays-matches)]
-          (with-open [pdf-file-is (io/input-stream pdf-file)]
-            (dim/create-message! discord-message-channel
-                                 daily-schedule-discord-channel-id
-                                 :content (str "Here are the scheduled matches for " today-str ":")
-                                 :stream {:content pdf-file-is :filename (str "daily-schedule-" today-str ".pdf")})))
+        (let [pdf-file    (pdf/generate-daily-schedule today todays-matches)
+              pdf-file-is (io/input-stream pdf-file)]
+          (dim/create-message! discord-message-channel
+                               daily-schedule-discord-channel-id
+                               :content (str "Here are the scheduled matches for " today-str ":")
+                               :stream {:content pdf-file-is :filename (str "daily-schedule-" today-str ".pdf")}))
         (dim/create-message! discord-message-channel
                              daily-schedule-discord-channel-id
                              :content (str "Sadly there are no ⚽️ matches scheduled for today (" today-str "). 😢"))))
@@ -80,7 +76,22 @@
       (log/error e "Unexpected exception while generating daily schedule")))
   (log/debug "Daily schedule job finished"))
 
+(def tomorrow-at-midnight-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days)))
+(def every-day-at-midnight-UTC (chime/periodic-seq (tm/instant tomorrow-at-midnight-UTC)
+                                                   (tm/period 1 :days)))
+
 (defstate daily-schedule-job
           :start (chime/chime-at every-day-at-midnight-UTC
                                  post-daily-schedule!)
           :stop (.close ^java.lang.AutoCloseable daily-schedule-job))
+
+
+
+; For testing purposes
+(comment
+(def run-shortly (tm/with-clock (tm/system-clock "UTC") (tm/plus (tm/zoned-date-time) (tm/minutes 1))))
+(defstate run-shortly-job
+          :start (chime/chime-at [run-shortly]
+                                 post-daily-schedule!)
+          :stop (.close ^java.lang.AutoCloseable run-shortly-job))
+)

@@ -18,12 +18,12 @@
 
 (ns futbot.main
   (:require [CLJ-2253]
+            [futbot.config         :as cfg]
             [clojure.string        :as s]
             [clojure.java.io       :as io]
             [clojure.tools.cli     :as cli]
             [clojure.tools.logging :as log]
             [mount.core            :as mnt :refer [defstate]]
-            [futbot.config         :as cfg]
             [futbot.core           :as core])
   (:gen-class))
 
