@@ -16,7 +16,7 @@ Configure a Discord bot using the [Discord developer portal](https://discord.com
 
 Obtain an API key for [football-data.org](https://football-data.org/).
 
-#### Running the Bot
+### Running the Bot
 
 1. Clone this repository locally.
 2. Either set environment variables as described in the default [`config.edn` file](https://github.com/pmonks/futbot/blob/main/resources/config.edn), or copy that file somewhere else and hardcode the values in the file directly.
