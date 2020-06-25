@@ -10,7 +10,19 @@ A small [Discord](https://discord.com/) bot that provides football (soccer) comp
 
 ## Trying it Out
 
-TODO!
+### Obtaining API Keys
+
+Configure a Discord bot using the [Discord developer portal](https://discord.com/developers), obtaining an API key.  Detailed instructions on this process are provided in the [`discljord` project](https://github.com/IGJoshua/discljord).
+
+Obtain an API key for [football-data.org](https://football-data.org/).
+
+#### Running the Bot
+
+1. Clone this repository locally.
+2. Either set environment variables as described in the default [`config.edn` file](https://github.com/pmonks/futbot/blob/main/resources/config.edn), or copy that file somewhere else and hardcode the values in the file directly.
+3. If you set the environment variables in step 2 run `clj -m futbot.main`, otherwise run `clj -m futbot.main -c /path/to/your/config.edn`
+4. ???
+5. PROFIT!!!1
 
 ## Contributor Information
 
