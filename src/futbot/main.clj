@@ -67,5 +67,4 @@
     ; Start the bot
     (mnt/with-args options)
     (mnt/start)
-    (core/start-bot!)
-    (log/info "futbot started")))
+    (core/start-bot!)))  ; This must go last, as it blocks

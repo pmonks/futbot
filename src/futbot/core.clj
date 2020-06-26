@@ -171,5 +171,6 @@
 (defn start-bot!
   "Starts the bot, which involves starting the message pump and creating timed jobs for all of today's match reminders."
   []
-  (de/message-pump! discord-event-channel handle-discord-event)
-  (register-todays-reminders!))
+  (register-todays-reminders!)
+  (log/info "futbot started")
+  (de/message-pump! discord-event-channel handle-discord-event))   ; Note: blocking fn
