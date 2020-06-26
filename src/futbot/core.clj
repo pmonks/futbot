@@ -32,10 +32,16 @@
             [discljord.events      :as de]))
 
 (defstate football-data-api-token
-          :start (:football-data-api-token cfg/config))
+          :start (let [token (:football-data-api-token cfg/config)]
+                   (if-not (s/blank? token)
+                     token
+                     (throw (ex-info "football-data.org API token not provided" {})))))
 
 (defstate discord-api-token
-          :start (:discord-api-token cfg/config))
+          :start (let [token (:discord-api-token cfg/config)]
+                   (if-not (s/blank? token)
+                     token
+                     (throw (ex-info "Discord API token not provided" {})))))
 
 (defstate discord-event-channel
           :start (async/chan (:discord-event-channel-size cfg/config))
@@ -54,18 +60,27 @@
           :stop  (dm/stop-connection! discord-message-channel))
 
 (defstate daily-schedule-discord-channel-id
-          :start (:daily-schedule-discord-channel-id cfg/config))
+          :start (let [channel-id (:daily-schedule-discord-channel-id cfg/config)]
+                   (if-not (s/blank? channel-id)
+                     channel-id
+                     (throw (ex-info "Daily schedule Discord channel id not provided" {})))))
 
 (defstate match-reminder-duration-mins
-          :start (:match-reminder-duration-mins cfg/config))
+          :start (if-let [duration (:match-reminder-duration-mins cfg/config)]
+                   duration
+                   15))    ; Default to 15 minutes
+
 (defstate match-reminder-duration
           :start (tm/minutes match-reminder-duration-mins))
 
 (defstate league-to-channel
           :start (:league-to-channel-map cfg/config))
 
-(defstate default-league-channel
-          :start (:default-league-channel cfg/config))
+(defstate default-league-channel-id
+          :start (let [channel-id (:default-league-channel-id cfg/config)]
+                   (if-not (s/blank? channel-id)
+                     channel-id
+                     (throw (ex-info "Default league Discord channel id not provided" {})))))
 
 
 ; Timed jobs and related fns
@@ -90,7 +105,7 @@
     (log/info (str "Sending reminder for match " match-id "..."))
     (if-let [{head-to-head :head2head
               match        :match}    (fd/match football-data-api-token match-id)]
-      (let [channel-id    (get league-to-channel (get-in match [:competition :name]) default-league-channel)
+      (let [channel-id    (get league-to-channel (get-in match [:competition :name]) default-league-channel-id)
             starts-in-min (try
                             (.toMinutes (tm/duration (tm/zoned-date-time)
                                                      (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time (:utc-date match)))))
