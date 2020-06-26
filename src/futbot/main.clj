@@ -56,15 +56,16 @@
   (System/exit status-code))
 
 (defn -main
-  "Runs the futbot bot."
+  "Runs futbot."
   [& args]
+  (log/info "Starting futbot...")
   (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
     (cond
       (:help options) (exit 0 (usage summary))
       errors          (exit 1 (error-message errors)))
 
     ; Start the bot
-    (log/debug "Starting futbot...")
     (mnt/with-args options)
     (mnt/start)
+    (core/start-bot!)
     (log/info "futbot started")))

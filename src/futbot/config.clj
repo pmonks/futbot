@@ -45,11 +45,3 @@
           :start (if-let [config-file (:config-file (mnt/args))]
                    (a/read-config config-file)
                    (a/read-config (io/resource "config.edn"))))
-
-(defn reload!
-  "Reloads all of configuration for the bot.  This will briefly take the bot offline."
-  []
-  (log/debug "Reloading futbot configuration...")
-  (mnt/stop)
-  (mnt/start)
-  (log/debug "futbot configuration reloaded."))

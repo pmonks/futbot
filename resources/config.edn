@@ -3,9 +3,15 @@
   :football-data-api-token    #env FOOTBALL_DATA_API_TOKEN
 
   :discord-api-token          #env DISCORD_API_TOKEN
-  :discord-event-channel-size #or [#env DISCORD_EVENT_CHANNEL_SIZE 100]
+  :discord-event-channel-size #or [#env DISCORD_EVENT_CHANNEL_SIZE 100]   ; Default = 100 queue slots
 
-  :daily-schedule-discord-channel-id #env DAILY-SCHEDULE-DISCORD-CHANNEL-ID
+  :daily-schedule-discord-channel-id #env DAILY_SCHEDULE_DISCORD_CHANNEL_ID
+
+  ; Match reminder duration, in minutes
+  :match-reminder-duration-mins #or [#env MATCH_REMINDER_DURATION 15]
+
+  :league-to-channel-map {}  ; TODO: Figure out how to parse a map out of an environment variable using aero...
+  :default-league-channel #env DEFAULT_LEAGUE_DISCORD_CHANNEL_ID
 
   ; For details, see https://github.com/rhuss/jolokia/blob/master/agent/jvm/src/main/resources/default-jolokia-agent.properties
   ; Note: All keys and values MUST be strings - this is a Jolokia requirement
