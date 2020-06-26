@@ -87,24 +87,36 @@
 (defn post-match-reminder-to-channel!
   [match-id & args]
   (try
-    (log/info (str "Reminder job for match " match-id " started..."))
-    (if-let [updated-match-info (fd/match football-data-api-token match-id)]
-      (let [channel-id (get-in league-to-channel [:competition :name] default-league-channel)
-            message    (str (get-in [:match :home-team :name] updated-match-info) " vs " (get-in [:match :away-team :name] updated-match-info)
-                            " starts in " match-reminder-duration-mins " minutes."
-                            (if-let [referees (seq (get-in [:match :referees] updated-match-info))]
-                              (str "\nReferees: " (s/join ", " referees))))]
-        (dm/create-message! discord-message-channel
-                             channel-id
-                             :content message))
-      (log/warn (str "Match " match-id " was not found by football-data.org")))
+    (log/info (str "Sending reminder for match " match-id "..."))
+    (if-let [{head-to-head :head2head
+              match        :match}    (fd/match football-data-api-token match-id)]
+      (let [channel-id    (get league-to-channel (get-in match [:competition :name]) default-league-channel)
+            starts-in-min (try
+                            (.toMinutes (tm/duration (tm/zoned-date-time)
+                                                     (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time (:utc-date match)))))
+                            (catch Exception e
+                              match-reminder-duration-mins))
+            opponents     (str (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown"))
+            message       (case (:status match)
+                            "SCHEDULED" (str opponents " starts in " starts-in-min " minutes."
+                                             (if-let [referees (seq (:referees match))]
+                                               (str "\nReferees: " (s/join ", " (map :name referees)))))
+                            "POSTPONED" (str opponents ", due to start in " starts-in-min " minutes, has been postponed.")
+                            "CANCELED"  (str opponents ", due to start in " starts-in-min " minutes, has been canceled.")
+                            nil)]
+        (if message
+          (dm/create-message! discord-message-channel
+                               channel-id
+                               :content message)
+          (log/info (str "Match " match-id " had an unexpected status: " (:status match) ". No reminder message sent."))))
+      (log/warn (str "Match " match-id " was not found by football-data.org. No reminder message sent.")))
     (catch Exception e
       (log/error e "Unexpected exception while sending reminder for match " match-id))
     (finally
-      (log/info (str "Reminder job for match " match-id " finished")))))
+      (log/info (str "Finished sending reminder for match " match-id)))))
 
-(defn create-match-reminder-job!
-  "Schedules a reminder job for the given match."
+(defn schedule-match-reminder!
+  "Schedules a reminder for the given match."
   [match]
   (let [now           (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
         match-time    (tm/zoned-date-time (:utc-date match))
@@ -120,10 +132,10 @@
   [channel-id & args]
   (try
     (log/info "Daily job started...")
-    (let [today          (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
-          todays-matches (fd/matches-on-day football-data-api-token today)]
-      (post-daily-schedule-to-channel! channel-id today todays-matches)
-      (doall (map create-match-reminder-job! todays-matches)))
+    (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+          todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
+      (post-daily-schedule-to-channel! channel-id today todays-scheduled-matches)
+      (doall (map schedule-match-reminder! todays-scheduled-matches)))
     (catch Exception e
       (log/error e "Unexpected exception while generating daily schedule"))
     (finally
@@ -138,12 +150,15 @@
                                  (partial daily-job-fn! daily-schedule-discord-channel-id))
           :stop (.close ^java.lang.AutoCloseable daily-job))
 
-(defn register-todays-reminders!
-  "Registers reminders for the remainder of today's matches."
+(defn schedule-todays-reminders!
+  "Schedules reminders for the remainder of today's matches."
   []
-  (let [today          (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
-        todays-matches (fd/matches-on-day football-data-api-token today)]
-    (doall (map create-match-reminder-job! todays-matches))))
+  (log/debug "Scheduling reminders for the remainder of today's matches...")
+  (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+        todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
+    (if (seq todays-scheduled-matches)
+      (doall (map schedule-match-reminder! todays-scheduled-matches))
+      (log/debug "No remaining matches scheduled for today"))))
 
 ; For testing purposes
 (comment
@@ -168,9 +183,12 @@
 
 ;####TODO: Implement responsive messaging (i.e. chatops from humans to the bot)
 
+
+
+; Bot functionality
 (defn start-bot!
-  "Starts the bot, which involves starting the message pump and creating timed jobs for all of today's match reminders."
+  "Starts the bot."
   []
-  (register-todays-reminders!)
+  (schedule-todays-reminders!)
   (log/info "futbot started")
   (de/message-pump! discord-event-channel handle-discord-event))   ; Note: blocking fn

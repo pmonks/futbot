@@ -51,14 +51,19 @@
                        clojurise-json-key))))
 
 (defn matches-on-day
-  "Returns a list of all scheduled matches visible to the given token, on the given day (defaults to today UTC if not otherwise specified), sorted by scheduled time and then by competition."
+  "Returns a list of all matches visible to the given token, on the given day (defaults to today UTC if not otherwise specified), sorted by scheduled time and then by competition."
   ([token] (matches-on-day token (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))))
   ([token day]
     (let [day-as-string (tm/format "yyyy-MM-dd" day)
           api-call      (format endpoint-matches-on-date day-as-string day-as-string)]
       (log/debug (str "Calling " api-call))
       (sort-by #(str (:utc-date %) "-" (:name (:competition %)))
-               (filter #(= (:status %) "SCHEDULED") (:matches (football-data-api-call api-call token)))))))
+               (:matches (football-data-api-call api-call token))))))
+
+(defn scheduled-matches-on-day
+  "Returns a list of all scheduled matches visible to the given token, on the given day (defaults to today UTC if not otherwise specified), sorted by scheduled time and then by competition."
+  ([token]     (filter #(= (:status %) "SCHEDULED") (matches-on-day token)))
+  ([token day] (filter #(= (:status %) "SCHEDULED") (matches-on-day token day))))
 
 (defn match
   "Returns match details for a single match."
