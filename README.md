@@ -23,7 +23,7 @@ Currently the bot is only distributed in source form, so regardless of how you i
 #### Direct Execution
 
 1. Either set environment variables as described in the default [`config.edn` file](https://github.com/pmonks/futbot/blob/main/resources/config.edn), or copy that file somewhere else and hardcode the values in the file directly.
-2. If you set the environment variables in step 2 run `clj -m futbot.main`, otherwise run `clj -m futbot.main -c /path/to/your/config.edn`
+2. If you set the environment variables in the previous step run `clj -m futbot.main`, otherwise run `clj -m futbot.main -c /path/to/your/config.edn`
 
 #### Dockerised Execution
 
