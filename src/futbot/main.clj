@@ -59,7 +59,7 @@
   "Runs futbot."
   [& args]
   (try
-    (log/info "Starting futbot...")
+    (log/info "Starting futbot on Clojure" (clojure-version) " / JVM " (System/getProperty "java.version"))
     (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
       (cond
         (:help options) (exit 0 (usage summary))

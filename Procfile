@@ -1,1 +1,1 @@
-bot: clojure -Srepro -m futbot.main -c ./heroku-config.edn
+bot: clojure -J-XX:+UseContainerSupport -Srepro -m futbot.main -c ./heroku-config.edn
