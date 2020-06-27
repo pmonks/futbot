@@ -82,6 +82,9 @@
                      channel-id
                      (throw (ex-info "Default league Discord channel id not provided" {})))))
 
+(defstate muted-leagues
+          :start (:muted-leagues cfg/config))
+
 
 ; Timed jobs and related fns
 (defn post-daily-schedule-to-channel!
@@ -135,13 +138,16 @@
   [match]
   (let [now           (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
         match-time    (tm/zoned-date-time (:utc-date match))
+        match-league  (get-in match [:competition :name])
         reminder-time (tm/minus match-time match-reminder-duration)]
-    (if (tm/before? now reminder-time)
-      (do
-        (log/debug (str "Scheduling reminder for match " (:id match) " at " reminder-time))
-        (chime/chime-at [reminder-time]
-                        (partial post-match-reminder-to-channel! (:id match))))
-      (log/debug (str "Reminder time " reminder-time " for match " (:id match) " has already passed - not scheduling a reminder.")))))
+    (if-not (some (partial = match-league) muted-leagues)
+      (if (tm/before? now reminder-time)
+        (do
+          (log/debug (str "Scheduling reminder for match " (:id match) " at " reminder-time))
+          (chime/chime-at [reminder-time]
+                          (partial post-match-reminder-to-channel! (:id match))))
+        (log/debug (str "Reminder time " reminder-time " for match " (:id match) " has already passed - not scheduling a reminder.")))
+      (log/debug (str "Match " (:id match) " is in a muted league - not scheduling a reminder.")))))
 
 (defn daily-job-fn!
   [channel-id & args]

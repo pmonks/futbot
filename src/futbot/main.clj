@@ -59,7 +59,7 @@
   "Runs futbot."
   [& args]
   (try
-    (log/info "Starting futbot on Clojure" (clojure-version) " / JVM " (System/getProperty "java.version"))
+    (log/info "Starting futbot on Clojure" (clojure-version) "/ JVM" (System/getProperty "java.version"))   ; Yes the odd looking whitespace is correct...
     (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
       (cond
         (:help options) (exit 0 (usage summary))
