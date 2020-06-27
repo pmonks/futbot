@@ -1,0 +1,5 @@
+build:
+  docker:
+    bot: Dockerfile
+run:
+  bot: clojure -Srepro -m futbot.main -c ./heroku-config.edn
