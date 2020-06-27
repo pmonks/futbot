@@ -51,6 +51,12 @@ $ docker run -d futbot
 
 [Code of Conduct](https://github.com/pmonks/futbot/blob/main/.github/CODE_OF_CONDUCT.md)
 
+### Developer Workflow
+
+The `futbot` source repository has two permanent branches: `main` and `dev`.  **All development must occur either in branch `dev`, or (preferably) in feature branches off of `dev`.**  All PRs must also be submitted against `dev`; the `main` branch is **only** updated from `dev` via PRs created by the core development team.  All other changes submitted to `main` will be rejected.
+
+This model allows otherwise unrelated changes to be batched up in the `dev` branch, integration tested there, and then released en masse to the `main` branch.  The `main` branch is configured to auto-deploy to heroku, and therefore this branch must only contain tested, functioning code, and should not be updated too frequently.
+
 ## License
 
 Copyright © 2020 Peter Monks
