@@ -58,13 +58,17 @@
 (defn -main
   "Runs futbot."
   [& args]
-  (log/info "Starting futbot...")
-  (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
-    (cond
-      (:help options) (exit 0 (usage summary))
-      errors          (exit 1 (error-message errors)))
+  (try
+    (log/info "Starting futbot...")
+    (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
+      (cond
+        (:help options) (exit 0 (usage summary))
+        errors          (exit 1 (error-message errors)))
 
-    ; Start the bot
-    (mnt/with-args options)
-    (mnt/start)
-    (core/start-bot!)))  ; This must go last, as it blocks
+      ; Start the bot
+      (mnt/with-args options)
+      (mnt/start)
+      (core/start-bot!))  ; This must go last, as it blocks
+    (catch Exception e
+      (log/error e)
+      (System/exit -1))))
