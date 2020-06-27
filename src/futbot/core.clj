@@ -113,11 +113,11 @@
                               match-reminder-duration-mins))
             opponents     (str (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown"))
             message       (case (:status match)
-                            "SCHEDULED" (str opponents " starts in " starts-in-min " minutes."
+                            "SCHEDULED" (str "⚽️ **" opponents " starts in " starts-in-min " minutes.**"
                                              (if-let [referees (seq (:referees match))]
                                                (str "\nReferees: " (s/join ", " (map :name referees)))))
-                            "POSTPONED" (str opponents ", due to start in " starts-in-min " minutes, has been postponed.")
-                            "CANCELED"  (str opponents ", due to start in " starts-in-min " minutes, has been canceled.")
+                            "POSTPONED" (str "⚽️ **" opponents ", due to start in " starts-in-min " minutes, has been postponed.**")
+                            "CANCELED"  (str "⚽️ **" opponents ", due to start in " starts-in-min " minutes, has been canceled.**")
                             nil)]
         (if message
           (dm/create-message! discord-message-channel
