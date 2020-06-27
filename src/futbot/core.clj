@@ -139,7 +139,7 @@
   (let [now           (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
         match-time    (tm/zoned-date-time (:utc-date match))
         match-league  (get-in match [:competition :name])
-        reminder-time (tm/minus match-time match-reminder-duration)]
+        reminder-time (tm/minus match-time (tm/plus match-reminder-duration (tm/seconds 10)))]
     (if-not (some (partial = match-league) muted-leagues)
       (if (tm/before? now reminder-time)
         (do
