@@ -18,11 +18,30 @@ Obtain an API key for [football-data.org](https://football-data.org/).
 
 ### Running the Bot
 
-1. Clone this repository locally.
-2. Either set environment variables as described in the default [`config.edn` file](https://github.com/pmonks/futbot/blob/main/resources/config.edn), or copy that file somewhere else and hardcode the values in the file directly.
-3. If you set the environment variables in step 2 run `clj -m futbot.main`, otherwise run `clj -m futbot.main -c /path/to/your/config.edn`
-4. ???
-5. PROFIT!!!1
+Currently the bot is only distributed in source form, so regardless of how you intend to deploy it, you'll need to clone this repository locally.
+
+#### Direct Execution
+
+1. Either set environment variables as described in the default [`config.edn` file](https://github.com/pmonks/futbot/blob/main/resources/config.edn), or copy that file somewhere else and hardcode the values in the file directly.
+2. If you set the environment variables in step 2 run `clj -m futbot.main`, otherwise run `clj -m futbot.main -c /path/to/your/config.edn`
+
+#### Dockerised Execution
+
+Copy the default [`config.edn` file](https://github.com/pmonks/futbot/blob/main/resources/config.edn) to `./docker-config.edn`, and edit the entries in the file for your needs.
+
+Build the container:
+```
+$ docker build -t futbot .
+```
+
+Run the container:
+
+```
+$ # Interactively:
+$ docker run futbot
+$ # In the background:
+$ docker run -d futbot
+```
 
 ## Contributor Information
 
