@@ -14,11 +14,4 @@
   :default-league-channel-id #env DEFAULT_LEAGUE_DISCORD_CHANNEL_ID
 
   :muted-leagues #split [#env MUTED_LEAGUES "\\s*,\\s*"]
-
-  ; For details, see https://github.com/rhuss/jolokia/blob/master/agent/jvm/src/main/resources/default-jolokia-agent.properties
-  ; Note: All keys and values MUST be strings - this is a Jolokia requirement
-  :jolokia-config {
-    "host" #or [#env JOLOKIA_HOST "localhost"]
-    "port" #or [#env JOLOKIA_PORT "8778"]
-  }
 }
