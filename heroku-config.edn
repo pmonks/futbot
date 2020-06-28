@@ -25,9 +25,4 @@
   :default-league-channel-id "723309028725227532"
 
   :muted-leagues ["Championship"]
-
-  :jolokia-config {
-    "host" #or [#env JOLOKIA_HOST "localhost"]
-    "port" #or [#env JOLOKIA_PORT "8778"]
-  }
 }
