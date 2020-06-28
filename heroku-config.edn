@@ -4,25 +4,25 @@
   :discord-api-token          #env DISCORD_API_TOKEN
   :discord-event-channel-size 100
 
-  :daily-schedule-discord-channel-id "723309028725227532"
+  :daily-schedule-discord-channel-id "686396574104158228"   ; Watching Games Together > #game-listings
 
   :match-reminder-duration-mins 15
 
   :league-to-channel-map {
-    "Série A"               "723309028725227532"
-    "Championship"          "723309028725227532"
-    "Premier League"        "723309028725227532"
-    "European Championship" "723309028725227532"
-    "UEFA Champions League" "723309028725227532"
-    "Ligue 1"               "723309028725227532"
-    "Bundesliga"            "723309028725227532"
-    "Serie A"               "723309028725227532"
-    "Eredivisie"            "723309028725227532"
-    "Primeira Liga"         "723309028725227532"
-    "Primera Division"      "723309028725227532"
-    "FIFA World Cup"        "723309028725227532"
+    "Série A"                "710316975393341511"       ; League Discussions > #other    (no #brazil channel yet)
+    "Championship"           "683856416351846441"       ; League Discussions > #england
+    "Premier League"         "683856416351846441"       ; League Discussions > #england
+    "European Championship"  "683856917122121734"       ; League Discussions > #international
+    "UEFA Champions League"  "683856917122121734"       ; League Discussions > #international
+    "Ligue 1"                "710316975393341511"       ; League Discussions > #other    (no #france channel yet)
+    "Bundesliga"             "687660279189995554"       ; League Discussions > #germany
+    "Serie A"                "687660332981944321"       ; League Discussions > #italy
+    "Eredivisie"             "710316975393341511"       ; League Discussions > #other    (no #netherlands channel yet)
+    "Primeira Liga"          "710316975393341511"       ; League Discussions > #other    (no #portugal channel yet)
+    "Primera Division"       "687659858476138582"       ; League Discussions > #spain
+    "FIFA World Cup"         "683856917122121734"       ; League Discussions > #international
   }
-  :default-league-channel-id "723309028725227532"
+  :default-league-channel-id "710316975393341511"       ; League Discussions > #other
 
   :muted-leagues ["Championship"]
 }

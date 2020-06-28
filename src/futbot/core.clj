@@ -156,7 +156,7 @@
     (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
           todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
       (post-daily-schedule-to-channel! channel-id today todays-scheduled-matches)
-      (doall (map schedule-match-reminder! todays-scheduled-matches)))
+      (doall (map schedule-match-reminder! (distinct todays-scheduled-matches))))
     (catch Exception e
       (log/error e "Unexpected exception while generating daily schedule"))
     (finally
@@ -178,7 +178,7 @@
   (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
         todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
     (if (seq todays-scheduled-matches)
-      (doall (map schedule-match-reminder! todays-scheduled-matches))
+      (doall (map schedule-match-reminder! (distinct todays-scheduled-matches)))
       (log/debug "No remaining matches scheduled for today"))))
 
 ; For testing purposes
