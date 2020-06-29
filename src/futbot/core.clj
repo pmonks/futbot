@@ -25,11 +25,12 @@
             [futbot.config         :as cfg]
             [java-time             :as tm]
             [chime.core            :as chime]
-            [futbot.football-data  :as fd]
-            [futbot.pdf            :as pdf]
             [discljord.connections :as dc]
             [discljord.messaging   :as dm]
-            [discljord.events      :as de]))
+            [discljord.events      :as de]
+            [futbot.football-data  :as fd]
+            [futbot.pdf            :as pdf]
+            [futbot.chat           :as chat]))
 
 (defstate football-data-api-token
           :start (let [token (:football-data-api-token cfg/config)]
@@ -191,25 +192,10 @@
 )
 
 
-
-; Responsive fns
-(defmulti handle-discord-event
-  "Discord event handler"
-  (fn [event-type event-data]
-    event-type))
-
-; Default Discord event handler (noop)
-(defmethod handle-discord-event :default
-  [event-type event-data])
-
-;####TODO: Implement responsive messaging (i.e. chatops from humans to the bot)
-
-
-
 ; Bot functionality
 (defn start-bot!
   "Starts the bot."
   []
   (schedule-todays-reminders!)
   (log/info "futbot started")
-  (de/message-pump! discord-event-channel handle-discord-event))   ; Note: blocking fn
+  (de/message-pump! discord-event-channel chat/handle-discord-event))   ; Note: blocking fn
