@@ -96,12 +96,12 @@
       (let [pdf-file    (pdf/generate-daily-schedule today todays-matches)
             pdf-file-is (io/input-stream pdf-file)]
         (dm/create-message! discord-message-channel
-                             channel-id
-                             :content (str "Here are the scheduled matches for " today-str ":")
-                             :stream {:content pdf-file-is :filename (str "daily-schedule-" today-str ".pdf")}))
+                            channel-id
+                            :content (str "Here are the scheduled matches for " today-str ":")
+                            :stream {:content pdf-file-is :filename (str "daily-schedule-" today-str ".pdf")}))
       (dm/create-message! discord-message-channel
-                           channel-id
-                           :content (str "Sadly there are no ⚽️ matches scheduled for today (" today-str "). 😢")))))
+                          channel-id
+                          :content (str "There are no matches scheduled for today (" today-str ").")))))
 
 (defn post-match-reminder-to-channel!
   [match-id & args]
