@@ -24,5 +24,5 @@
   }
   :default-league-channel-id "710316975393341511"       ; League Discussions > #other
 
-  :muted-leagues ["Championship"]
+  :muted-leagues ["Championship" "Série A"]
 }
