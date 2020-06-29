@@ -26,9 +26,8 @@
   <logger name="org.apache"  level="ERROR" />
   <logger name="org.eclipse" level="ERROR" />
   <logger name="discljord"   level="ERROR" />
-  <logger name="futbot"      level="INFO" />
 
-  <root level="WARN">
+  <root level="INFO">
     <appender-ref ref="STDOUT" />
   </root>
 </configuration>
