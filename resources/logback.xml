@@ -6,6 +6,7 @@
     </encoder>
   </appender>
 
+<!--
   <appender name="LOG_FILE" class="ch.qos.logback.core.FileAppender">
     <file>futbot.log</file>
     <encoder>
@@ -22,12 +23,14 @@
       <pattern>%date %-5level [%thread] %logger{30} - %msg%n</pattern>
     </encoder>
   </appender>
+-->
 
   <logger name="org.apache"  level="ERROR" />
   <logger name="org.eclipse" level="ERROR" />
   <logger name="discljord"   level="ERROR" />
+  <logger name="futbot"      level="INFO" />
 
-  <root level="INFO">
+  <root level="WARN">
     <appender-ref ref="STDOUT" />
   </root>
 </configuration>
