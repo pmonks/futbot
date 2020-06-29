@@ -26,8 +26,8 @@
   <logger name="org.apache"  level="ERROR" />
   <logger name="org.eclipse" level="ERROR" />
   <logger name="org.jolokia" level="ERROR" />
-  <logger name="discljord"   level="WARN" />
-  <logger name="futbot"      level="DEBUG" />
+  <logger name="discljord"   level="ERROR" />
+  <logger name="futbot"      level="INFO" />
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />
