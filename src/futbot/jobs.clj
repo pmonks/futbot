@@ -24,7 +24,8 @@
             [chime.core            :as chime]
             [discljord.messaging   :as dm]
             [futbot.football-data  :as fd]
-            [futbot.pdf            :as pdf]))
+            [futbot.pdf            :as pdf]
+            [futbot.flags          :as fl]))
 
 (defn post-daily-schedule-to-channel!
   "Generates and posts the daily-schedule (as an attachment) to the Discord channel identified by channel-id."
@@ -52,19 +53,24 @@
     (log/info (str "Sending reminder for match " match-id "..."))
     (if-let [{head-to-head :head2head
               match        :match}    (fd/match football-data-api-token match-id)]
-      (let [channel-id    (league-to-channel-fn (get-in match [:competition :name]))
+      (let [league        (get-in match [:competition :name])
+            channel-id    (league-to-channel-fn league)
             starts-in-min (try
                             (.toMinutes (tm/duration (tm/zoned-date-time)
                                                      (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time (:utc-date match)))))
                             (catch Exception e
                               (.toMinutes ^java.time.Duration match-reminder-duration)))
-            opponents     (str (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown"))
+            flag          (if-let [flag (fl/flag (get-in match [:competition :area :code]))]
+                            flag
+                            "🏴‍☠️")
+            match-prefix  (str flag " " league ": **" (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown") "**")
             message       (case (:status match)
-                            "SCHEDULED" (str "⚽️ **" opponents " starts in " starts-in-min " minutes.**"
+                            "SCHEDULED" (str match-prefix " starts in " starts-in-min " minutes.\nReferees: "
                                              (if-let [referees (seq (:referees match))]
-                                               (str "\nReferees: " (s/join ", " (map :name referees)))))
-                            "POSTPONED" (str "⚽️ **" opponents ", due to start in " starts-in-min " minutes, has been postponed.**")
-                            "CANCELED"  (str "⚽️ **" opponents ", due to start in " starts-in-min " minutes, has been canceled.**")
+                                               (s/join ", " (map :name referees))
+                                               ("Unknown")))
+                            "POSTPONED" (str match-prefix ", which was due to start in " starts-in-min " minutes, has been postponed.")
+                            "CANCELED"  (str match-prefix ", which was due to start in " starts-in-min " minutes, has been canceled.")
                             nil)]
         (if message
           (dm/create-message! discord-message-channel
