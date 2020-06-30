@@ -1,5 +1,2 @@
 #!/usr/bin/env bash
-
-# This NOOP garbage is needed because heroku's Clojure buildpack is trash...
-
-clojure -Srepro -e '(println "Dependencies downloaded")'
+clojure -Srepro -Agit-info-edn

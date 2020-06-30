@@ -13,3 +13,4 @@ pom.xml.asc
 *.log
 uberjar/
 config.edn
+resources/deploy-info.edn
