@@ -43,17 +43,21 @@
 
 
 (defn post-match-reminder-to-channel!
-  [football-data-api-token discord-message-channel match-reminder-duration-mins league-to-channel default-league-channel-id match-id & _]
+  [football-data-api-token
+   discord-message-channel
+   match-reminder-duration
+   league-to-channel-fn
+   match-id & _]
   (try
     (log/info (str "Sending reminder for match " match-id "..."))
     (if-let [{head-to-head :head2head
               match        :match}    (fd/match football-data-api-token match-id)]
-      (let [channel-id    (get league-to-channel (get-in match [:competition :name]) default-league-channel-id)
+      (let [channel-id    (league-to-channel-fn (get-in match [:competition :name]))
             starts-in-min (try
                             (.toMinutes (tm/duration (tm/zoned-date-time)
                                                      (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time (:utc-date match)))))
                             (catch Exception e
-                              match-reminder-duration-mins))
+                              (.toMinutes ^java.time.Duration match-reminder-duration)))
             opponents     (str (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown"))
             message       (case (:status match)
                             "SCHEDULED" (str "⚽️ **" opponents " starts in " starts-in-min " minutes.**"
@@ -75,29 +79,59 @@
 
 (defn schedule-match-reminder!
   "Schedules a reminder for the given match."
-  [football-data-api-token discord-message-channel match-reminder-duration-mins muted-leagues league-to-channel default-league-channel-id match]
+  [football-data-api-token
+   discord-message-channel
+   match-reminder-duration
+   muted-leagues
+   league-to-channel-fn
+   match]
   (let [now           (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
         match-time    (tm/zoned-date-time (:utc-date match))
         match-league  (get-in match [:competition :name])
-        reminder-time (tm/minus match-time (tm/plus match-reminder-duration-mins (tm/seconds 10)))]
+        reminder-time (tm/minus match-time (tm/plus match-reminder-duration (tm/seconds 10)))]
     (if-not (some (partial = match-league) muted-leagues)
       (if (tm/before? now reminder-time)
         (do
           (log/info (str "Scheduling reminder for match " (:id match) " at " reminder-time))
           (chime/chime-at [reminder-time]
-                          (partial post-match-reminder-to-channel! football-data-api-token discord-message-channel match-reminder-duration-mins league-to-channel default-league-channel-id (:id match))))
+                          (partial post-match-reminder-to-channel!
+                                   football-data-api-token
+                                   discord-message-channel
+                                   match-reminder-duration
+                                   league-to-channel-fn
+                                   (:id match))))
         (log/info (str "Reminder time " reminder-time " for match " (:id match) " has already passed - not scheduling a reminder.")))
       (log/info (str "Match " (:id match) " is in a muted league - not scheduling a reminder.")))))
 
 (defn schedule-todays-reminders!
   "Schedules reminders for the remainder of today's matches."
-  ([football-data-api-token discord-message-channel match-reminder-duration-mins muted-leagues league-to-channel default-league-channel-id]
+  ([football-data-api-token
+    discord-message-channel
+    match-reminder-duration
+    muted-leagues
+    league-to-channel-fn]
     (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
           todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
-      (schedule-todays-reminders! football-data-api-token discord-message-channel match-reminder-duration-mins muted-leagues league-to-channel default-league-channel-id today todays-scheduled-matches)))
-  ([football-data-api-token discord-message-channel match-reminder-duration-mins muted-leagues league-to-channel default-league-channel-id today todays-scheduled-matches]
+      (schedule-todays-reminders! football-data-api-token
+                                  discord-message-channel
+                                  match-reminder-duration
+                                  muted-leagues
+                                  league-to-channel-fn
+                                  today
+                                  todays-scheduled-matches)))
+  ([football-data-api-token
+    discord-message-channel
+    match-reminder-duration
+    muted-leagues
+    league-to-channel-fn
+    today
+    todays-scheduled-matches]
     (if (seq todays-scheduled-matches)
-      (doall (map (partial schedule-match-reminder! football-data-api-token discord-message-channel match-reminder-duration-mins muted-leagues league-to-channel default-league-channel-id)
+      (doall (map (partial schedule-match-reminder! football-data-api-token
+                                                    discord-message-channel
+                                                    match-reminder-duration
+                                                    muted-leagues
+                                                    league-to-channel-fn)
                   (distinct todays-scheduled-matches)))
       (log/info "No matches today - not scheduling any reminders."))))
 

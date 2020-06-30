@@ -66,13 +66,10 @@
                      channel-id
                      (throw (ex-info "Daily schedule Discord channel id not provided" {})))))
 
-(defstate match-reminder-duration-mins
-          :start (if-let [duration (:match-reminder-duration-mins cfg/config)]
-                   duration
-                   15))    ; Default to 15 minutes
-
 (defstate match-reminder-duration
-          :start (tm/minutes match-reminder-duration-mins))
+          :start (tm/minutes (if-let [duration (:match-reminder-duration-mins cfg/config)]
+                               duration
+                               15)))  ; Default is 15 minutes
 
 (defstate league-to-channel
           :start (:league-to-channel-map cfg/config))
@@ -96,19 +93,31 @@
                                        (log/info "Daily job started...")
                                        (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
                                              todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
-                                         (job/post-daily-schedule-to-channel! discord-message-channel daily-schedule-discord-channel-id today todays-scheduled-matches)
-                                         (job/schedule-todays-reminders! football-data-api-token discord-message-channel match-reminder-duration-mins league-to-channel default-league-channel-id today todays-scheduled-matches))
+                                         (job/post-daily-schedule-to-channel! discord-message-channel
+                                                                              daily-schedule-discord-channel-id
+                                                                              today
+                                                                              todays-scheduled-matches)
+                                         (job/schedule-todays-reminders! football-data-api-token
+                                                                         discord-message-channel
+                                                                         match-reminder-duration
+                                                                         muted-leagues
+                                                                         #(get-in league-to-channel % default-league-channel-id)
+                                                                         today
+                                                                         todays-scheduled-matches))
                                        (catch Exception e
                                          (log/error e "Unexpected exception while generating daily schedule"))
                                        (finally
                                          (log/info "Daily job finished"))))))
           :stop (.close ^java.lang.AutoCloseable daily-job))
 
-
 ; Bot functionality
 (defn start-bot!
   "Starts the bot."
   []
-  (job/schedule-todays-reminders! football-data-api-token discord-message-channel match-reminder-duration-mins muted-leagues league-to-channel default-league-channel-id)
+  (job/schedule-todays-reminders! football-data-api-token
+                                  discord-message-channel
+                                  match-reminder-duration
+                                  muted-leagues
+                                  #(get-in league-to-channel % default-league-channel-id))
   (log/info "futbot started")
   (de/message-pump! discord-event-channel chat/handle-discord-event))   ; Note: blocking fn
