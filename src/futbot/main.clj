@@ -24,6 +24,7 @@
             [clojure.tools.cli     :as cli]
             [clojure.tools.logging :as log]
             [mount.core            :as mnt :refer [defstate]]
+            [java-time             :as tm]
             [futbot.core           :as core])
   (:gen-class))
 
@@ -59,7 +60,8 @@
   "Runs futbot."
   [& args]
   (try
-    (log/info "Starting futbot on Clojure" (clojure-version) "/ JVM" (System/getProperty "java.version"))   ; Yes the odd looking whitespace is correct...
+    (log/info "Starting futbot on Clojure" (clojure-version) "/ JVM" (System/getProperty "java.version"))
+    (log/info "Built at" (tm/format :iso-instant cfg/built-at) "from" cfg/git-url)
     (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
       (cond
         (:help options) (exit 0 (usage summary))

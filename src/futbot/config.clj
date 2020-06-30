@@ -45,3 +45,17 @@
           :start (if-let [config-file (:config-file (mnt/args))]
                    (a/read-config config-file)
                    (a/read-config (io/resource "config.edn"))))
+
+(def ^:private build-info
+  (if-let [deploy-info (io/resource "deploy-info.edn")]
+    (edn/read-string (slurp deploy-info))
+    (throw (RuntimeException. "deploy-info.edn classpath resource not found - did you remember to run the 'git-info-edn' alias first?"))))
+
+(def git-revision
+  (s/trim (:hash build-info)))
+
+(def git-url
+  (str "https://github.com/pmonks/futbot/tree/" git-revision))
+
+(def built-at
+  (.toInstant ^java.util.Date (:date build-info)))

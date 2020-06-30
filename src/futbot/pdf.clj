@@ -23,6 +23,7 @@
             [java-time             :as tm]
             [clj-pdf.core          :as pdf]))
 
+
 (defn generate-daily-schedule-pdf-data-structure
   [day matches]
   [{:title         (str "Soccer Matches - " (tm/format "yyyy-MM-dd" day))
@@ -33,8 +34,9 @@
     :bottom-margin 25
     :left-margin   25
     :top-margin    25
-    :font          {:family :helvetica
-                    :size   10}}
+    :font          {:family   :helvetica
+                    :encoding :unicode
+                    :size     10}}
 
     [:heading (str "Matches scheduled for " (tm/format "EEEE LLLL d, yyyy" day) ":")]
 
