@@ -55,7 +55,8 @@
   (s/trim (:hash build-info)))
 
 (def git-url
-  (str "https://github.com/pmonks/futbot/tree/" git-revision))
+  (if git-revision
+    (str "https://github.com/pmonks/futbot/tree/" git-revision))
 
 (def built-at
   (.toInstant ^java.util.Date (:date build-info)))
