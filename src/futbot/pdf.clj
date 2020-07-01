@@ -23,7 +23,6 @@
             [java-time             :as tm]
             [clj-pdf.core          :as pdf]))
 
-
 (defn generate-daily-schedule-pdf-data-structure
   [day matches]
   [{:title         (str "Soccer Matches - " (tm/format "yyyy-MM-dd" day))
