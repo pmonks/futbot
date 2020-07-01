@@ -68,7 +68,7 @@
                             "SCHEDULED" (str match-prefix " starts in " starts-in-min " minutes.\nReferees: "
                                              (if-let [referees (seq (:referees match))]
                                                (s/join ", " (map :name referees))
-                                               ("Unknown")))
+                                               "Unknown"))
                             "POSTPONED" (str match-prefix ", which was due to start in " starts-in-min " minutes, has been postponed.")
                             "CANCELED"  (str match-prefix ", which was due to start in " starts-in-min " minutes, has been canceled.")
                             nil)]
