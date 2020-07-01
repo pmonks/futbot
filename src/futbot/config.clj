@@ -55,7 +55,7 @@
   (s/trim (:hash build-info)))
 
 (def git-url
-  (if git-revision
+  (if-not (s/blank? git-revision)
     (str "https://github.com/pmonks/futbot/tree/" git-revision)))
 
 (def built-at
