@@ -118,6 +118,6 @@
                                   discord-message-channel
                                   match-reminder-duration
                                   muted-leagues
-                                  #(get-in league-to-channel % default-league-channel-id))
+                                  #(get league-to-channel % default-league-channel-id))
   (log/info "futbot started")
   (de/message-pump! discord-event-channel chat/handle-discord-event))   ; Note: blocking fn
