@@ -42,7 +42,6 @@
                           channel-id
                           :content (str "There are no matches scheduled for today (" today-str ").")))))
 
-
 (defn post-match-reminder-to-channel!
   [football-data-api-token
    discord-message-channel
@@ -140,4 +139,3 @@
                                                     league-to-channel-fn)
                   (distinct todays-scheduled-matches)))
       (log/info "No matches today - not scheduling any reminders."))))
-
