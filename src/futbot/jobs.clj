@@ -66,7 +66,9 @@
             message       (case (:status match)
                             "SCHEDULED" (str match-prefix " starts in " starts-in-min " minutes.\nReferees: "
                                              (if-let [referees (seq (:referees match))]
-                                               (s/join ", " (map :name referees))
+                                               (s/join ", " (replace {nil "[unnamed referee]"}
+                                                                     (map #(if-not (s/blank? (:name %)) (:name %))
+                                                                          referees)))
                                                "¯\\_(ツ)_/¯"))
                             "POSTPONED" (str match-prefix ", which was due to start in " starts-in-min " minutes, has been postponed.")
                             "CANCELED"  (str match-prefix ", which was due to start in " starts-in-min " minutes, has been canceled.")
