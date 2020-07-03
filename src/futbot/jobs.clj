@@ -52,7 +52,7 @@
     (log/info (str "Sending reminder for match " match-id "..."))
     (if-let [{head-to-head :head2head
               match        :match}    (fd/match football-data-api-token match-id)]
-      (let [league        (get-in match [:competition :name])
+      (let [league        (s/trim (get-in match [:competition :name]))
             channel-id    (league-to-channel-fn league)
             starts-in-min (try
                             (.toMinutes (tm/duration (tm/zoned-date-time)
@@ -66,7 +66,9 @@
             message       (case (:status match)
                             "SCHEDULED" (str match-prefix " starts in " starts-in-min " minutes.\nReferees: "
                                              (if-let [referees (seq (:referees match))]
-                                               (s/join ", " (map :name referees))
+                                               (s/join ", " (replace {nil "[unnamed referee]"}
+                                                                     (map #(if-not (s/blank? (:name %)) (:name %))
+                                                                          referees)))
                                                "¯\\_(ツ)_/¯"))
                             "POSTPONED" (str match-prefix ", which was due to start in " starts-in-min " minutes, has been postponed.")
                             "CANCELED"  (str match-prefix ", which was due to start in " starts-in-min " minutes, has been canceled.")
