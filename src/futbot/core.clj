@@ -118,6 +118,11 @@
                                   discord-message-channel
                                   match-reminder-duration
                                   muted-leagues
-                                  #(get league-to-channel % default-league-channel-id))
+                                  (fn [league]   ; This is identical to #(get league-to-channel % default-league-channel-id)), but adds logging for "misses"
+                                    (if-let [channel-id (get league-to-channel league)]
+                                      channel-id
+                                      (do
+                                        (log/warn (str "Didn't find channel-id for league '" league "'; falling back to default."))
+                                        default-league-channel-id))))
   (log/info "futbot started")
   (de/message-pump! discord-event-channel chat/handle-discord-event))   ; Note: blocking fn
