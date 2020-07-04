@@ -22,4 +22,10 @@
   :default-reminder-channel-id "710316975393341511"       ; League Discussions > #other
 
   :muted-leagues ["Championship" "Série A"]
+
+  :referee-emoji {
+    "Mike Dean"         ":mikedean:"
+    "Michael Oliver"    ":michaeloliver:"
+    "Pierluigi Collina" ":collina:"
+  }
 }

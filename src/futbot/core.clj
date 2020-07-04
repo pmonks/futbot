@@ -83,6 +83,9 @@
 (defstate muted-leagues
           :start (:muted-leagues cfg/config))
 
+(defstate referee-emoji
+          :start (:referee-emoji cfg/config))
+
 (defstate daily-job
           :start (let [tomorrow-at-midnight-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days))
                        every-day-at-midnight-UTC (chime/periodic-seq (tm/instant tomorrow-at-midnight-UTC)
@@ -102,6 +105,7 @@
                                                                          match-reminder-duration
                                                                          muted-leagues
                                                                          #(get country-to-channel % default-reminder-channel-id)
+                                                                         referee-emoji
                                                                          today
                                                                          todays-scheduled-matches))
                                        (catch Exception e
@@ -118,6 +122,7 @@
                                   discord-message-channel
                                   match-reminder-duration
                                   muted-leagues
-                                  #(get country-to-channel % default-reminder-channel-id))
+                                  #(get country-to-channel % default-reminder-channel-id)
+                                  referee-emoji)
   (log/info "futbot started")
   (de/message-pump! discord-event-channel chat/handle-discord-event))   ; Note: blocking fn
