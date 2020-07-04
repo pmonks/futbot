@@ -29,7 +29,10 @@
 
 (defn post-daily-schedule-to-channel!
   "Generates and posts the daily-schedule (as an attachment) to the Discord channel identified by channel-id."
-  [discord-message-channel channel-id today todays-matches]
+  [discord-message-channel
+   channel-id
+   today
+   todays-matches]
   (let [today-str (tm/format "yyyy-MM-dd" today)]
     (if (seq todays-matches)
       (let [pdf-file    (pdf/generate-daily-schedule today todays-matches)
@@ -42,11 +45,22 @@
                           channel-id
                           :content (str "There are no matches scheduled for today (" today-str ").")))))
 
+(defn- referee-name
+  [referee-emoji
+   referee]
+  (let [name (:name referee)]
+    (if (s/blank? name)
+      "[unnamed referee]"
+      (if-let [emoji (get referee-emoji name)]
+        (str name " " emoji)
+        name))))
+
 (defn post-match-reminder-to-channel!
   [football-data-api-token
    discord-message-channel
    match-reminder-duration
    country-to-channel-fn
+   referee-emoji
    match-id & _]
   (try
     (log/info (str "Sending reminder for match " match-id "..."))
@@ -67,9 +81,7 @@
             message       (case (:status match)
                             "SCHEDULED" (str match-prefix " starts in " starts-in-min " minutes.\nReferees: "
                                              (if-let [referees (seq (:referees match))]
-                                               (s/join ", " (replace {nil "[unnamed referee]"}
-                                                                     (map #(if-not (s/blank? (:name %)) (:name %))
-                                                                          referees)))
+                                               (s/join ", " (map (partial referee-name referee-emoji) referees))
                                                "¯\\_(ツ)_/¯"))
                             "POSTPONED" (str match-prefix ", which was due to start in " starts-in-min " minutes, has been postponed.")
                             "CANCELED"  (str match-prefix ", which was due to start in " starts-in-min " minutes, has been canceled.")
@@ -92,6 +104,7 @@
    match-reminder-duration
    muted-leagues
    country-to-channel-fn
+   referee-emoji
    match]
   (let [now           (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
         match-time    (tm/zoned-date-time (:utc-date match))
@@ -107,6 +120,7 @@
                                    discord-message-channel
                                    match-reminder-duration
                                    country-to-channel-fn
+                                   referee-emoji
                                    (:id match))))
         (log/info (str "Reminder time " reminder-time " for match " (:id match) " has already passed - not scheduling a reminder.")))
       (log/info (str "Match " (:id match) " is in a muted league - not scheduling a reminder.")))))
@@ -117,7 +131,8 @@
     discord-message-channel
     match-reminder-duration
     muted-leagues
-    country-to-channel-fn]
+    country-to-channel-fn
+    referee-emoji]
     (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
           todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
       (schedule-todays-reminders! football-data-api-token
@@ -125,6 +140,7 @@
                                   match-reminder-duration
                                   muted-leagues
                                   country-to-channel-fn
+                                  referee-emoji
                                   today
                                   todays-scheduled-matches)))
   ([football-data-api-token
@@ -132,6 +148,7 @@
     match-reminder-duration
     muted-leagues
     country-to-channel-fn
+    referee-emoji
     today
     todays-scheduled-matches]
     (if (seq todays-scheduled-matches)
@@ -139,6 +156,7 @@
                                                     discord-message-channel
                                                     match-reminder-duration
                                                     muted-leagues
-                                                    country-to-channel-fn)
+                                                    country-to-channel-fn
+                                                    referee-emoji)
                   (distinct todays-scheduled-matches)))
       (log/info "No matches today - not scheduling any reminders."))))
