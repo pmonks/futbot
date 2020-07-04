@@ -8,21 +8,18 @@
 
   :match-reminder-duration-mins 15
 
-  :league-to-channel-map {
-    "Série A"                "710316975393341511"       ; League Discussions > #other    (no #brazil channel yet)
-    "Championship"           "683856416351846441"       ; League Discussions > #england
-    "Premier League"         "683856416351846441"       ; League Discussions > #england
-    "European Championship"  "683856917122121734"       ; League Discussions > #international
-    "UEFA Champions League"  "683856917122121734"       ; League Discussions > #international
-    "Ligue 1"                "710316975393341511"       ; League Discussions > #other    (no #france channel yet)
-    "Bundesliga"             "687660279189995554"       ; League Discussions > #germany
-    "Serie A"                "687660332981944321"       ; League Discussions > #italy
-    "Eredivisie"             "710316975393341511"       ; League Discussions > #other    (no #netherlands channel yet)
-    "Primeira Liga"          "710316975393341511"       ; League Discussions > #other    (no #portugal channel yet)
-    "Primera Division"       "687659858476138582"       ; League Discussions > #spain
-    "FIFA World Cup"         "683856917122121734"       ; League Discussions > #international
+  :country-to-channel-map {
+    "EUR" "683856917122121734"       ; League Discussions > #international
+    "INT" "683856917122121734"       ; League Discussions > #international
+    "ENG" "683856416351846441"       ; League Discussions > #england
+    "DEU" "687660279189995554"       ; League Discussions > #germany
+    "ITA" "687660332981944321"       ; League Discussions > #italy
+    "ESP" "687659858476138582"       ; League Discussions > #spain
+    "USA" "683856451583869019"       ; League Discussions > #north-america
+    "CAN" "683856451583869019"       ; League Discussions > #north-america
+    "MEX" "683856451583869019"       ; League Discussions > #north-america
   }
-  :default-league-channel-id "710316975393341511"       ; League Discussions > #other
+  :default-reminder-channel-id "710316975393341511"       ; League Discussions > #other
 
   :muted-leagues ["Championship" "Série A"]
 }

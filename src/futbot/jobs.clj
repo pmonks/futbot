@@ -46,14 +46,15 @@
   [football-data-api-token
    discord-message-channel
    match-reminder-duration
-   league-to-channel-fn
+   country-to-channel-fn
    match-id & _]
   (try
     (log/info (str "Sending reminder for match " match-id "..."))
     (if-let [{head-to-head :head2head
               match        :match}    (fd/match football-data-api-token match-id)]
       (let [league        (s/trim (get-in match [:competition :name]))
-            channel-id    (league-to-channel-fn league)
+            country       (s/trim (get-in match [:competition :area :code]))
+            channel-id    (country-to-channel-fn country)
             starts-in-min (try
                             (.toMinutes (tm/duration (tm/zoned-date-time)
                                                      (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time (:utc-date match)))))
@@ -90,7 +91,7 @@
    discord-message-channel
    match-reminder-duration
    muted-leagues
-   league-to-channel-fn
+   country-to-channel-fn
    match]
   (let [now           (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
         match-time    (tm/zoned-date-time (:utc-date match))
@@ -105,7 +106,7 @@
                                    football-data-api-token
                                    discord-message-channel
                                    match-reminder-duration
-                                   league-to-channel-fn
+                                   country-to-channel-fn
                                    (:id match))))
         (log/info (str "Reminder time " reminder-time " for match " (:id match) " has already passed - not scheduling a reminder.")))
       (log/info (str "Match " (:id match) " is in a muted league - not scheduling a reminder.")))))
@@ -116,21 +117,21 @@
     discord-message-channel
     match-reminder-duration
     muted-leagues
-    league-to-channel-fn]
+    country-to-channel-fn]
     (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
           todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
       (schedule-todays-reminders! football-data-api-token
                                   discord-message-channel
                                   match-reminder-duration
                                   muted-leagues
-                                  league-to-channel-fn
+                                  country-to-channel-fn
                                   today
                                   todays-scheduled-matches)))
   ([football-data-api-token
     discord-message-channel
     match-reminder-duration
     muted-leagues
-    league-to-channel-fn
+    country-to-channel-fn
     today
     todays-scheduled-matches]
     (if (seq todays-scheduled-matches)
@@ -138,6 +139,6 @@
                                                     discord-message-channel
                                                     match-reminder-duration
                                                     muted-leagues
-                                                    league-to-channel-fn)
+                                                    country-to-channel-fn)
                   (distinct todays-scheduled-matches)))
       (log/info "No matches today - not scheduling any reminders."))))

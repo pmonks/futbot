@@ -71,17 +71,26 @@
                                duration
                                15)))  ; Default is 15 minutes
 
-(defstate league-to-channel
-          :start (:league-to-channel-map cfg/config))
+(defstate country-to-channel
+          :start (:country-to-channel-map cfg/config))
 
-(defstate default-league-channel-id
-          :start (let [channel-id (:default-league-channel-id cfg/config)]
+(defstate default-reminder-channel-id
+          :start (let [channel-id (:default-reminder-channel-id cfg/config)]
                    (if-not (s/blank? channel-id)
                      channel-id
-                     (throw (ex-info "Default league Discord channel id not provided" {})))))
+                     (throw (ex-info "Default country Discord channel id not provided" {})))))
 
 (defstate muted-leagues
           :start (:muted-leagues cfg/config))
+
+; This is identical to #(get country-to-channel % default-reminder-channel-id)), but adds logging for "misses"
+(defn country-to-channel-id
+  [country]
+  (if-let [channel-id (get country-to-channel country)]
+    channel-id
+    (do
+      (log/warn (str "Didn't find channel-id for country '" country "'; falling back to default."))
+      default-reminder-channel-id)))
 
 (defstate daily-job
           :start (let [tomorrow-at-midnight-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days))
@@ -101,7 +110,7 @@
                                                                          discord-message-channel
                                                                          match-reminder-duration
                                                                          muted-leagues
-                                                                         #(get-in league-to-channel % default-league-channel-id)
+                                                                         country-to-channel-id
                                                                          today
                                                                          todays-scheduled-matches))
                                        (catch Exception e
@@ -118,11 +127,6 @@
                                   discord-message-channel
                                   match-reminder-duration
                                   muted-leagues
-                                  (fn [league]   ; This is identical to #(get league-to-channel % default-league-channel-id)), but adds logging for "misses"
-                                    (if-let [channel-id (get league-to-channel league)]
-                                      channel-id
-                                      (do
-                                        (log/warn (str "Didn't find channel-id for league '" league "'; falling back to default."))
-                                        default-league-channel-id))))
+                                  country-to-channel-id)
   (log/info "futbot started")
   (de/message-pump! discord-event-channel chat/handle-discord-event))   ; Note: blocking fn

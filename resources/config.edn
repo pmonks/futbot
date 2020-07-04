@@ -10,8 +10,8 @@
   ; Match reminder duration, in minutes
   :match-reminder-duration-mins #or [#env MATCH_REMINDER_DURATION 15]
 
-  :league-to-channel-map {}  ; TODO: Figure out how to parse a map out of an environment variable using aero...
-  :default-league-channel-id #env DEFAULT_LEAGUE_DISCORD_CHANNEL_ID
+  :country-to-channel-map {}  ; TODO: Figure out how to parse a map out of an environment variable using aero...
+  :default-reminder-channel-id #env DEFAULT_REMINDER_DISCORD_CHANNEL_ID
 
   :muted-leagues #split [#env MUTED_LEAGUES "\\s*,\\s*"]
 }
