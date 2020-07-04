@@ -45,14 +45,15 @@
                           channel-id
                           :content (str "There are no matches scheduled for today (" today-str ").")))))
 
-(defn- normalise-referee-name
+(defn- referee-name
   [referee-emoji
-   name]
-  (if (s/blank? name)
-    "[unnamed referee]"
-    (if-let [emoji (get referee-emoji name)]
-      (str name " " emoji)
-      name)))
+   referee]
+  (let [name (:name referee)]
+    (if (s/blank? name)
+      "[unnamed referee]"
+      (if-let [emoji (get referee-emoji name)]
+        (str name " " emoji)
+        name))))
 
 (defn post-match-reminder-to-channel!
   [football-data-api-token
