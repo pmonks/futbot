@@ -159,4 +159,4 @@
                                                     country-to-channel-fn
                                                     referee-emoji)
                   (distinct todays-scheduled-matches)))
-      (log/info "No matches today - not scheduling any reminders."))))
+      (log/info "No matches remaining today - not scheduling any reminders."))))
