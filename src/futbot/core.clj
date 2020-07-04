@@ -83,15 +83,6 @@
 (defstate muted-leagues
           :start (:muted-leagues cfg/config))
 
-; This is identical to #(get country-to-channel % default-reminder-channel-id)), but adds logging for "misses"
-(defn country-to-channel-id
-  [country]
-  (if-let [channel-id (get country-to-channel country)]
-    channel-id
-    (do
-      (log/warn (str "Didn't find channel-id for country '" country "'; falling back to default."))
-      default-reminder-channel-id)))
-
 (defstate daily-job
           :start (let [tomorrow-at-midnight-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days))
                        every-day-at-midnight-UTC (chime/periodic-seq (tm/instant tomorrow-at-midnight-UTC)
@@ -110,7 +101,7 @@
                                                                          discord-message-channel
                                                                          match-reminder-duration
                                                                          muted-leagues
-                                                                         country-to-channel-id
+                                                                         #(get country-to-channel % default-reminder-channel-id)
                                                                          today
                                                                          todays-scheduled-matches))
                                        (catch Exception e
@@ -127,6 +118,6 @@
                                   discord-message-channel
                                   match-reminder-duration
                                   muted-leagues
-                                  country-to-channel-id)
+                                  #(get country-to-channel % default-reminder-channel-id))
   (log/info "futbot started")
   (de/message-pump! discord-event-channel chat/handle-discord-event))   ; Note: blocking fn
