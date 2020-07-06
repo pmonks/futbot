@@ -32,7 +32,7 @@
         org.suskalo/discljord          #:mvn {:version "1.0.0"}
         http-kit/http-kit              #:mvn {:version "2.4.0-alpha6"}
         cheshire                       #:mvn {:version "5.10.0"}
-        clj-pdf                        #:mvn {:version "2.5.3"}
+        clj-pdf                        #:mvn {:version "2.5.4"}
        }
  :aliases
    {; clj -Arun -c /path/to/config.edn
