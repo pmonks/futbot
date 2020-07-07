@@ -21,7 +21,7 @@
             [clojure.java.io :as io]))
 
 (defn alpha-2-to-flag
-  "Returns the emoji flag for a valid ISO-3166-1 alpha-2 country code (e.g. 'AU', 'US', etc.), or another Unicode character for invalid country codes."
+  "Returns the emoji flag (e.g. '🇦🇺', '🇺🇸') for a valid ISO-3166-1 alpha-2 country code (e.g. 'AU', 'US', etc.), or another Unicode character for invalid country codes."
   [iso-3166-1-alpha-2]
   (let [code-point-offset 127397
         country-code      (if (= "UK" (s/upper-case iso-3166-1-alpha-2))
@@ -286,7 +286,7 @@
   "EUR" (alpha-2-to-flag "EU")          ; Europe
   "INT" "🗺️"                       ; World - could also use (alpha-2-to-flag "UN")
   "AFR" "🌍"                       ; Africa
-  "RSA" (alpha-2-to-flag "ZA")          ; South Africa
+  "RSA" (alpha-2-to-flag "ZA")     ; South Africa (alternative code)
   "ENG" "🏴󠁧󠁢󠁥󠁮󠁧󠁿"                       ; England
   "SCO" "🏴󠁧󠁢󠁳󠁣󠁴󠁿"                       ; Scotland
   "WAL" "🏴󠁧󠁢󠁷󠁬󠁳󠁿"                       ; Wales
@@ -313,6 +313,6 @@
 (defn image-file
   "Returns the java.io.File representing a flag image file (PNG format) for the given country-code (an ISO-3166-1 alpha-3 code.  Returns nil if the code is invalid or no file is available for that code."
   [iso-3166-1-alpha-3]
-  (let [flag-file (io/file (io/resource (str "flags/" (s/upper-case iso-3166-1-alpha-3) ".png")))]
+  (let [flag-file (io/file (io/resource (str "flags/" (s/upper-case (s/trim iso-3166-1-alpha-3)) ".png")))]
     (if (.exists flag-file)
       flag-file)))

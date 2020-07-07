@@ -17,35 +17,36 @@
 ;
 
 {:paths ["src" "resources"]
- :deps {org.clojure/clojure            #:mvn {:version "1.10.1"}
-        org.clojars.pmonks/clj-2253    #:mvn {:version "0.1.0"}
-        org.clojure/tools.logging      #:mvn {:version "1.1.0"}
-        ch.qos.logback/logback-classic #:mvn {:version "1.2.3"}
-        org.slf4j/jcl-over-slf4j       #:mvn {:version "1.7.30"}
-        org.slf4j/log4j-over-slf4j     #:mvn {:version "1.7.30"}
-        org.slf4j/jul-to-slf4j         #:mvn {:version "1.7.30"}
-        clojure.java-time              #:mvn {:version "0.3.2"}
-        org.clojure/tools.cli          #:mvn {:version "1.0.194"}
-        aero                           #:mvn {:version "1.1.6"}
-        mount                          #:mvn {:version "0.1.16"}
-        jarohen/chime                  #:mvn {:version "0.3.2"}
-        org.suskalo/discljord          #:mvn {:version "1.0.0"}
-        http-kit/http-kit              #:mvn {:version "2.4.0-alpha6"}
-        cheshire                       #:mvn {:version "5.10.0"}
-        clj-pdf                        #:mvn {:version "2.5.4"}
+ :deps {org.clojure/clojure            {:mvn/version "1.10.1"}
+        org.clojars.pmonks/clj-2253    {:mvn/version "0.1.0"}
+        org.clojure/tools.logging      {:mvn/version "1.1.0"}
+        ch.qos.logback/logback-classic {:mvn/version "1.2.3"}
+        org.slf4j/jcl-over-slf4j       {:mvn/version "1.7.30"}
+        org.slf4j/log4j-over-slf4j     {:mvn/version "1.7.30"}
+        org.slf4j/jul-to-slf4j         {:mvn/version "1.7.30"}
+        clojure.java-time              {:mvn/version "0.3.2"}
+        org.clojure/tools.cli          {:mvn/version "1.0.194"}
+        aero                           {:mvn/version "1.1.6"}
+        mount                          {:mvn/version "0.1.16"}
+        jarohen/chime                  {:mvn/version "0.3.2"}
+        org.suskalo/discljord          {:mvn/version "1.0.0"}
+        http-kit/http-kit              {:mvn/version "2.4.0-alpha6"}
+        cheshire                       {:mvn/version "5.10.0"}
+        clj-pdf                        {:mvn/version "2.5.4"}
        }
  :aliases
    {; clj -Arun -c /path/to/config.edn
     :run      {:main-opts ["-m" "futbot.main"]}
     ; clj -Acheck
-    :check    {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git" :sha "a2f4d4cb6ef347bff420edb66629e41d530b9668"}}
+    :check    {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git"
+                                             :sha     "a2f4d4cb6ef347bff420edb66629e41d530b9668"}}
                :main-opts  ["-m" "clj-check.check"]}
     ; clj -Agit-info-edn
     :git-info-edn {:extra-deps {pmonks/lein-git-info-edn {:git/url "https://github.com/pmonks/lein-git-info-edn.git"
-                                                          :sha "f1cb50ff673becd738d5aa9b697aad421a266cfd"}}
+                                                          :sha     "f1cb50ff673becd738d5aa9b697aad421a266cfd"}}
                    :main-opts ["-m" "leiningen.git-info-edn"]}
     ; clj -Aoutdated
-    :outdated {:extra-deps {olical/depot #:mvn {:version "1.8.4"}}
+    :outdated {:extra-deps {olical/depot {:mvn/version "1.8.4"}}
                :main-opts  ["-m" "depot.outdated.main"]}
     }
 }
