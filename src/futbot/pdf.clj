@@ -21,7 +21,8 @@
             [clojure.java.io       :as io]
             [clojure.tools.logging :as log]
             [java-time             :as tm]
-            [clj-pdf.core          :as pdf]))
+            [clj-pdf.core          :as pdf]
+            [futbot.flags          :as fl]))
 
 (defn generate-daily-schedule-pdf-data-structure
   [day matches]
@@ -52,17 +53,20 @@
           (if (not= last-utc-date (:utc-date current-match))
             (let [utc-date-txt    (tm/format "h:mm a" (tm/zoned-date-time (:utc-date current-match)))
                   utc-date-txt-qs (java.net.URLEncoder/encode ^String utc-date-txt "UTF-8")]
-              (swap! result conj [[:cell {:colspan 3}
+              (swap! result conj [[:cell {:colspan 3 :style :bold :background-color [230 230 230]}
                                   "Scheduled start "
-                                  [:anchor {:style {:style "underline" :color [0 123 255]}
+                                  [:anchor {:style {:styles [:bold :underline] :color [0 123 255]}
                                             :target (str "https://www.thetimezoneconverter.com/?t=" utc-date-txt-qs "&tz=UTC")}
                                            (str utc-date-txt " UTC")]
                                   ":"]])))
 
           ; Regular data row
-          (swap! result conj [(get-in current-match [:competition :name] "Unknown")
-                              (get-in current-match [:home-team :name]   "Unknown")
-                              (get-in current-match [:away-team :name]   "Unknown")])
+          (let [country   (s/trim (get-in current-match [:competition :area :code]))
+                flag-file (fl/image-file country)]
+            (swap! result conj [[:cell [:chunk (if flag-file [:image {:scale 0.5} (javax.imageio.ImageIO/read flag-file)])]
+                                       (str " " (get-in current-match [:competition :name] "Unknown"))]
+                                (get-in current-match [:home-team :name]   "Unknown")
+                                (get-in current-match [:away-team :name]   "Unknown")]))
 
           (recur (:utc-date current-match)
                  (first remaining-matches)

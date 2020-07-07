@@ -74,7 +74,7 @@
                                                      (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time (:utc-date match)))))
                             (catch Exception e
                               (.toMinutes ^java.time.Duration match-reminder-duration)))
-            flag          (if-let [flag (fl/flag (get-in match [:competition :area :code]))]
+            flag          (if-let [flag (fl/emoji (get-in match [:competition :area :code]))]
                             flag
                             "🏴‍☠️")
             match-prefix  (str flag " " league ": **" (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown") "**")

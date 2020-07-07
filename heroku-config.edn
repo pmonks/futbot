@@ -21,11 +21,16 @@
   }
   :default-reminder-channel-id "710316975393341511"       ; League Discussions > #other
 
-  :muted-leagues ["Championship" "Série A"]
+  :muted-leagues [
+    "Championship"   ; England 2nd division
+    "Série A"        ; Brazil
+    "Serie A"        ; Italy
+  ]
 
   :referee-emoji {
     "Mike Dean"         ":mikedean:"
     "Michael Oliver"    ":michaeloliver:"
     "Pierluigi Collina" ":collina:"
+    "Anthony Taylor"    ":anthonytaylor:"
   }
 }
