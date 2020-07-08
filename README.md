@@ -20,6 +20,8 @@ Obtain an API key for [football-data.org](https://football-data.org/).
 
 Currently the bot is only distributed in source form, so regardless of how you intend to deploy it, you'll need to clone this repository locally.
 
+Before running the code, you'll need to generate a git info EDN file, by running `clj -Agit-info-edn` (this only needs to be done once).
+
 #### Direct Execution
 
 1. Either set environment variables as described in the default [`config.edn` file](https://github.com/pmonks/futbot/blob/main/resources/config.edn), or copy that file somewhere else and hardcode the values in the file directly.
@@ -65,5 +67,4 @@ Distributed under the [Apache License, Version 2.0](http://www.apache.org/licens
 
 SPDX-License-Identifier: [Apache-2.0](https://spdx.org/licenses/Apache-2.0)
 
-Flag images used in PDF generation courtesy of [freeflagicons.com](https://www.freeflagicons.com/).
-
+[Flag images](https://github.com/pmonks/futbot/tree/main/resources/flags) used in PDF generation courtesy of [freeflagicons.com](https://www.freeflagicons.com/).
