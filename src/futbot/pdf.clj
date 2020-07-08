@@ -38,7 +38,7 @@
                     :encoding :unicode
                     :size     10}}
 
-    [:heading (str "Matches scheduled for " (tm/format "EEEE LLLL d, yyyy" day) ":")]
+    [:heading (str (count matches) " matches scheduled for " (tm/format "EEEE LLLL d, yyyy" day) ":")]
 
     (loop [last-utc-date     nil
            current-match     (first matches)
@@ -63,7 +63,7 @@
           ; Regular data row
           (let [country   (s/trim (get-in current-match [:competition :area :code]))
                 flag-file (fl/image-file country)]
-            (swap! result conj [[:cell [:chunk (if flag-file [:image {:scale 2} (javax.imageio.ImageIO/read flag-file)])]
+            (swap! result conj [[:cell [:chunk (if flag-file [:image {:scale 2} (.toURL flag-file)])]
                                        (str " " (get-in current-match [:competition :name] "Unknown"))]
                                 (get-in current-match [:home-team :name]   "Unknown")
                                 (get-in current-match [:away-team :name]   "Unknown")]))
