@@ -27,10 +27,10 @@
     "Serie A"        ; Italy
   ]
 
-  :referee-emoji {
-    "Mike Dean"         ":mikedean:"
-    "Michael Oliver"    ":michaeloliver:"
-    "Pierluigi Collina" ":collina:"
-    "Anthony Taylor"    ":anthonytaylor:"
+  :referee-emoji {  ; To determine these values, go into a chat and type "\:emojishortcut:" - Discord will automatically convert it into the form shown below, which includes the emoji id
+    "Mike Dean"         "<:mikedean:724348558601486390>"
+    "Michael Oliver"    "<:michaeloliver:725406887603863562>"
+    "Pierluigi Collina" "<:collina:725056633457082459>"
+    "Anthony Taylor"    "<:anthonytaylor:730103009735999559>"
   }
 }
