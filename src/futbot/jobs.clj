@@ -33,6 +33,7 @@
    channel-id
    today
    todays-matches]
+  (System/gc)   ; Dear Mx JVM, now would be a *great* time to garbage collect...
   (let [today-str (tm/format "yyyy-MM-dd" today)]
     (if (seq todays-matches)
       (let [pdf-file    (pdf/generate-daily-schedule today todays-matches)
