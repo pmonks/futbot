@@ -25,6 +25,7 @@
     "Championship"   ; England 2nd division
     "Série A"        ; Brazil
     "Serie A"        ; Italy
+    "Primeira Liga"  ; Portugal
   ]
 
   :referee-emoji {  ; To determine these values, go into a chat and type "\:emojishortcut:" - Discord will automatically convert it into the form shown below, which includes the emoji id
