@@ -28,10 +28,17 @@
     "Primeira Liga"  ; Portugal
   ]
 
-  :referee-emoji {  ; To determine these values, go into a chat and type "\:emojishortcut:" - Discord will automatically convert it into the form shown below, which includes the emoji id
+  :referee-emoji {  ; To determine these values, go into a chat and type "\:emojishortcut:" - Discord will automatically convert it into the form shown below, which is required for a bot to send custom emoji
     "Mike Dean"         "<:mikedean:724348558601486390>"
     "Michael Oliver"    "<:michaeloliver:725406887603863562>"
     "Pierluigi Collina" "<:collina:725056633457082459>"
     "Anthony Taylor"    "<:anthonytaylor:730103009735999559>"
+    "Stuart Attwell"    "<:stuartattwell:731931016360362004>"
+    "Corey Rockwell"    "<:coreyrockwell:730613554369265684>"
+    "Craig Pawson"      "<:craigpawson:731931653416681543>"
+    "Graham Scott"      "<:grahamscott:731589640565293107>"
+    "Brian Poeschel"    "<:brianpoeschel:730614703541190756>"
+    "Andy Madley"       "<:andymadley:731547809890697278>"
+    "Andrew Marriner"   "<:andremarriner:731547751057195050>"
   }
 }
