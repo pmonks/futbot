@@ -40,6 +40,7 @@
 
     [:heading (str (count matches) " matches scheduled for " (tm/format "EEEE LLLL d, yyyy" day) ":")]
 
+    ; Match table
     (loop [last-utc-date     nil
            current-match     (first matches)
            remaining-matches (rest matches)
@@ -72,7 +73,11 @@
                  (first remaining-matches)
                  (rest  remaining-matches)
                  result))
-        @result))])
+        @result))
+
+    [:paragraph [:anchor {:style {:styles [:underline] :color [0 123 255]}
+                          :target "https://livesoccertv.com/"}
+                         "Find out how to watch these matches."]]])
 
 (defn generate-daily-schedule
   [day matches]
