@@ -75,7 +75,7 @@
                  result))
         @result))
 
-    [:paragraph [:anchor {:style {:styles [:bold :underline] :color [0 123 255]}
+    [:paragraph [:anchor {:style {:styles [:underline] :color [0 123 255]}
                           :target "https://livesoccertv.com/"}
                          "Find out how to watch these matches."]]])
 
