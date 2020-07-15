@@ -19,72 +19,15 @@
 (ns futbot.core
   (:require [clojure.string        :as s]
             [clojure.java.io       :as io]
-            [clojure.core.async    :as async]
             [clojure.tools.logging :as log]
-            [futbot.config         :as cfg]
             [mount.core            :as mnt :refer [defstate]]
             [java-time             :as tm]
             [chime.core            :as chime]
-            [discljord.connections :as dc]
-            [discljord.messaging   :as dm]
             [discljord.events      :as de]
+            [futbot.config         :as cfg]
             [futbot.football-data  :as fd]
             [futbot.jobs           :as job]
             [futbot.chat           :as chat]))
-
-(defstate football-data-api-token
-          :start (let [token (:football-data-api-token cfg/config)]
-                   (if-not (s/blank? token)
-                     token
-                     (throw (ex-info "football-data.org API token not provided" {})))))
-
-(defstate discord-api-token
-          :start (let [token (:discord-api-token cfg/config)]
-                   (if-not (s/blank? token)
-                     token
-                     (throw (ex-info "Discord API token not provided" {})))))
-
-(defstate discord-event-channel
-          :start (async/chan (:discord-event-channel-size cfg/config))
-          :stop  (async/close! discord-event-channel))
-
-(defstate discord-connection-channel
-          :start (if-let [connection (dc/connect-bot! discord-api-token discord-event-channel)]
-                   connection
-                   (throw (ex-info "Failed to connect bot to Discord" {})))
-          :stop  (dc/disconnect-bot! discord-connection-channel))
-
-(defstate discord-message-channel
-          :start (if-let [connection (dm/start-connection! discord-api-token)]
-                   connection
-                   (throw (ex-info "Failed to connect to Discord message channel" {})))
-          :stop  (dm/stop-connection! discord-message-channel))
-
-(defstate daily-schedule-discord-channel-id
-          :start (let [channel-id (:daily-schedule-discord-channel-id cfg/config)]
-                   (if-not (s/blank? channel-id)
-                     channel-id
-                     (throw (ex-info "Daily schedule Discord channel id not provided" {})))))
-
-(defstate match-reminder-duration
-          :start (tm/minutes (if-let [duration (:match-reminder-duration-mins cfg/config)]
-                               duration
-                               15)))  ; Default is 15 minutes
-
-(defstate country-to-channel
-          :start (:country-to-channel-map cfg/config))
-
-(defstate default-reminder-channel-id
-          :start (let [channel-id (:default-reminder-channel-id cfg/config)]
-                   (if-not (s/blank? channel-id)
-                     channel-id
-                     (throw (ex-info "Default country Discord channel id not provided" {})))))
-
-(defstate muted-leagues
-          :start (:muted-leagues cfg/config))
-
-(defstate referee-emoji
-          :start (:referee-emoji cfg/config))
 
 (defstate daily-job
           :start (let [tomorrow-at-midnight-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days))
@@ -95,17 +38,17 @@
                                      (try
                                        (log/info "Daily job started...")
                                        (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
-                                             todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
-                                         (job/post-daily-schedule-to-channel! discord-message-channel
-                                                                              daily-schedule-discord-channel-id
+                                             todays-scheduled-matches (fd/scheduled-matches-on-day cfg/football-data-api-token today)]
+                                         (job/post-daily-schedule-to-channel! cfg/discord-message-channel
+                                                                              cfg/daily-schedule-discord-channel-id
                                                                               today
                                                                               todays-scheduled-matches)
-                                         (job/schedule-todays-reminders! football-data-api-token
-                                                                         discord-message-channel
-                                                                         match-reminder-duration
-                                                                         muted-leagues
-                                                                         #(get country-to-channel % default-reminder-channel-id)
-                                                                         referee-emoji
+                                         (job/schedule-todays-reminders! cfg/football-data-api-token
+                                                                         cfg/discord-message-channel
+                                                                         cfg/match-reminder-duration
+                                                                         cfg/muted-leagues
+                                                                         #(get cfg/country-to-channel % cfg/default-reminder-channel-id)
+                                                                         cfg/referee-emoji
                                                                          today
                                                                          todays-scheduled-matches))
                                        (catch Exception e
@@ -118,11 +61,11 @@
 (defn start-bot!
   "Starts the bot."
   []
-  (job/schedule-todays-reminders! football-data-api-token
-                                  discord-message-channel
-                                  match-reminder-duration
-                                  muted-leagues
-                                  #(get country-to-channel % default-reminder-channel-id)
-                                  referee-emoji)
+  (job/schedule-todays-reminders! cfg/football-data-api-token
+                                  cfg/discord-message-channel
+                                  cfg/match-reminder-duration
+                                  cfg/muted-leagues
+                                  #(get cfg/country-to-channel % cfg/default-reminder-channel-id)
+                                  cfg/referee-emoji)
   (log/info "futbot started")
-  (de/message-pump! discord-event-channel chat/handle-discord-event))   ; Note: blocking fn
+  (de/message-pump! cfg/discord-event-channel chat/handle-discord-event))   ; Note: blocking fn

@@ -33,10 +33,13 @@
         http-kit/http-kit              {:mvn/version "2.4.0-alpha6"}
         cheshire                       {:mvn/version "5.10.0"}
         clj-pdf                        {:mvn/version "2.5.4"}
+        rm-hull/markov-chains          {:mvn/version "0.1.1"}
        }
  :aliases
    {; clj -Arun -c /path/to/config.edn
     :run      {:main-opts ["-m" "futbot.main"]}
+    ; clj -Agen-ist-markov google-api-key
+    :gen-ist-markov {:main-opts ["-m" "futbot.ist.main"]}
     ; clj -Acheck
     :check    {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git"
                                              :sha     "a2f4d4cb6ef347bff420edb66629e41d530b9668"}}

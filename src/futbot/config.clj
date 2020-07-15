@@ -21,9 +21,12 @@
             [clojure.string        :as s]
             [clojure.tools.logging :as log]
             [clojure.edn           :as edn]
+            [clojure.core.async    :as async]
             [java-time             :as tm]
             [aero.core             :as a]
-            [mount.core            :as mnt :refer [defstate]]))
+            [mount.core            :as mnt :refer [defstate]]
+            [discljord.connections :as dc]
+            [discljord.messaging   :as dm]))
 
 ; Because java.util.logging is a hot mess
 (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
@@ -45,6 +48,61 @@
           :start (if-let [config-file (:config-file (mnt/args))]
                    (a/read-config config-file)
                    (a/read-config (io/resource "config.edn"))))
+
+
+(defstate football-data-api-token
+          :start (let [token (:football-data-api-token config)]
+                   (if-not (s/blank? token)
+                     token
+                     (throw (ex-info "football-data.org API token not provided" {})))))
+
+(defstate discord-api-token
+          :start (let [token (:discord-api-token config)]
+                   (if-not (s/blank? token)
+                     token
+                     (throw (ex-info "Discord API token not provided" {})))))
+
+(defstate discord-event-channel
+          :start (async/chan (:discord-event-channel-size config))
+          :stop  (async/close! discord-event-channel))
+
+(defstate discord-connection-channel
+          :start (if-let [connection (dc/connect-bot! discord-api-token discord-event-channel)]
+                   connection
+                   (throw (ex-info "Failed to connect bot to Discord" {})))
+          :stop  (dc/disconnect-bot! discord-connection-channel))
+
+(defstate discord-message-channel
+          :start (if-let [connection (dm/start-connection! discord-api-token)]
+                   connection
+                   (throw (ex-info "Failed to connect to Discord message channel" {})))
+          :stop  (dm/stop-connection! discord-message-channel))
+
+(defstate daily-schedule-discord-channel-id
+          :start (let [channel-id (:daily-schedule-discord-channel-id config)]
+                   (if-not (s/blank? channel-id)
+                     channel-id
+                     (throw (ex-info "Daily schedule Discord channel id not provided" {})))))
+
+(defstate match-reminder-duration
+          :start (tm/minutes (if-let [duration (:match-reminder-duration-mins config)]
+                               duration
+                               15)))  ; Default is 15 minutes
+
+(defstate country-to-channel
+          :start (:country-to-channel-map config))
+
+(defstate default-reminder-channel-id
+          :start (let [channel-id (:default-reminder-channel-id config)]
+                   (if-not (s/blank? channel-id)
+                     channel-id
+                     (throw (ex-info "Default country Discord channel id not provided" {})))))
+
+(defstate muted-leagues
+          :start (:muted-leagues config))
+
+(defstate referee-emoji
+          :start (:referee-emoji config))
 
 (def ^:private build-info
   (if-let [deploy-info (io/resource "deploy-info.edn")]

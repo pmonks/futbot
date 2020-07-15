@@ -21,16 +21,42 @@
             [clojure.java.io       :as io]
             [clojure.tools.logging :as log]
             [java-time             :as tm]
-            [futbot.football-data  :as fd]
             [discljord.connections :as dc]
             [discljord.messaging   :as dm]
-            [discljord.events      :as de]))
+            [discljord.events      :as de]
+            [futbot.config         :as cfg]
+            [futbot.ist            :as ist]))
+
+(defn ist-command
+  [_ event-data]
+  (dm/create-message! cfg/discord-message-channel
+                      (:channel-id event-data)
+                      :content (str "IST says: \"" (ist/gen-title) "\"")))
+
+(def command-dispatch-table
+  {"!ist" ist-command})
 
 ; Responsive fns
 (defmulti handle-discord-event
   "Discord event handler"
   (fn [event-type event-data]
     event-type))
+
+(defmethod handle-discord-event :message-create
+  [event-type event-data]
+  (try
+    (let [content (s/triml (:content event-data))]
+      (if (s/starts-with? content "!")
+        (let [command-and-args (s/split content #"\s+" 2)
+              command          (s/lower-case (s/trim (first command-and-args)))
+              args             (second command-and-args)
+              command-fn       (get command-dispatch-table command)]
+          (if command-fn
+            (do
+              (log/debug (str "Calling command fn for '" command "' with args '" args "'."))
+              (command-fn args event-data))))))
+    (catch Exception e
+      (log/error e))))
 
 ; Default Discord event handler (noop)
 (defmethod handle-discord-event :default
