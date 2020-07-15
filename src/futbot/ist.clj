@@ -30,7 +30,8 @@
 (defn gen-title
   []
   (u/replace-all (s/join " "
-                         (take-while (partial not= "🔚")
-                                     (drop-while #(or (= "🔚" %) (re-matches #"(\p{Punct})+" %))   ; Drop leading title breaks and punctuation
-                                                 (mc/generate markov-chain))))
+                         (take 100   ; Make sure we eventually drop out
+                               (take-while (partial not= "🔚")
+                                           (drop-while #(or (= "🔚" %) (re-matches #"(\p{Punct})+" %))   ; Drop leading title breaks and punctuation
+                                                       (mc/generate markov-chain))))
                  [[#"\s+([!?:;,\"…\*\.])" "$1"]]))  ; Collapse whitespace before punctuation
