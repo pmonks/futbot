@@ -21,7 +21,8 @@
             [clojure.tools.logging :as log]
             [java-time             :as tm]
             [org.httpkit.client    :as http]
-            [cheshire.core         :as ch]))
+            [cheshire.core         :as ch]
+            [futbot.util           :as u]))
 
 (def api-host "https://api.football-data.org")
 
@@ -29,24 +30,6 @@
 (def endpoint-match-details   "/v2/matches/%d")
 
 (def maximum-retries 3)
-
-(defn clojurise-json-key
-  "Converts JSON string keys (e.g. \"fullName\") to Clojure keyword keys (e.g. :full-name)."
-  [k]
-  (keyword
-    (s/replace
-      (s/join "-"
-              (map s/lower-case
-                   (s/split k #"(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])")))
-      "_"
-      "-")))
-
-(defn parse-int
-  [s]
-  (try
-    (Integer/parseInt s)
-    (catch NumberFormatException nfe
-      nil)))
 
 (defn football-data-api-call
   "Calls the given football-data API endpoint using the given token, parses the result and returns it.  Throws an ex-info if an error occurs (the ex-info map contains HTTP :status)."
@@ -59,7 +42,7 @@
         (if (= status 429)                   ; We got throttled
           (if (> attempt maximum-retries)    ; Bail out after too many retry attempts
             (throw (ex-info (format "Too many retries (%d) to football-data API %s" attempt api-url) {:status status} error))
-            (let [counter-reset-ms (* 1000 (parse-int (s/trim (get headers "X-RequestCounter-Reset"))))  ; Find out how long football-data wants us to wait
+            (let [counter-reset-ms (* 1000 (u/parse-int (s/trim (get headers "X-RequestCounter-Reset"))))  ; Find out how long football-data wants us to wait
                   retry-in-ms      (+ counter-reset-ms (rand-int (* 1000 attempt)))]            ; Add some randomness to try to avoid stampeding herds
               (log/warn (format "football-data API call attempt %d throttled, waiting %dms before retrying." attempt retry-in-ms))
               (Thread/sleep retry-in-ms)
@@ -67,7 +50,7 @@
           (if error
             (throw (ex-info (format "football-data API call (%s) failed" api-url) {:status status} error))
             (ch/parse-string body
-                             clojurise-json-key)))))))
+                             u/clojurise-json-key)))))))
 
 (defn matches-on-day
   "Returns a list of all matches visible to the given token, on the given day (defaults to today UTC if not otherwise specified), sorted by scheduled time and then by competition."
