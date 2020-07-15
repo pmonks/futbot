@@ -42,8 +42,8 @@
                                              :sha     "a2f4d4cb6ef347bff420edb66629e41d530b9668"}}
                :main-opts  ["-m" "clj-check.check"]}
     ; clj -Agit-info-edn
-    :git-info-edn {:extra-deps {pmonks/lein-git-info-edn {:git/url "https://github.com/pmonks/lein-git-info-edn.git"
-                                                          :sha     "f1cb50ff673becd738d5aa9b697aad421a266cfd"}}
+    :git-info-edn {:extra-deps {noisesmith/lein-git-info-edn {:git/url "https://github.com/noisesmith/lein-git-info-edn.git"
+                                                              :sha     "beb66c0935273c5b7e5129062027984473eb8e02"}}
                    :main-opts ["-m" "leiningen.git-info-edn"]}
     ; clj -Aoutdated
     :outdated {:extra-deps {olical/depot {:mvn/version "1.8.4"}}
