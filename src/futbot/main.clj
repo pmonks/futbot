@@ -25,8 +25,7 @@
             [clojure.tools.logging :as log]
             [mount.core            :as mnt :refer [defstate]]
             [java-time             :as tm]
-            [futbot.core           :as core])
-  (:gen-class))
+            [futbot.core           :as core]))
 
 (def ^:private cli-opts
   [["-c" "--config-file FILE" "Path to configuration file (defaults to 'config.edn' in the classpath)"
