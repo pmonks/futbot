@@ -40,7 +40,7 @@ To make review of PRs easier, please:
  * Keep PRs small and cohesive - if you have multiple independent contributions, please submit them as independent PRs.
  * Minimise "spurious" changes (e.g. whitespace shenanigans).
  * Ensure all updated files include your copyright information at the top.
- * Ensure all new files include a header comment block containing the [CC-BY-NC-SA 4.0 license header and your copyright information](https://creativecommons.org/choose/results-one?license_code=by-nc-sa&amp;jurisdiction=&amp;version=4.0&amp;lang=en).
+ * Ensure all new files include a header comment block containing the [Apache 2.0 license header and your copyright information](https://infra.apache.org/apply-license.html).
 
 ## Commit and PR Messages
 

@@ -21,28 +21,32 @@
             [org.httpkit.client :as http]
             [cheshire.core      :as ch]
             [markov-chains.core :as mc]
-            [futbot.util        :as u])
-  (:gen-class))
+            [futbot.util        :as u]))
 
 (def ist-youtube-channel-id "UCmzFaEBQlLmMTWS0IQ90tgA")
 
 (def api-host                       "https://www.googleapis.com")
-(def endpoint-youtube-search-page-1 "/youtube/v3/search?part=snippet&type=video&maxResults=50&order=date&key=%s&channelId=%s")
+(def endpoint-youtube-search-page-1 "/youtube/v3/search?part=snippet&type=video&maxResults=50&order=date&channelId=%s")
 (def endpoint-youtube-search-page-n (str endpoint-youtube-search-page-1 "&pageToken=%s"))
 
 (defn all-videos-for-channel
   "Retrieves all videos for the given YouTube channel id, by paging through 50 at a time."
   [google-api-key channel-id]
-  (loop [api-url (format (str api-host endpoint-youtube-search-page-1) google-api-key channel-id)
+  (loop [api-url (format (str api-host endpoint-youtube-search-page-1) channel-id)
+         page    1
          result  (atom [])]
-    (let [{:keys [status headers body error]} @(http/get api-url)
-          api-response                        (ch/parse-string body u/clojurise-json-key)
-          next-page                           (:next-page-token api-response)]
-      (swap! result concat (:items api-response))
-      (if (not (s/blank? next-page))
-        (recur (format (str api-host endpoint-youtube-search-page-n) google-api-key channel-id next-page)
-               result)
-        @result))))
+    (println "Retrieving results" (inc (* 50 (dec page))) "to" (* 50 page))
+    (let [{:keys [status headers body error]} @(http/get (str api-url "&key=" google-api-key))]
+      (if (or error (not= status 200))
+        (throw (ex-info (format "Google API call (%s) failed" (str api-url "&key=REDACTED")) {:status status :body body} error))
+        (let [api-response (ch/parse-string body u/clojurise-json-key)
+              next-page    (:next-page-token api-response)]
+          (swap! result concat (:items api-response))
+          (if (not (s/blank? next-page))
+            (recur (format (str api-host endpoint-youtube-search-page-n) channel-id next-page)
+                   (inc page)
+                   result)
+            @result))))))
 
 (defn exit
   [msg code]
