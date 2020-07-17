@@ -28,10 +28,11 @@
                     (throw (RuntimeException. "ist-markov-chain classpath resource not found - did you remember to run the 'gen-ist-markov' alias first?"))))
 
 (defn gen-title
-  []
-  (u/replace-all (s/join " "
-                         (take 100   ; Make sure we eventually drop out
-                               (take-while (partial not= "🔚")
-                                           (drop-while #(or (= "🔚" %) (re-matches #"(\p{Punct})+" %))   ; Drop leading title breaks and punctuation
-                                                       (mc/generate markov-chain)))))
-                 [[#"\s+([!?:;,\"…\*\.])" "$1"]]))  ; Collapse whitespace before punctuation
+  ([] (gen-title markov-chain))
+  ([chain]
+   (u/replace-all (s/join " "
+                          (take 100   ; Make sure we eventually drop out
+                                (take-while (partial not= "🔚")
+                                            (drop-while #(or (= "🔚" %) (re-matches #"(\p{Punct})+" %))   ; Drop leading title breaks and punctuation
+                                                        (mc/generate chain)))))
+                  [[#"\s+([!?:;,\"…\*\.])" "$1"]])))  ; Collapse whitespace before punctuation

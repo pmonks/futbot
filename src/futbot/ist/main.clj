@@ -18,6 +18,8 @@
 
 (ns futbot.ist.main
   (:require [clojure.string     :as s]
+            [clojure.java.io    :as io]
+            [clojure.pprint     :as pp]
             [org.httpkit.client :as http]
             [cheshire.core      :as ch]
             [markov-chains.core :as mc]
@@ -55,6 +57,26 @@
     (flush))
   (System/exit code))
 
+(defn words
+  [titles]
+  (s/split (u/replace-all (s/join " 🔚 " titles)
+                          [["&amp;"             "&"]
+                           ["&quot;"            "\""]
+                           ["&#39;"             "'"]
+                           ["’"                 "'"]
+                           [#"[“”]"             "\""]
+                           [#"([!?:;,\"…\*])"   " $1 "]
+                           [#"((?<!\s))(\.+)\s" "$1 $2 "]
+                          ])
+           #"\s+"))
+
+(defn gen-chain
+  ([google-api-key youtube-channel-id] (gen-chain (all-videos-for-channel google-api-key youtube-channel-id)))
+  ([videos]
+   (let [titles (map #(:title (:snippet %)) videos)
+         words  (words titles)]
+     (mc/collate words 1))))    ;1 = extra deranged IST mode, 2 = relatively sane IST mode
+
 (defn -main
   [& args]
   (try
@@ -62,19 +84,8 @@
       (exit "Please provide a Google API key on the command line." -1))
 
     (let [google-api-key (first args)
-          ist-videos     (all-videos-for-channel google-api-key ist-youtube-channel-id)
-          ist-titles     (map #(:title (:snippet %)) ist-videos)
-          ist-titles-str (u/replace-all (s/join " 🔚 " ist-titles)
-                                        [["&amp;"             "&"]
-                                         ["&quot;"            "\""]
-                                         ["&#39;"             "'"]
-                                         ["’"                 "'"]
-                                         [#"[“”]"             "\""]
-                                         [#"([!?:;,\"…\*])"   " $1 "]
-                                         [#"((?<!\s))(\.+)\s" "$1 $2 "]
-                                         ])
-          words          (s/split ist-titles-str #"\s+")
-          chain          (mc/collate words 2)]
-      (spit "resources/ist-markov-chain.edn" (pr-str chain)))
+          chain          (gen-chain google-api-key ist-youtube-channel-id)]
+      (with-open [w (io/writer (io/file "resources/ist-markov-chain.edn"))]
+        (pp/pprint chain w)))
     (catch Exception e
       (exit e -1))))
