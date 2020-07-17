@@ -31,7 +31,7 @@
   [_ event-data]
   (dm/create-message! cfg/discord-message-channel
                       (:channel-id event-data)
-                      :content (str "IST says: \"" (ist/gen-title) "\"")))
+                      :content (str "<:ist:733173880403001394>: \"" (ist/gen-title) "\"")))
 
 (def command-dispatch-table
   {"!ist" ist-command})
