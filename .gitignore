@@ -15,3 +15,4 @@ uberjar/
 config.edn
 resources/deploy-info.edn
 .rebel_readline_history
+titles-*.edn
