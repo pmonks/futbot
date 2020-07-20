@@ -36,19 +36,19 @@
   [google-api-key channel-id]
   (loop [api-url (format (str api-host endpoint-youtube-search-page-1) channel-id)
          page    1
-         result  (atom [])]
-    (println "Retrieving results" (inc (* 50 (dec page))) "to" (* 50 page))
+         result  []]
+    (println "Retrieving page" page "of results")
     (let [{:keys [status headers body error]} @(http/get (str api-url "&key=" google-api-key))]
       (if (or error (not= status 200))
         (throw (ex-info (format "Google API call (%s) failed" (str api-url "&key=REDACTED")) {:status status :body body} error))
         (let [api-response (ch/parse-string body u/clojurise-json-key)
+              items        (:items api-response)
               next-page    (:next-page-token api-response)]
-          (swap! result concat (:items api-response))
           (if (not (s/blank? next-page))
             (recur (format (str api-host endpoint-youtube-search-page-n) channel-id next-page)
                    (inc page)
-                   result)
-            @result))))))
+                   (into result items))
+            (into result items)))))))
 
 (defn exit
   [msg code]
