@@ -19,9 +19,11 @@
 (ns futbot.ist.main
   (:require [clojure.string     :as s]
             [clojure.java.io    :as io]
+            [clojure.edn        :as edn]
             [clojure.pprint     :as pp]
             [org.httpkit.client :as http]
             [cheshire.core      :as ch]
+            [java-time          :as tm]
             [markov-chains.core :as mc]
             [futbot.util        :as u]))
 
@@ -37,7 +39,7 @@
   (loop [api-url (format (str api-host endpoint-youtube-search-page-1) channel-id)
          page    1
          result  []]
-    (println "Retrieving page" page "of results")
+    (println "Reading page" (str page "..."))
     (let [{:keys [status headers body error]} @(http/get (str api-url "&key=" google-api-key))]
       (if (or error (not= status 200))
         (throw (ex-info (format "Google API call (%s) failed" (str api-url "&key=REDACTED")) {:status status :body body} error))
@@ -50,14 +52,8 @@
                    (into result items))
             (into result items)))))))
 
-(defn exit
-  [msg code]
-  (binding [*out* *err*]
-    (println msg)
-    (flush))
-  (System/exit code))
-
-(defn words
+(defn tokenize
+  "Convert the given video titles into tokens (~= words) suitable for collation into a Markov chain."
   [titles]
   (s/split (u/replace-all (s/join " 🔚 " titles)
                           [["&amp;"             "&"]
@@ -65,17 +61,44 @@
                            ["&#39;"             "'"]
                            ["’"                 "'"]
                            [#"[“”]"             "\""]
-                           [#"([!?:;,\"…\*])"   " $1 "]
-                           [#"((?<!\s))(\.+)\s" "$1 $2 "]
+                           ["…"                 "..."]
+                           [#"([!?:;,\"\*])"    " $1 "]
+                           [#"\s&(\S)"          " & $1"]
+                           [#"(\S)&\s"          "$1 & "]
+                           [#"(\D)(\.+)\s"      "$1 $2 "]
+                           [#"\s-(\S)"          " - $1"]
                           ])
            #"\s+"))
 
 (defn gen-chain
-  ([google-api-key youtube-channel-id] (gen-chain (all-videos-for-channel google-api-key youtube-channel-id)))
-  ([videos]
-   (let [titles (map #(:title (:snippet %)) videos)
-         words  (words titles)]
-     (mc/collate words 1))))    ;1 = extra deranged IST mode, 2 = relatively sane IST mode
+  "Generate a Markov chain for the given video titles."
+  [titles]
+  (mc/collate (tokenize titles) 1))    ;1 = extra deranged IST mode, 2 = relatively sane IST mode
+
+(defn load-titles
+  "Loads titles from Youtube, and caches them to disk, reusing that cache if it already exists.  We do this because Google's API call quotas are draconian."
+  [google-api-key youtube-channel-id]
+  (let [titles-filename (str "titles-" (tm/local-date) ".edn")
+        titles-file     (io/file titles-filename)]
+    (if (.exists titles-file)
+      (do
+        (println titles-filename "found, loading it...")
+        (edn/read-string (slurp titles-file)))
+      (do
+        (println titles-filename "not found, reading titles from YouTube...")
+        (let [titles (map #(:title (:snippet %)) (all-videos-for-channel google-api-key youtube-channel-id))]
+          (println "Caching" (count titles) "titles to" titles-filename)
+          (with-open [w (io/writer titles-file)]
+            (pp/pprint titles w))
+          titles)))))
+
+(defn exit
+  "Exit the program, printing the given message to stderr, and returning the given exit code to the OS."
+  [msg code]
+  (binding [*out* *err*]
+    (println msg)
+    (flush))
+  (System/exit code))
 
 (defn -main
   [& args]
@@ -84,8 +107,14 @@
       (exit "Please provide a Google API key on the command line." -1))
 
     (let [google-api-key (first args)
-          chain          (gen-chain google-api-key ist-youtube-channel-id)]
-      (with-open [w (io/writer (io/file "resources/ist-markov-chain.edn"))]
+          titles         (load-titles google-api-key ist-youtube-channel-id)
+          _              (println (count titles) "IST titles loaded")
+          chain          (gen-chain titles)
+          chain-filename "resources/ist-markov-chain.edn"]
+      (println "Writing Markov chain to" (str chain-filename "..."))
+      (with-open [w (io/writer (io/file chain-filename))]
         (pp/pprint chain w)))
+
+    (println "Done.")
     (catch Exception e
       (exit e -1))))
