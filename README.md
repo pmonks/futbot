@@ -6,11 +6,13 @@
 
 # futbot
 
-A small [Discord](https://discord.com/) bot that provides football (soccer) competition information sourced from [football-data.org](https://www.football-data.org/).  This bot was specifically designed and implemented for the [Referee Discord Server](https://discord.gg/FgUPVe), and may therefore have limited utility elsewhere.
+A small [Discord](https://discord.com/) bot that provides football (soccer) competition information sourced from [football-data.org](https://www.football-data.org/).  This bot has been deployed to the [Referee Discord Server](https://discord.gg/FgUPVe), and was specifically designed and implemented for that community, and may therefore have limited utility elsewhere.
 
 The bot also has a small, but growing number of ["responsive functions"](https://github.com/pmonks/futbot/milestone/2?closed=1) - command messages that it will respond to in any channels it has been added to.
 
-## Trying it Out
+Please review the [privacy policy](https://github.com/pmonks/futbot/blob/main/PRIVACY.md) before interacting with the deployed instance of the bot on the [Referee Discord Server](https://discord.gg/FgUPVe).
+
+## Running Your Own Copy of the Bot
 
 ### Obtaining API Keys
 
