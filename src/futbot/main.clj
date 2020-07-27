@@ -51,9 +51,16 @@
        (s/join \newline errors)))
 
 (defn- exit
-  [status-code message]
-  (println message)
-  (System/exit status-code))
+  ([status-code] (exit status-code nil))
+  ([status-code message]
+   (if message
+     (if (= 0 status-code)
+       (println message)
+       (binding [*out* *err*]
+         (println message))))
+   (flush)
+   (shutdown-agents)
+   (System/exit status-code)))
 
 (defn -main
   "Runs futbot."
@@ -72,4 +79,6 @@
       (core/start-bot!))  ; This must go last, as it blocks
     (catch Exception e
       (log/error e)
-      (System/exit -1))))
+      (exit -1))
+    (finally
+      (exit 0))))
