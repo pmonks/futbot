@@ -21,6 +21,7 @@
             [clojure.java.io    :as io]
             [clojure.edn        :as edn]
             [clojure.pprint     :as pp]
+            [clojure.stacktrace :as st]
             [org.httpkit.client :as http]
             [cheshire.core      :as ch]
             [java-time          :as tm]
@@ -92,19 +93,11 @@
             (pp/pprint titles w))
           titles)))))
 
-(defn exit
-  "Exit the program, printing the given message to stderr, and returning the given exit code to the OS."
-  [msg code]
-  (binding [*out* *err*]
-    (println msg)
-    (flush))
-  (System/exit code))
-
 (defn -main
   [& args]
   (try
     (if (not= 1 (count args))
-      (exit "Please provide a Google API key on the command line." -1))
+      (u/exit -1 "Please provide a Google API key on the command line."))
 
     (let [google-api-key (first args)
           titles         (load-titles google-api-key ist-youtube-channel-id)
@@ -117,4 +110,6 @@
 
     (println "Done.")
     (catch Exception e
-      (exit e -1))))
+      (u/exit -1 (with-out-str (st/print-stack-trace e))))
+    (finally
+      (u/exit))))
