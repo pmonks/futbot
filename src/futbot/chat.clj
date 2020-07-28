@@ -31,9 +31,12 @@
 
 (defn ist-command
   [_ event-data]
-  (dm/create-message! cfg/discord-message-channel
-                      (:channel-id event-data)
-                      :content (str "<:ist:733173880403001394>: \"" (ist/gen-title) "\"")))
+  (let [channel-id (:channel-id event-data)
+        message    (str "<:ist:733173880403001394>: \"" (ist/gen-title) "\"")]
+    (log/debug "Sending message to channel-id" channel-id ":" message)
+    (dm/create-message! cfg/discord-message-channel
+                        channel-id
+                        :content message)))
 
 (def command-dispatch-table
   {"ist" ist-command})
@@ -46,7 +49,7 @@
 
 (defmethod handle-discord-event :message-create
   [event-type event-data]
-  (future  ; Fire off the command handler asynchronously
+  (future    ; Spin off the actual processing, so we don't clog the Discord event queue
     (try
       (let [content (s/triml (:content event-data))]
         (if (s/starts-with? content prefix)
@@ -57,7 +60,7 @@
             (if command-fn
               (do
                 (log/debug (str "Calling command fn for '" command "' with args '" args "'."))
-                command-fn args event-data)))))
+                (command-fn args event-data))))))
       (catch Exception e
         (log/error e)))))
 
