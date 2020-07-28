@@ -21,6 +21,7 @@
             [clojure.java.io    :as io]
             [clojure.edn        :as edn]
             [clojure.pprint     :as pp]
+            [clojure.stacktrace :as st]
             [org.httpkit.client :as http]
             [cheshire.core      :as ch]
             [java-time          :as tm]
@@ -75,7 +76,7 @@
   [titles]
   (mc/collate (tokenize titles) 1))    ;1 = extra deranged IST mode, 2 = relatively sane IST mode
 
-(defn load-titles
+(defn load-ist-titles
   "Loads titles from Youtube, and caches them to disk, reusing that cache if it already exists.  We do this because Google's API call quotas are draconian."
   [google-api-key youtube-channel-id]
   (let [titles-filename (str "titles-" (tm/local-date) ".edn")
@@ -92,24 +93,24 @@
             (pp/pprint titles w))
           titles)))))
 
-(defn exit
-  "Exit the program, printing the given message to stderr, and returning the given exit code to the OS."
-  [msg code]
-  (binding [*out* *err*]
-    (println msg)
-    (flush))
-  (System/exit code))
+(defn load-bonus-titles
+  []
+  (if-let [bonus-file (io/resource "bonus-titles.edn")]
+    (do
+      (println "bonus-titles.edn found, reading titles...")
+      (edn/read-string (slurp bonus-file)))))
 
 (defn -main
   [& args]
   (try
     (if (not= 1 (count args))
-      (exit "Please provide a Google API key on the command line." -1))
+      (u/exit -1 "Please provide a Google API key on the command line."))
 
     (let [google-api-key (first args)
-          titles         (load-titles google-api-key ist-youtube-channel-id)
-          _              (println (count titles) "IST titles loaded")
-          chain          (gen-chain titles)
+          ist-titles     (load-ist-titles google-api-key ist-youtube-channel-id)
+          bonus-titles   (load-bonus-titles)
+          _              (println (count ist-titles) "IST titles, and" (count bonus-titles) "bonus titles loaded")
+          chain          (gen-chain (into ist-titles bonus-titles))
           chain-filename "resources/ist-markov-chain.edn"]
       (println "Writing Markov chain to" (str chain-filename "..."))
       (with-open [w (io/writer (io/file chain-filename))]
@@ -117,4 +118,6 @@
 
     (println "Done.")
     (catch Exception e
-      (exit e -1))))
+      (u/exit -1 (with-out-str (st/print-stack-trace e))))
+    (finally
+      (u/exit))))

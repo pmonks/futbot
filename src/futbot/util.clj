@@ -49,3 +49,16 @@
              (rest  r))
       s)))
 
+(defn exit
+  "Exits the program after printing the given message, and returns the given status code."
+  ([]            (exit 0 nil))
+  ([status-code] (exit status-code nil))
+  ([status-code message]
+   (if message
+     (if (= 0 status-code)
+       (println message)
+       (binding [*out* *err*]
+         (println message))))
+   (flush)
+   (shutdown-agents)
+   (System/exit status-code)))

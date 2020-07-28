@@ -25,6 +25,7 @@
             [clojure.tools.logging :as log]
             [mount.core            :as mnt :refer [defstate]]
             [java-time             :as tm]
+            [futbot.util           :as u]
             [futbot.core           :as core]))
 
 (def ^:private cli-opts
@@ -45,16 +46,6 @@
      options-summary
      ""]))
 
-(defn- error-message
-  [errors]
-  (str "The following errors occurred while parsing the command line:\n\n"
-       (s/join \newline errors)))
-
-(defn- exit
-  [status-code message]
-  (println message)
-  (System/exit status-code))
-
 (defn -main
   "Runs futbot."
   [& args]
@@ -63,8 +54,9 @@
     (log/info "Built at" (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str "from " cfg/git-url) ""))
     (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
       (cond
-        (:help options) (exit 0 (usage summary))
-        errors          (exit 1 (error-message errors)))
+        (:help options) (u/exit 0 (usage summary))
+        errors          (u/exit 1 (str "The following errors occurred while parsing the command line:\n\n"
+                                       (s/join \newline errors))))
 
       ; Start the bot
       (mnt/with-args options)
@@ -72,4 +64,6 @@
       (core/start-bot!))  ; This must go last, as it blocks
     (catch Exception e
       (log/error e)
-      (System/exit -1))))
+      (u/exit -1))
+    (finally
+      (u/exit))))
