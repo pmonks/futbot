@@ -46,19 +46,20 @@
 
 (defmethod handle-discord-event :message-create
   [event-type event-data]
-  (try
-    (let [content (s/triml (:content event-data))]
-      (if (s/starts-with? content prefix)
-        (let [command-and-args (s/split content #"\s+" 2)
-              command          (s/lower-case (subs (s/trim (first command-and-args)) (count prefix)))
-              args             (second command-and-args)
-              command-fn       (get command-dispatch-table command)]
-          (if command-fn
-            (future  ; Fire off the command handler asynchronously
-              (log/debug (str "Calling command fn for '" command "' with args '" args "'."))
-              command-fn args event-data)))))
-    (catch Exception e
-      (log/error e))))
+  (future  ; Fire off the command handler asynchronously
+    (try
+      (let [content (s/triml (:content event-data))]
+        (if (s/starts-with? content prefix)
+          (let [command-and-args (s/split content #"\s+" 2)
+                command          (s/lower-case (subs (s/trim (first command-and-args)) (count prefix)))
+                args             (second command-and-args)
+                command-fn       (get command-dispatch-table command)]
+            (if command-fn
+              (do
+                (log/debug (str "Calling command fn for '" command "' with args '" args "'."))
+                command-fn args event-data)))))
+      (catch Exception e
+        (log/error e)))))
 
 ; Default Discord event handler (noop)
 (defmethod handle-discord-event :default
