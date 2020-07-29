@@ -29,6 +29,14 @@
             [futbot.jobs           :as job]
             [futbot.chat           :as chat]))
 
+(defstate gc-job
+          :start (let [seven-past-the-hour-UTC               (tm/with-clock (tm/system-clock "UTC") (tm/plus (tm/truncate-to (tm/zoned-date-time) :hours) (tm/minutes 7)))
+                       every-hour-at-seven-past-the-hour-UTC (chime/periodic-seq (tm/instant seven-past-the-hour-UTC)
+                                                                                 (tm/duration 1 :hours))]
+                   (chime/chime-at every-hour-at-seven-past-the-hour-UTC
+                                   (fn [_] (System/gc))))
+          :stop (.close ^java.lang.AutoCloseable gc-job))
+
 (defstate daily-job
           :start (let [tomorrow-at-midnight-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days))
                        every-day-at-midnight-UTC (chime/periodic-seq (tm/instant tomorrow-at-midnight-UTC)
