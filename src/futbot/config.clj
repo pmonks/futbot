@@ -67,7 +67,7 @@
           :stop  (async/close! discord-event-channel))
 
 (defstate discord-connection-channel
-          :start (if-let [connection (dc/connect-bot! discord-api-token discord-event-channel)]
+          :start (if-let [connection (dc/connect-bot! discord-api-token discord-event-channel :intents #{:guilds :guild-messages :direct-messages})]
                    connection
                    (throw (ex-info "Failed to connect bot to Discord" {})))
           :stop  (dc/disconnect-bot! discord-connection-channel))
