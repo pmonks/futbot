@@ -26,7 +26,8 @@
             [mount.core            :as mnt :refer [defstate]]
             [java-time             :as tm]
             [futbot.util           :as u]
-            [futbot.core           :as core]))
+            [futbot.core           :as core])
+  (:gen-class))
 
 (def ^:private cli-opts
   [["-c" "--config-file FILE" "Path to configuration file (defaults to 'config.edn' in the classpath)"
