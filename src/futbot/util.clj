@@ -49,6 +49,16 @@
              (rest  r))
       s)))
 
+(defn human-readable-date-diff
+  "Returns a string containing the human readable difference between two instants."
+  [^java.time.Instant i1
+   ^java.time.Instant i2]
+  (format "%dd %2dh %2dm %2d.%03ds" (.until i1 i2 (java.time.temporal.ChronoUnit/DAYS))
+                                    (mod (.until i1 i2 (java.time.temporal.ChronoUnit/HOURS))     24)
+                                    (mod (.until i1 i2 (java.time.temporal.ChronoUnit/MINUTES))   60)
+                                    (mod (.until i1 i2 (java.time.temporal.ChronoUnit/SECONDS))   60)
+                                    (mod (.until i1 i2 (java.time.temporal.ChronoUnit/MILLIS))  1000)))
+
 (defn exit
   "Exits the program after printing the given message, and returns the given status code."
   ([]            (exit 0 nil))

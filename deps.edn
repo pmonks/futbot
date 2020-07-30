@@ -42,7 +42,7 @@
     :gen-ist-markov {:main-opts ["-m" "futbot.ist.main"]}
     ; clj -Acheck
     :check    {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git"
-                                             :sha     "a2f4d4cb6ef347bff420edb66629e41d530b9668"}}
+                                             :sha     "0f734f560dd989b2ec0f9078cc646476bfdab4e1"}}
                :main-opts  ["-m" "clj-check.check"]}
     ; clj -Agit-info-edn
     :git-info-edn {:extra-deps {noisesmith/lein-git-info-edn {:git/url "https://github.com/noisesmith/lein-git-info-edn.git"
