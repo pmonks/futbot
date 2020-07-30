@@ -32,10 +32,7 @@
 (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
 (org.slf4j.bridge.SLF4JBridgeHandler/install)
 
-(def boot-time (tm/local-date-time))
-
-(defstate last-reload-time
-          :start (tm/local-date-time))
+(def boot-time (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))))
 
 (defmethod a/reader 'split
   [opts tag value]
@@ -117,4 +114,4 @@
     (str "https://github.com/pmonks/futbot/tree/" git-revision)))
 
 (def built-at
-  (.toInstant ^java.util.Date (:date build-info)))
+  (tm/instant (:date build-info)))
