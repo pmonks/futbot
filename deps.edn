@@ -53,6 +53,7 @@
                :main-opts  ["-m" "depot.outdated.main"]}
     ; clj -A:uberjar
     :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.0.96"}}
-               :main-opts ["-m" "hf.depstar.uberjar" "./target/futbot-standalone.jar" "-C" "-m" "futbot.main"]}
+               :main-opts ["-m" "hf.depstar.uberjar" "./target/futbot-standalone.jar"]}
+;               :main-opts ["-m" "hf.depstar.uberjar" "./target/futbot-standalone.jar" "-C" "-m" "futbot.main"]}
     }
 }
