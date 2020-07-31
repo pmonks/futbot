@@ -40,14 +40,16 @@
   (loop [api-url (format (str api-host endpoint-youtube-search-page-1) channel-id)
          page    1
          result  []]
-    (println "Reading page" (str page "..."))
+    (print "Reading page" page)
     (let [{:keys [status headers body error]} @(http/get (str api-url "&key=" google-api-key))]
       (if (or error (not= status 200))
         (throw (ex-info (format "Google API call (%s) failed" (str api-url "&key=REDACTED")) {:status status :body body} error))
         (let [api-response (ch/parse-string body u/clojurise-json-key)
               items        (:items api-response)
               next-page    (:next-page-token api-response)]
-          (if (not (s/blank? next-page))
+          (println "," (count items) "items found")
+          (if (and (= (count items) 50)
+                   (not (s/blank? next-page)))
             (recur (format (str api-host endpoint-youtube-search-page-n) channel-id next-page)
                    (inc page)
                    (into result items))
