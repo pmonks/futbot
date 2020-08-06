@@ -49,6 +49,7 @@
                                              todays-scheduled-matches (fd/scheduled-matches-on-day cfg/football-data-api-token today)]
                                          (job/post-daily-schedule-to-channel! cfg/discord-message-channel
                                                                               cfg/daily-schedule-discord-channel-id
+                                                                              (partial fd/match cfg/football-data-api-token)
                                                                               today
                                                                               todays-scheduled-matches)
                                          (job/schedule-todays-reminders! cfg/football-data-api-token
