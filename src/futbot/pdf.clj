@@ -62,9 +62,9 @@
                                   ":"]])))
 
           ; Regular data row
-          (let [country   (s/trim (get-in current-match [:competition :area :code]))
-                flag-file (fl/image-file country)]
-            (swap! result conj [[:cell [:chunk (if flag-file [:image {:scale 2} flag-file])]
+          (let [country  (s/trim (get-in current-match [:competition :area :code]))
+                flag-url (fl/image-url country)]
+            (swap! result conj [[:cell [:chunk (if flag-url [:image {:scale 2} flag-url])]
                                        (str " " (get-in current-match [:competition :name] "Unknown"))]
                                 (get-in current-match [:home-team :name]   "Unknown")
                                 (get-in current-match [:away-team :name]   "Unknown")]))
