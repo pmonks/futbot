@@ -30,7 +30,7 @@
         mount/mount                         {:mvn/version "0.1.16"}
         jarohen/chime                       {:mvn/version "0.3.2"}
         org.suskalo/discljord               {:mvn/version "1.1.1"}
-        http-kit/http-kit                   {:mvn/version "2.4.0-alpha6"}
+        http-kit/http-kit                   {:mvn/version "2.4.0"}
         cheshire/cheshire                   {:mvn/version "5.10.0"}
         clj-pdf/clj-pdf                     {:mvn/version "2.5.4"}
         rm-hull/markov-chains               {:mvn/version "0.1.1"}
@@ -52,7 +52,7 @@
     :outdated {:extra-deps {olical/depot {:mvn/version "1.8.4"}}
                :main-opts  ["-m" "depot.outdated.main"]}
     ; clj -A:uberjar
-    :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.0.96"}}
+    :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.0.97"}}
                :main-opts ["-m" "hf.depstar.uberjar" "./target/futbot-standalone.jar" "-C" "-m" "futbot.main"]}
     }
 }

@@ -31,12 +31,13 @@
   "Generates and posts the daily-schedule (as an attachment) to the Discord channel identified by channel-id."
   [discord-message-channel
    channel-id
+   match-details-fn
    today
    todays-matches]
   (System/gc)   ; Dear Mx JVM, now would be a *great* time to garbage collect...
   (let [today-str (tm/format "yyyy-MM-dd" today)]
     (if (seq todays-matches)
-      (let [pdf-file    (pdf/generate-daily-schedule today todays-matches)
+      (let [pdf-file    (pdf/generate-daily-schedule match-details-fn today todays-matches)
             pdf-file-is (io/input-stream pdf-file)]
         (dm/create-message! discord-message-channel
                             channel-id

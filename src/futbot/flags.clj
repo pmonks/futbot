@@ -310,7 +310,7 @@
         3 (get alpha-3-to-flag code nil)
         nil))))
 
-(defn ^java.net.URL image-file
+(defn ^java.net.URL image-url
   "Returns the java.net.URL representing a flag image file (PNG format) for the given country-code (an ISO-3166-1 alpha-3 code.  Returns nil if the code is invalid or no file is available for that code."
   [iso-3166-1-alpha-3]
   (io/resource (str "flags/" (s/upper-case (s/trim iso-3166-1-alpha-3)) ".png")))
