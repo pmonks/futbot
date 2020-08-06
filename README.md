@@ -26,7 +26,7 @@ If you wish to regenerate the [IST Markov chain](https://github.com/pmonks/futbo
 
 Currently the bot is only distributed in source form, so regardless of how you intend to deploy it, you'll need to clone this repository locally.
 
-Before running the code, you'll need to generate a git info EDN file, by running `clj -Agit-info-edn` (this only needs to be done once).
+Before running the code, you'll need to generate a git info EDN file, by running `clj -A:git-info-edn` (this only needs to be done once).
 
 #### Direct Execution
 
