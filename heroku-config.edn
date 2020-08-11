@@ -24,7 +24,6 @@
   :muted-leagues [
     "Championship"   ; England 2nd division
     "Série A"        ; Brazil
-    "Serie A"        ; Italy
     "Primeira Liga"  ; Portugal
   ]
 
