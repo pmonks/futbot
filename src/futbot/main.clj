@@ -51,7 +51,7 @@
   "Runs futbot."
   [& args]
   (try
-    (log/info "Starting futbot on Clojure" (clojure-version) "/" (System/getProperty "java.vm.vendor") (System/getProperty "java.vm.version") (str "(" (System/getProperty "os.arch") ")"))
+    (log/info "Starting futbot on Clojure" (clojure-version) "/" (System/getProperty "java.vm.vendor") "JVM" (System/getProperty "java.vm.version") (str "(" (System/getProperty "os.arch") ")"))
     (log/info "Built at" (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str "from " cfg/git-url) ""))
     (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
       (cond
