@@ -91,12 +91,13 @@
                          "Find out how to watch these matches."]]])
 
 (defn generate-daily-schedule
-  [match-details-fn day matches]
-  (log/debug (str "Daily schedule PDF generation started for " (tm/format "yyyy-MM-dd" day) ": " (count matches) " matches."))
-  (if (pos? (count matches))
-    (let [pdf-data         (generate-daily-schedule-pdf-data-structure match-details-fn day matches)
-          temp-pdf-file    (doto (java.io.File/createTempFile "futbot-tmp-" ".pdf") (.deleteOnExit))]
-      (with-open [temp-pdf-file-os (io/output-stream temp-pdf-file)]
-        (pdf/pdf pdf-data
-                 temp-pdf-file-os))
-      temp-pdf-file)))
+  "Generates the daily schedule PDF for the given day and matches, returning the generated file (as a java.io.File)."
+  ([match-details-fn day matches] (generate-daily-schedule match-details-fn day matches (doto (java.io.File/createTempFile "futbot-tmp-" ".pdf") (.deleteOnExit))))
+  ([match-details-fn day matches pdf-file]
+   (log/debug (str "Daily schedule PDF generation started for " (tm/format "yyyy-MM-dd" day) ": " (count matches) " matches."))
+   (if (pos? (count matches))
+     (let [pdf-data  (generate-daily-schedule-pdf-data-structure match-details-fn day matches)]
+       (with-open [pdf-file-os (io/output-stream pdf-file)]
+         (pdf/pdf pdf-data
+                  pdf-file-os))
+       (io/file pdf-file)))))
