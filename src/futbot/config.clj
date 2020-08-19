@@ -32,6 +32,12 @@
 (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
 (org.slf4j.bridge.SLF4JBridgeHandler/install)
 
+; Because Java's default exception behaviour in threads other than main is a hot mess
+(Thread/setDefaultUncaughtExceptionHandler
+ (reify Thread$UncaughtExceptionHandler
+   (uncaughtException [_ t e]
+     (log/error e "Uncaught exception on" (.getName t)))))
+
 (def boot-time (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))))
 
 (defmethod a/reader 'split
