@@ -32,7 +32,7 @@
 (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
 (org.slf4j.bridge.SLF4JBridgeHandler/install)
 
-; Because Java's default exception behaviour in threads is a hot mess
+; Because Java's default exception behaviour in threads other than main is a hot mess
 (Thread/setDefaultUncaughtExceptionHandler
  (reify Thread$UncaughtExceptionHandler
    (uncaughtException [_ t e]
