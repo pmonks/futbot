@@ -42,8 +42,8 @@
         (if (= status 429)                   ; We got throttled
           (if (> attempt maximum-retries)    ; Bail out after too many retry attempts
             (throw (ex-info (format "Too many retries (%d) to football-data API %s" attempt api-url) {:status status} error))
-            (let [counter-reset-ms (* 1000 (u/parse-int (s/trim (get headers "X-RequestCounter-Reset"))))  ; Find out how long football-data wants us to wait
-                  retry-in-ms      (+ counter-reset-ms (rand-int (* 1000 attempt)))]            ; Add some randomness to try to avoid stampeding herds
+            (let [counter-reset-ms (* 1000 (u/parse-int (s/trim (get headers "X-RequestCounter-Reset" "60"))))  ; Find out how long football-data wants us to wait, defaulting to 1 minute
+                  retry-in-ms      (+ counter-reset-ms (rand-int (* 1000 attempt)) 500)]            ; Add some randomness to try to avoid stampeding herds
               (log/warn (format "football-data API call attempt %d throttled, waiting %dms before retrying." attempt retry-in-ms))
               (Thread/sleep retry-in-ms)
               (recur (inc attempt))))
