@@ -15,5 +15,6 @@ uberjar/
 config.edn
 resources/deploy-info.edn
 .rebel_readline_history
-titles-*.edn
 .eastwood
+titles-*.edn
+daily-schedule-*.pdf

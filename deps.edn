@@ -40,6 +40,8 @@
     :run      {:main-opts ["-m" "futbot.main"]}
     ; clj -A:gen-ist-markov google-api-key
     :gen-ist-markov {:main-opts ["-m" "futbot.ist.main"]}
+    ; clj -A:gen-daily-schedule-pdf football-data-token
+    :gen-daily-schedule-pdf {:main-opts ["-m" "futbot.daily-schedule.main"]}
     ; clj -A:check
     :check    {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git"
                                              :sha     "0f734f560dd989b2ec0f9078cc646476bfdab4e1"}}
