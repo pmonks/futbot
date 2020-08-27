@@ -57,6 +57,13 @@
         (str name " " emoji)
         name))))
 
+(defn- referee-names
+  [referee-emoji
+   referees]
+  (if (seq (remove s/blank? (map :name referees)))   ; Make sure we have at least one named referee
+    (s/join ", " (map (partial referee-name referee-emoji) referees))  ; And if so, include "unnamed" referees in the result, since position matters (CR, AR1, AR2, 4TH, VAR, etc.)
+    "¯\\_(ツ)_/¯"))
+
 (defn post-match-reminder-to-channel!
   [football-data-api-token
    discord-message-channel
@@ -81,10 +88,7 @@
                             "🏴‍☠️")
             match-prefix  (str flag " " league ": **" (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown") "**")
             message       (case (:status match)
-                            "SCHEDULED" (str match-prefix " starts in " starts-in-min " minutes.\nReferees: "
-                                             (if-let [referees (seq (:referees match))]
-                                               (s/join ", " (map (partial referee-name referee-emoji) referees))
-                                               "¯\\_(ツ)_/¯"))
+                            "SCHEDULED" (str match-prefix " starts in " starts-in-min " minutes.\nReferees: " (referee-names referee-emoji (:referees match)))
                             "POSTPONED" (str match-prefix ", which was due to start in " starts-in-min " minutes, has been postponed.")
                             "CANCELED"  (str match-prefix ", which was due to start in " starts-in-min " minutes, has been canceled.")
                             nil)]
