@@ -35,8 +35,11 @@
           day                     (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
           matches                 (fd/matches-on-day football-data-api-token day)
           pdf-filename            (str "daily-schedule-" (tm/format "yyyy-MM-dd" day) ".pdf")]
-      (println "Writing daily schedule to" (str pdf-filename "..."))
-      (pdf/generate-daily-schedule (partial fd/match football-data-api-token) day matches pdf-filename))
+      (if (seq matches)
+        (do
+          (println "Writing daily schedule to" (str pdf-filename "..."))
+          (pdf/generate-daily-schedule (partial fd/match football-data-api-token) day matches pdf-filename))
+        (println "No matches found for today, skipping generation of daily schedule.")))
 
     (println "Done.")
     (catch Exception e
