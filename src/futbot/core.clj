@@ -17,9 +17,7 @@
 ;
 
 (ns futbot.core
-  (:require [clojure.string        :as s]
-            [clojure.java.io       :as io]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
             [mount.core            :as mnt :refer [defstate]]
             [java-time             :as tm]
             [chime.core            :as chime]
@@ -58,7 +56,6 @@
                                                                          cfg/muted-leagues
                                                                          #(get cfg/country-to-channel % cfg/default-reminder-channel-id)
                                                                          cfg/referee-emoji
-                                                                         today
                                                                          todays-scheduled-matches))
                                        (catch Exception e
                                          (log/error e "Unexpected exception while generating daily schedule"))

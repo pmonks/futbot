@@ -18,12 +18,9 @@
 
 (ns futbot.chat
   (:require [clojure.string        :as s]
-            [clojure.java.io       :as io]
             [clojure.tools.logging :as log]
             [java-time             :as tm]
-            [discljord.connections :as dc]
             [discljord.messaging   :as dm]
-            [discljord.events      :as de]
             [futbot.util           :as u]
             [futbot.config         :as cfg]
             [futbot.ist            :as ist]))
@@ -94,11 +91,10 @@
 ; Responsive fns
 (defmulti handle-discord-event
   "Discord event handler"
-  (fn [event-type event-data]
-    event-type))
+  (fn [event-type _] event-type))
 
 (defmethod handle-discord-event :message-create
-  [event-type event-data]
+  [_ event-data]
   ; Only respond to messages sent from a human
   (if (not (:bot (:author event-data)))
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
@@ -131,4 +127,4 @@
 
 ; Default Discord event handler (noop)
 (defmethod handle-discord-event :default
-  [event-type event-data])
+  [_ _])

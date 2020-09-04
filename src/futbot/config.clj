@@ -40,9 +40,9 @@
 
 (def boot-time (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))))
 
+; Adds a #split reader macro to aero - see https://github.com/juxt/aero/issues/55
 (defmethod a/reader 'split
-  [opts tag value]
-  "Adds a #split reader macro to aero - see https://github.com/juxt/aero/issues/55"
+  [_ _ value]
   (let [[s re] value]
     (if (and s re)
       (s/split s (re-pattern re)))))

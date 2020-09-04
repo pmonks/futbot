@@ -73,8 +73,7 @@
    match-id & _]
   (try
     (log/info (str "Sending reminder for match " match-id "..."))
-    (if-let [{head-to-head :head2head
-              match        :match}    (fd/match football-data-api-token match-id)]
+    (if-let [{match :match} (fd/match football-data-api-token match-id)]
       (let [league        (s/trim (get-in match [:competition :name]))
             country       (s/trim (get-in match [:competition :area :code]))
             channel-id    (country-to-channel-fn country)
@@ -147,7 +146,6 @@
                                   muted-leagues
                                   country-to-channel-fn
                                   referee-emoji
-                                  today
                                   todays-scheduled-matches)))
   ([football-data-api-token
     discord-message-channel
@@ -155,7 +153,6 @@
     muted-leagues
     country-to-channel-fn
     referee-emoji
-    today
     todays-scheduled-matches]
     (if (seq todays-scheduled-matches)
       (doall (map (partial schedule-match-reminder! football-data-api-token

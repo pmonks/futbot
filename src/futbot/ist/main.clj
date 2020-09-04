@@ -41,7 +41,7 @@
          page    1
          result  []]
     (print "Reading page" page)
-    (let [{:keys [status headers body error]} @(http/get (str api-url "&key=" google-api-key))]
+    (let [{:keys [status body error]} @(http/get (str api-url "&key=" google-api-key))]
       (if (or error (not= status 200))
         (throw (ex-info (format "Google API call (%s) failed" (str api-url "&key=REDACTED")) {:status status :body body} error))
         (let [api-response (ch/parse-string body u/clojurise-json-key)
