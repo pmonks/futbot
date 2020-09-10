@@ -16,4 +16,6 @@
   :muted-leagues #split [#env MUTED_LEAGUES "\\s*,\\s*"]
 
   :referee-emoji {}  ; TODO: Figure out how to parse a map out of an environment variable using aero...
+
+  :quiz-channel-id #env QUIZ_DISCORD_CHANNEL_ID
 }

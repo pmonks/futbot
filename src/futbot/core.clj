@@ -31,18 +31,20 @@
           :start (let [seven-past-the-hour-UTC               (tm/with-clock (tm/system-clock "UTC") (tm/plus (tm/truncate-to (tm/zoned-date-time) :hours) (tm/minutes 7)))
                        every-hour-at-seven-past-the-hour-UTC (chime/periodic-seq (tm/instant seven-past-the-hour-UTC)
                                                                                  (tm/duration 1 :hours))]
+                   (log/info (str "Scheduling GC job; first run will be at " (first every-hour-at-seven-past-the-hour-UTC)))
                    (chime/chime-at every-hour-at-seven-past-the-hour-UTC
                                    (fn [_] (System/gc))))
           :stop (.close ^java.lang.AutoCloseable gc-job))
 
-(defstate daily-job
+(defstate daily-schedule-job
           :start (let [tomorrow-at-midnight-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days))
                        every-day-at-midnight-UTC (chime/periodic-seq (tm/instant tomorrow-at-midnight-UTC)
                                                                      (tm/period 1 :days))]
+                   (log/info (str "Scheduling daily schedule job; first run will be at " (first every-day-at-midnight-UTC)))
                    (chime/chime-at every-day-at-midnight-UTC
                                    (fn [_]
                                      (try
-                                       (log/info "Daily job started...")
+                                       (log/info "Daily schedule job started...")
                                        (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
                                              todays-scheduled-matches (fd/scheduled-matches-on-day cfg/football-data-api-token today)]
                                          (job/post-daily-schedule-to-channel! cfg/discord-message-channel
@@ -58,10 +60,27 @@
                                                                          cfg/referee-emoji
                                                                          todays-scheduled-matches))
                                        (catch Exception e
-                                         (log/error e "Unexpected exception while generating daily schedule"))
+                                         (log/error e "Unexpected exception in daily schedule job"))
                                        (finally
-                                         (log/info "Daily job finished"))))))
-          :stop (.close ^java.lang.AutoCloseable daily-job))
+                                         (log/info "Daily schedule job finished"))))))
+          :stop (.close ^java.lang.AutoCloseable daily-schedule-job))
+
+(defstate dutch-referee-blog-quiz-job
+          :start (let [tomorrow-at-nine-am-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/plus (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days) (tm/hours 9)))
+                       every-day-at-nine-am-UTC (chime/periodic-seq (tm/instant tomorrow-at-nine-am-UTC)
+                                                                    (tm/period 1 :days))]
+                   (log/info (str "Scheduling Dutch referee blog quiz job; first run will be at " (first every-day-at-nine-am-UTC)))
+                   (chime/chime-at every-day-at-nine-am-UTC
+                                   (fn [_]
+                                     (try
+                                       (log/info "Dutch referee blog quiz job started...")
+                                       (job/check-for-new-dutch-referee-blog-quiz-and-post-to-channel! cfg/discord-message-channel
+                                                                                                       cfg/quiz-channel-id)
+                                       (catch Exception e
+                                         (log/error e "Unexpected exception in Dutch referee blog quiz job"))
+                                       (finally
+                                         (log/info "Dutch referee blog quiz job finished"))))))
+          :stop (.close ^java.lang.AutoCloseable dutch-referee-blog-quiz-job))
 
 ; Bot functionality
 (defn start-bot!
