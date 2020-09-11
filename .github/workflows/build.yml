@@ -20,8 +20,6 @@ jobs:
           tools-deps: latest
 
       - name: Construct git info
-        run: clojure -Srepro -Agit-info-edn
+        run: clojure -Srepro -A:git-info-edn
       - name: Check code
-        run: clojure -Srepro -Acheck
-      - name: Check for outdated dependencies
-        run: clojure -Srepro -Aoutdated
+        run: clojure -Srepro -A:check
