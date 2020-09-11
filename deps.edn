@@ -34,8 +34,7 @@
         cheshire/cheshire                   {:mvn/version "5.10.0"}
         clj-pdf/clj-pdf                     {:mvn/version "2.5.4"}
         rm-hull/markov-chains               {:mvn/version "0.1.1"}
-        pmonks/remus                        {:git/url "https://github.com/pmonks/remus.git"
-                                             :sha "2669acbb816ea843e45f4fb64aee0d96fe861e34"}
+        remus/remus                         {:mvn/version "0.2.0"}
        }
  :aliases
    {; clj -A:run -c /path/to/config.edn
