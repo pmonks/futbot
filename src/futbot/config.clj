@@ -107,6 +107,12 @@
 (defstate referee-emoji
           :start (:referee-emoji config))
 
+(defstate quiz-channel-id
+          :start (let [channel-id (:quiz-channel-id config)]
+                   (if-not (s/blank? channel-id)
+                     channel-id
+                     (throw (ex-info "Quiz Discord channel id not provided" {})))))
+
 (def ^:private build-info
   (if-let [deploy-info (io/resource "deploy-info.edn")]
     (edn/read-string (slurp deploy-info))

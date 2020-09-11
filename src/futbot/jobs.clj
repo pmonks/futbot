@@ -17,15 +17,16 @@
 ;
 
 (ns futbot.jobs
-  (:require [clojure.string        :as s]
-            [clojure.java.io       :as io]
-            [clojure.tools.logging :as log]
-            [java-time             :as tm]
-            [chime.core            :as chime]
-            [discljord.messaging   :as dm]
-            [futbot.football-data  :as fd]
-            [futbot.pdf            :as pdf]
-            [futbot.flags          :as fl]))
+  (:require [clojure.string            :as s]
+            [clojure.java.io           :as io]
+            [clojure.tools.logging     :as log]
+            [java-time                 :as tm]
+            [chime.core                :as chime]
+            [discljord.messaging       :as dm]
+            [futbot.football-data      :as fd]
+            [futbot.dutch-referee-blog :as drb]
+            [futbot.pdf                :as pdf]
+            [futbot.flags              :as fl]))
 
 (defn post-daily-schedule-to-channel!
   "Generates and posts the daily-schedule (as an attachment) to the Discord channel identified by channel-id."
@@ -163,3 +164,25 @@
                                                     referee-emoji)
                   (distinct todays-scheduled-matches)))
       (log/info "No matches remaining today - not scheduling any reminders."))))
+
+(defn check-for-new-dutch-referee-blog-quiz-and-post-to-channel!
+  "Checks whether a new Dutch referee blog quiz has been posted in the last time-period-hours hours (defaults to 24), and posts it to the given channel if so."
+  ([discord-message-channel channel-id] (check-for-new-dutch-referee-blog-quiz-and-post-to-channel! discord-message-channel channel-id 24))
+  ([discord-message-channel
+    channel-id
+    time-period-hours]
+   (if-let [new-quizzes (drb/quizzes (tm/minus (tm/instant) (tm/hours time-period-hours)))]
+     (let [message    (str "<:dfb:753769713783537785> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
+                           (:link (first new-quizzes))
+                           "\nPuzzled by an answer? Click the react and we'll discuss!")
+           message-id (:id @(dm/create-message! discord-message-channel   ; Note: dereferences the promise, blocking until the message is sent
+                                                channel-id
+                                                :content message))]
+       (when message-id
+         @(dm/create-reaction! discord-message-channel channel-id message-id "1️⃣")  ; Note: wait for each promise to comnplete, to make sure reactions are added in numerical order
+         @(dm/create-reaction! discord-message-channel channel-id message-id "2️⃣")
+         @(dm/create-reaction! discord-message-channel channel-id message-id "3️⃣")
+         @(dm/create-reaction! discord-message-channel channel-id message-id "4️⃣")
+         @(dm/create-reaction! discord-message-channel channel-id message-id "5️⃣"))
+       nil)
+     (log/info "No new quizzes found"))))
