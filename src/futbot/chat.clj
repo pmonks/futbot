@@ -96,7 +96,7 @@
 (defmethod handle-discord-event :message-create
   [_ event-data]
   ; Only respond to messages sent from a human
-  (if (not (:bot (:author event-data)))
+  (when-not (:bot (:author event-data))
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
       (try
         (let [content (s/triml (:content event-data))]
@@ -109,7 +109,7 @@
                 (do
                   (log/debug (str "Calling public command fn for '" command "' with args '" args "'."))
                   (public-command-fn args event-data))
-                (if-not (:guild-id event-data)
+                (when-not (:guild-id event-data)
                   (if-let [private-command-fn (get private-command-dispatch-table command)]
                     (do
                       (log/debug (str "Calling private command fn for '" command "' with args '" args "'."))
@@ -120,7 +120,7 @@
                         (secret-command-fn args event-data))
                       (help-command! nil event-data))))))   ; If the requested private command doesn't exist, provide help
             ; If any unrecognised message was sent to a DM channel, provide help
-            (if-not (:guild-id event-data)
+            (when-not (:guild-id event-data)
               (help-command! nil event-data))))
         (catch Exception e
           (log/error e))))))

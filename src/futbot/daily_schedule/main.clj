@@ -26,7 +26,7 @@
 (defn -main
   [& args]
   (try
-    (if (not= 1 (count args))
+    (when (not= 1 (count args))
       (u/exit -1 "Please provide a football-data.org API token on the command line."))
 
     (let [football-data-api-token (first args)

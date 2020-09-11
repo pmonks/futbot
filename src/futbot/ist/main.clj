@@ -97,15 +97,14 @@
 
 (defn load-bonus-titles
   []
-  (if-let [bonus-file (io/resource "bonus-titles.edn")]
-    (do
-      (println "bonus-titles.edn found, reading titles...")
-      (edn/read-string (slurp bonus-file)))))
+  (when-let [bonus-file (io/resource "bonus-titles.edn")]
+    (println "bonus-titles.edn found, reading titles...")
+    (edn/read-string (slurp bonus-file))))
 
 (defn -main
   [& args]
   (try
-    (if (not= 1 (count args))
+    (when (not= 1 (count args))
       (u/exit -1 "Please provide a Google API key on the command line."))
 
     (let [google-api-key (first args)

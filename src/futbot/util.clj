@@ -64,7 +64,7 @@
   ([]            (exit 0 nil))
   ([status-code] (exit status-code nil))
   ([status-code message]
-   (if message
+   (when message
      (if (= 0 status-code)
        (println message)
        (binding [*out* *err*]

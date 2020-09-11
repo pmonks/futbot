@@ -57,7 +57,7 @@
       (if current-match
         (do
           ; Control-break row when we see a new utc-date
-          (if (not= last-utc-date (:utc-date current-match))
+          (when (not= last-utc-date (:utc-date current-match))
             (let [utc-date-txt    (tm/format "h:mm a" (tm/zoned-date-time (:utc-date current-match)))
                   utc-date-txt-qs (java.net.URLEncoder/encode ^String utc-date-txt "UTF-8")]
               (swap! result conj [[:cell {:colspan 4 :style :bold :background-color [230 230 230]}
@@ -71,7 +71,7 @@
           (let [country   (s/trim (get-in current-match [:competition :area :code]))
                 flag-url  (fl/image-url country)
                 head2head (:head2head (match-details-fn (:id current-match)))]
-            (swap! result conj [[:cell [:chunk (if flag-url [:image {:scale 2} flag-url])]
+            (swap! result conj [[:cell [:chunk (when flag-url [:image {:scale 2} flag-url])]
                                        (str " " (get-in current-match [:competition :name] "Unknown"))]
                                 (get-in current-match [:home-team :name] "Unknown")
                                 (get-in current-match [:away-team :name] "Unknown")
@@ -95,7 +95,7 @@
   ([match-details-fn day matches] (generate-daily-schedule match-details-fn day matches (doto (java.io.File/createTempFile "futbot-tmp-" ".pdf") (.deleteOnExit))))
   ([match-details-fn day matches pdf-file]
    (log/debug (str "Daily schedule PDF generation started for " (tm/format "yyyy-MM-dd" day) ": " (count matches) " matches."))
-   (if (pos? (count matches))
+   (when (pos? (count matches))
      (let [pdf-data  (generate-daily-schedule-pdf-data-structure match-details-fn day matches)]
        (with-open [pdf-file-os (io/output-stream pdf-file)]
          (pdf/pdf pdf-data

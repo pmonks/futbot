@@ -44,7 +44,7 @@
 (defmethod a/reader 'split
   [_ _ value]
   (let [[s re] value]
-    (if (and s re)
+    (when (and s re)
       (s/split s (re-pattern re)))))
 
 (defstate config
@@ -122,7 +122,7 @@
   (s/trim (:hash build-info)))
 
 (def git-url
-  (if-not (s/blank? git-revision)
+  (when-not (s/blank? git-revision)
     (str "https://github.com/pmonks/futbot/tree/" git-revision)))
 
 (def built-at

@@ -303,7 +303,7 @@
 (defn emoji
   "Returns the emoji flag (a string) for the given country-code (an ISO-3166-1 alpha-2 or alpha-3 code, or one of the 'bonus' 3 letter codes used by football-data.org).  Returns nil for invalid 3-letter codes, or another, non-flag Unicode character for an invalid 2-letter code."
   [country-code]
-  (if country-code
+  (when country-code
     (let [code (s/upper-case (s/trim country-code))]
       (case (count code)
         2 (alpha-2-to-flag code)
