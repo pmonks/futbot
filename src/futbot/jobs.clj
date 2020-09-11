@@ -172,7 +172,7 @@
     channel-id
     time-period-hours]
    (if-let [new-quizzes (drb/quizzes (tm/minus (tm/instant) (tm/hours time-period-hours)))]
-     (let [message    (str "<:dfb:753769713783537785> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
+     (let [message    (str "<:dfb:753779768306040863> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
                            (:link (first new-quizzes))
                            "\nPuzzled by an answer? Click the react and we'll discuss!")
            message-id (:id @(dm/create-message! discord-message-channel   ; Note: dereferences the promise, blocking until the message is sent
