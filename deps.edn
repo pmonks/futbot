@@ -32,7 +32,7 @@
         org.suskalo/discljord               {:mvn/version "1.1.1"}
         http-kit/http-kit                   {:mvn/version "2.4.0"}
         cheshire/cheshire                   {:mvn/version "5.10.0"}
-        clj-pdf/clj-pdf                     {:mvn/version "2.5.4"}
+        clj-pdf/clj-pdf                     {:mvn/version "2.5.5"}
         rm-hull/markov-chains               {:mvn/version "0.1.1"}
         remus/remus                         {:mvn/version "0.2.0"}
        }
