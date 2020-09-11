@@ -17,18 +17,16 @@
 ;
 
 (ns futbot.daily-schedule.main
-  (:require [clojure.string       :as s]
-            [clojure.java.io      :as io]
-            [clojure.stacktrace   :as st]
+  (:require [clojure.stacktrace   :as st]
             [java-time            :as tm]
             [futbot.football-data :as fd]
-            [futbot.pdf          :as pdf]
+            [futbot.pdf           :as pdf]
             [futbot.util          :as u]))
 
 (defn -main
   [& args]
   (try
-    (if (not= 1 (count args))
+    (when (not= 1 (count args))
       (u/exit -1 "Please provide a football-data.org API token on the command line."))
 
     (let [football-data-api-token (first args)

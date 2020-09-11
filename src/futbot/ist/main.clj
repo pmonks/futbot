@@ -41,7 +41,7 @@
          page    1
          result  []]
     (print "Reading page" page)
-    (let [{:keys [status headers body error]} @(http/get (str api-url "&key=" google-api-key))]
+    (let [{:keys [status body error]} @(http/get (str api-url "&key=" google-api-key))]
       (if (or error (not= status 200))
         (throw (ex-info (format "Google API call (%s) failed" (str api-url "&key=REDACTED")) {:status status :body body} error))
         (let [api-response (ch/parse-string body u/clojurise-json-key)
@@ -97,15 +97,14 @@
 
 (defn load-bonus-titles
   []
-  (if-let [bonus-file (io/resource "bonus-titles.edn")]
-    (do
-      (println "bonus-titles.edn found, reading titles...")
-      (edn/read-string (slurp bonus-file)))))
+  (when-let [bonus-file (io/resource "bonus-titles.edn")]
+    (println "bonus-titles.edn found, reading titles...")
+    (edn/read-string (slurp bonus-file))))
 
 (defn -main
   [& args]
   (try
-    (if (not= 1 (count args))
+    (when (not= 1 (count args))
       (u/exit -1 "Please provide a Google API key on the command line."))
 
     (let [google-api-key (first args)

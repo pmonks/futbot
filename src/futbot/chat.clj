@@ -18,12 +18,9 @@
 
 (ns futbot.chat
   (:require [clojure.string        :as s]
-            [clojure.java.io       :as io]
             [clojure.tools.logging :as log]
             [java-time             :as tm]
-            [discljord.connections :as dc]
             [discljord.messaging   :as dm]
-            [discljord.events      :as de]
             [futbot.util           :as u]
             [futbot.config         :as cfg]
             [futbot.ist            :as ist]))
@@ -94,13 +91,12 @@
 ; Responsive fns
 (defmulti handle-discord-event
   "Discord event handler"
-  (fn [event-type event-data]
-    event-type))
+  (fn [event-type _] event-type))
 
 (defmethod handle-discord-event :message-create
-  [event-type event-data]
+  [_ event-data]
   ; Only respond to messages sent from a human
-  (if (not (:bot (:author event-data)))
+  (when-not (:bot (:author event-data))
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
       (try
         (let [content (s/triml (:content event-data))]
@@ -113,7 +109,7 @@
                 (do
                   (log/debug (str "Calling public command fn for '" command "' with args '" args "'."))
                   (public-command-fn args event-data))
-                (if-not (:guild-id event-data)
+                (when-not (:guild-id event-data)
                   (if-let [private-command-fn (get private-command-dispatch-table command)]
                     (do
                       (log/debug (str "Calling private command fn for '" command "' with args '" args "'."))
@@ -124,11 +120,11 @@
                         (secret-command-fn args event-data))
                       (help-command! nil event-data))))))   ; If the requested private command doesn't exist, provide help
             ; If any unrecognised message was sent to a DM channel, provide help
-            (if-not (:guild-id event-data)
+            (when-not (:guild-id event-data)
               (help-command! nil event-data))))
         (catch Exception e
           (log/error e))))))
 
 ; Default Discord event handler (noop)
 (defmethod handle-discord-event :default
-  [event-type event-data])
+  [_ _])

@@ -23,7 +23,7 @@
             [clojure.java.io       :as io]
             [clojure.tools.cli     :as cli]
             [clojure.tools.logging :as log]
-            [mount.core            :as mnt :refer [defstate]]
+            [mount.core            :as mnt]
             [java-time             :as tm]
             [futbot.util           :as u]
             [futbot.core           :as core])
@@ -53,7 +53,7 @@
   (try
     (log/info "Starting futbot on Clojure" (clojure-version) "/" (System/getProperty "java.vm.vendor") "JVM" (System/getProperty "java.vm.version") (str "(" (System/getProperty "os.arch") ")"))
     (log/info "Built at" (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str "from " cfg/git-url) ""))
-    (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
+    (let [{:keys [options errors summary]} (cli/parse-opts args cli-opts)]
       (cond
         (:help options) (u/exit 0 (usage summary))
         errors          (u/exit 1 (str "The following errors occurred while parsing the command line:\n\n"

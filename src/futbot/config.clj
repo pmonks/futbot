@@ -40,11 +40,11 @@
 
 (def boot-time (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))))
 
+; Adds a #split reader macro to aero - see https://github.com/juxt/aero/issues/55
 (defmethod a/reader 'split
-  [opts tag value]
-  "Adds a #split reader macro to aero - see https://github.com/juxt/aero/issues/55"
+  [_ _ value]
   (let [[s re] value]
-    (if (and s re)
+    (when (and s re)
       (s/split s (re-pattern re)))))
 
 (defstate config
@@ -107,6 +107,12 @@
 (defstate referee-emoji
           :start (:referee-emoji config))
 
+(defstate quiz-channel-id
+          :start (let [channel-id (:quiz-channel-id config)]
+                   (if-not (s/blank? channel-id)
+                     channel-id
+                     (throw (ex-info "Quiz Discord channel id not provided" {})))))
+
 (def ^:private build-info
   (if-let [deploy-info (io/resource "deploy-info.edn")]
     (edn/read-string (slurp deploy-info))
@@ -116,7 +122,7 @@
   (s/trim (:hash build-info)))
 
 (def git-url
-  (if-not (s/blank? git-revision)
+  (when-not (s/blank? git-revision)
     (str "https://github.com/pmonks/futbot/tree/" git-revision)))
 
 (def built-at
