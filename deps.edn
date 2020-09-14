@@ -57,7 +57,7 @@
 ;    :outdated {:extra-deps {olical/depot {:mvn/version "2.0.1"}}   ; Depot is no longer maintained
 ;               :main-opts  ["-m" "depot.outdated.main"]}
     ; clj -A:uberjar
-    :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.116"}}
+    :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.117"}}
                :main-opts ["-m" "hf.depstar.uberjar" "./target/futbot-standalone.jar" "-C" "-m" "futbot.main"]}
     }
 }
