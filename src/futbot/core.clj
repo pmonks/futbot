@@ -66,8 +66,12 @@
           :stop (.close ^java.lang.AutoCloseable daily-schedule-job))
 
 (defstate dutch-referee-blog-quiz-job
-          :start (let [tomorrow-at-nine-am-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/plus (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days) (tm/hours 9)))
-                       every-day-at-nine-am-UTC (chime/periodic-seq (tm/instant tomorrow-at-nine-am-UTC)
+          :start (let [next-nine-am-UTC         (let [now-UTC              (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+                                                      today-at-nine-am-UTC (tm/with-clock (tm/system-clock "UTC") (tm/plus (tm/truncate-to now-UTC :days) (tm/hours 9)))]
+                                                  (if (tm/before? now-UTC today-at-nine-am-UTC)
+                                                    today-at-nine-am-UTC
+                                                    (tm/plus today-at-nine-am-UTC (tm/days 1))))
+                       every-day-at-nine-am-UTC (chime/periodic-seq (tm/instant next-nine-am-UTC)
                                                                     (tm/period 1 :days))]
                    (log/info (str "Scheduling Dutch referee blog quiz job; first run will be at " (first every-day-at-nine-am-UTC)))
                    (chime/chime-at every-day-at-nine-am-UTC

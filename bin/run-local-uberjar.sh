@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+source ./bin/clean.sh
 source ./bin/build
 
 # Use a low memory ceiling to emulate Heroku dyno environment
