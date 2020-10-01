@@ -37,24 +37,24 @@
         remus/remus                         {:mvn/version "0.2.0"}
        }
  :aliases
-   {; clj -A:run -c /path/to/config.edn
+   {; clj -M:run -c /path/to/config.edn
     :run {:main-opts ["-m" "futbot.main"]}
-    ; clj -A:gen-ist-markov google-api-key
+    ; clj -M:gen-ist-markov google-api-key
     :gen-ist-markov {:main-opts ["-m" "futbot.ist.main"]}
-    ; clj -A:gen-daily-schedule football-data-token
+    ; clj -M:gen-daily-schedule football-data-token
     :gen-daily-schedule {:main-opts ["-m" "futbot.daily-schedule.main"]}
-    ; clj -A:check
+    ; clj -M:check
     :check    {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git"
                                              :sha     "cd1f25456de5eebda0a69602dd3445905382b3a4"}}
                :main-opts  ["-m" "clj-check.check"]}
-    ; clj -A:git-info-edn
+    ; clj -M:git-info-edn
     :git-info-edn {:extra-deps {noisesmith/lein-git-info-edn {:git/url "https://github.com/noisesmith/lein-git-info-edn.git"
                                                               :sha     "beb66c0935273c5b7e5129062027984473eb8e02"}}
                    :main-opts ["-m" "leiningen.git-info-edn"]}
-    ; clj -A:outdated
+    ; clj -M:outdated
     :outdated {:extra-deps {antq/antq {:mvn/version "0.7.3"}}
                :main-opts ["-m" "antq.core"]}
-    ; clj -A:uberjar
+    ; clj -M:uberjar
     :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.117"}}
                :main-opts ["-m" "hf.depstar.uberjar" "./target/futbot-standalone.jar" "-C" "-m" "futbot.main"]}
     }
