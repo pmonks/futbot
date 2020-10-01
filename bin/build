@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 clojure -Srepro -e '(println "Dependencies downloaded")'
-clojure -Srepro -A:git-info-edn
+clojure -Srepro -M:git-info-edn
 clojure -Srepro -Spom
-clojure -Srepro -A:uberjar
+clojure -Srepro -M:uberjar
