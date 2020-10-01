@@ -45,14 +45,14 @@
     :gen-daily-schedule {:main-opts ["-m" "futbot.daily-schedule.main"]}
     ; clj -A:check
     :check    {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git"
-                                             :sha     "0f734f560dd989b2ec0f9078cc646476bfdab4e1"}}
+                                             :sha     "cd1f25456de5eebda0a69602dd3445905382b3a4"}}
                :main-opts  ["-m" "clj-check.check"]}
     ; clj -A:git-info-edn
     :git-info-edn {:extra-deps {noisesmith/lein-git-info-edn {:git/url "https://github.com/noisesmith/lein-git-info-edn.git"
                                                               :sha     "beb66c0935273c5b7e5129062027984473eb8e02"}}
                    :main-opts ["-m" "leiningen.git-info-edn"]}
     ; clj -A:outdated
-    :outdated {:extra-deps {antq/antq {:mvn/version "0.7.2"}}
+    :outdated {:extra-deps {antq/antq {:mvn/version "0.7.3"}}
                :main-opts ["-m" "antq.core"]}
     ; clj -A:uberjar
     :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.117"}}
