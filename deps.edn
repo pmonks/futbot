@@ -55,7 +55,7 @@
     :outdated {:extra-deps {antq/antq {:mvn/version "0.7.4"}}
                :main-opts ["-m" "antq.core"]}
     ; clj -M:uberjar
-    :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.126"}}
+    :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.128"}}
                :main-opts ["-m" "hf.depstar.uberjar" "./target/futbot-standalone.jar" "-C" "-m" "futbot.main"]}
     }
 }
