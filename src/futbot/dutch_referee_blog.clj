@@ -28,8 +28,9 @@
   "Returns a sequence of maps representing all of the quizzes in the Dutch Referee Blog's RSS feed, optionally since the given date, or nil if there aren't any."
   ([] (quizzes nil))
   ([since]
-    (when-let [all-quizzes (seq (filter #(s/index-of (:title %) quiz-title-substring)
-                                      (:entries (:feed (rss/parse-url dutch-referee-blog-rss-feed-url)))))]
-      (if since
-        (seq (filter #(tm/after? (tm/instant (:published-date %)) (tm/instant since)) all-quizzes))
-        all-quizzes))))
+    (seq
+      (when-let [all-quizzes (filter #(s/index-of (:title %) quiz-title-substring)
+                                     (:entries (:feed (rss/parse-url dutch-referee-blog-rss-feed-url))))]
+        (if since
+          (filter #(tm/after? (tm/instant (:published-date %)) (tm/instant since)) all-quizzes)
+          all-quizzes)))))
