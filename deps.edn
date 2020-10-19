@@ -34,7 +34,7 @@
         cheshire/cheshire                   {:mvn/version "5.10.0"}
         clj-pdf/clj-pdf                     {:mvn/version "2.5.5"}
         rm-hull/markov-chains               {:mvn/version "0.1.1"}
-        remus/remus                         {:mvn/version "0.2.0"}
+        remus/remus                         {:mvn/version "0.2.1"}
        }
  :aliases
    {; clj -M:run -c /path/to/config.edn
@@ -55,7 +55,7 @@
     :outdated {:extra-deps {antq/antq {:mvn/version "0.7.4"}}
                :main-opts ["-m" "antq.core"]}
     ; clj -M:uberjar
-    :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.126"}}
+    :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.128"}}
                :main-opts ["-m" "hf.depstar.uberjar" "./target/futbot-standalone.jar" "-C" "-m" "futbot.main"]}
     }
 }
