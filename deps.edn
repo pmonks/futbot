@@ -34,7 +34,7 @@
         cheshire/cheshire                   {:mvn/version "5.10.0"}
         clj-pdf/clj-pdf                     {:mvn/version "2.5.5"}
         rm-hull/markov-chains               {:mvn/version "0.1.1"}
-        remus/remus                         {:mvn/version "0.2.0"}
+        remus/remus                         {:mvn/version "0.2.1"}
        }
  :aliases
    {; clj -M:run -c /path/to/config.edn
