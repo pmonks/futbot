@@ -25,6 +25,7 @@
             [discljord.messaging       :as dm]
             [futbot.football-data      :as fd]
             [futbot.dutch-referee-blog :as drb]
+            [futbot.cnra               :as cnra]
             [futbot.pdf                :as pdf]
             [futbot.flags              :as fl]))
 
@@ -185,4 +186,19 @@
          @(dm/create-reaction! discord-message-channel channel-id message-id "4️⃣")
          @(dm/create-reaction! discord-message-channel channel-id message-id "5️⃣"))
        nil)
-     (log/info "No new quizzes found"))))
+     (log/info "No new Dutch referee blog quizzes found"))))
+
+(defn check-for-new-cnra-quiz-and-post-to-channel!
+  "Checks whether a new CNRA quiz has been posted since the first of the month, and posts it to the given channel if so."
+  [discord-message-channel channel-id]
+  (if-let [new-quizzes (cnra/quizzes (tm/adjust (tm/local-date) :first-day-of-month))]
+    (let [message    (str "<:cnra:769311341751959562> A new **CNRA Quiz** has been posted, on the topic of **"
+                          (:topic (first new-quizzes))
+                          "**: "
+                          (:link (first new-quizzes))
+                          "\nPuzzled by an answer? React or comment and we can discuss!")]
+      (dm/create-message! discord-message-channel
+                          channel-id
+                          :content message)
+      nil)
+    (log/info "No new CNRA quizzes found")))
