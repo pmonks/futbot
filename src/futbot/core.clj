@@ -65,7 +65,7 @@
                                          (log/info "Daily schedule job finished"))))))
           :stop (.close ^java.lang.AutoCloseable daily-schedule-job))
 
-; This job runs in Europe/Amsterdam timezone, since that's wheer the Dutch Referee Blog is located
+; This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
 (defstate dutch-referee-blog-quiz-job
           :start (let [next-nine-am         (let [now              (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/zoned-date-time))
                                                   today-at-nine-am (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
