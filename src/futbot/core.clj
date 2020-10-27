@@ -65,16 +65,17 @@
                                          (log/info "Daily schedule job finished"))))))
           :stop (.close ^java.lang.AutoCloseable daily-schedule-job))
 
+; This job runs in Europe/Amsterdam timezone, since that's wheer the Dutch Referee Blog is located
 (defstate dutch-referee-blog-quiz-job
-          :start (let [next-nine-am-UTC         (let [now-UTC              (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
-                                                      today-at-nine-am-UTC (tm/with-clock (tm/system-clock "UTC") (tm/plus (tm/truncate-to now-UTC :days) (tm/hours 9)))]
-                                                  (if (tm/before? now-UTC today-at-nine-am-UTC)
-                                                    today-at-nine-am-UTC
-                                                    (tm/plus today-at-nine-am-UTC (tm/days 1))))
-                       every-day-at-nine-am-UTC (chime/periodic-seq (tm/instant next-nine-am-UTC)
-                                                                    (tm/period 1 :days))]
-                   (log/info (str "Scheduling Dutch referee blog quiz job; first run will be at " (first every-day-at-nine-am-UTC)))
-                   (chime/chime-at every-day-at-nine-am-UTC
+          :start (let [next-nine-am         (let [now              (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/zoned-date-time))
+                                                  today-at-nine-am (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
+                                              (if (tm/before? now today-at-nine-am)
+                                                today-at-nine-am
+                                                (tm/plus today-at-nine-am (tm/days 1))))
+                       every-day-at-nine-am (chime/periodic-seq next-nine-am
+                                                                (tm/period 1 :days))]
+                   (log/info (str "Scheduling Dutch referee blog quiz job; first run will be at " (first every-day-at-nine-am)))
+                   (chime/chime-at every-day-at-nine-am
                                    (fn [_]
                                      (try
                                        (log/info "Dutch referee blog quiz job started...")
@@ -85,6 +86,28 @@
                                        (finally
                                          (log/info "Dutch referee blog quiz job finished"))))))
           :stop (.close ^java.lang.AutoCloseable dutch-referee-blog-quiz-job))
+
+; This job runs in America/Los_Angeles timezone, since that's where CNRA is located
+(defstate cnra-quiz-job
+          :start (let [next-16th-of-the-month-at-midnight  (let [now                                (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/zoned-date-time))
+                                                                 sixteenth-of-the-month-at-midnight (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/truncate-to (tm/plus (tm/adjust now :first-day-of-month) (tm/days 15)) :days))]
+                                                             (if (tm/before? now sixteenth-of-the-month-at-midnight)
+                                                               sixteenth-of-the-month-at-midnight
+                                                               (tm/plus sixteenth-of-the-month-at-midnight (tm/months 1))))
+                       sixteenth-of-every-month-at-midnight (chime/periodic-seq next-16th-of-the-month-at-midnight
+                                                                                (tm/period 1 :months))]
+                   (log/info (str "Scheduling CNRA quiz job; first run will be at " (first sixteenth-of-every-month-at-midnight)))
+                   (chime/chime-at sixteenth-of-every-month-at-midnight
+                                   (fn [_]
+                                     (try
+                                       (log/info "CNRA quiz job started...")
+                                       (job/check-for-new-cnra-quiz-and-post-to-channel! cfg/discord-message-channel
+                                                                                         cfg/quiz-channel-id)
+                                       (catch Exception e
+                                         (log/error e "Unexpected exception in CNRA quiz job"))
+                                       (finally
+                                         (log/info "CNRA quiz job finished"))))))
+          :stop (.close ^java.lang.AutoCloseable cnra-quiz-job))
 
 ; Bot functionality
 (defn start-bot!
