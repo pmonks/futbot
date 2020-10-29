@@ -23,7 +23,7 @@
             [discljord.messaging   :as dm]
             [futbot.util           :as u]
             [futbot.config         :as cfg]
-            [futbot.ist            :as ist]))
+            [futbot.source.ist     :as ist]))
 
 (def prefix "!")
 

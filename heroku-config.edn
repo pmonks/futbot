@@ -45,5 +45,17 @@
     "Timothy Ford"      "<:timford:732030914607186010>"
   }
 
-  :quiz-channel-id "686439362291826694"  ; Refereeing > training-and-resources
+  :quiz-channel-id  "771086596644274216"  ; Refereeing > quizzes-and-videos
+  :video-channel-id "771086596644274216"  ; Refereeing > quizzes-and-videos
+
+  :youtube-api-token #env YOUTUBE_API_TOKEN
+  :youtube-channels [
+    "UCxdPyM0KXNhXGUChb1FaJSA"   ; Football Victoria Referees
+    "UCosXVB8eY3iF26k6iTHW9gw"   ; CONCACAF Center of Refereeing Excellence
+    "UCRvL3eeBF3MFGFn6vnqR0nw"   ; WASRC Webinars
+    "UCcMv5IAlVBy-7oHt7pdiLxQ"   ; RWISOA Referees
+    "UCH4fZCsZ3_4rPIzEeLbcLGA"   ; Ahmed Habib's Referee Channel
+    "UCjlAAUxk70KurpcLWcFL8Mg"   ; Victor Karimi's Referee Channel
+    "UCmzFaEBQlLmMTWS0IQ90tgA"   ; IST
+  ]
 }

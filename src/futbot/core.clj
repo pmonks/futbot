@@ -17,15 +17,15 @@
 ;
 
 (ns futbot.core
-  (:require [clojure.tools.logging :as log]
-            [mount.core            :as mnt :refer [defstate]]
-            [java-time             :as tm]
-            [chime.core            :as chime]
-            [discljord.events      :as de]
-            [futbot.config         :as cfg]
-            [futbot.football-data  :as fd]
-            [futbot.jobs           :as job]
-            [futbot.chat           :as chat]))
+  (:require [clojure.tools.logging       :as log]
+            [mount.core                  :as mnt :refer [defstate]]
+            [java-time                   :as tm]
+            [chime.core                  :as chime]
+            [discljord.events            :as de]
+            [futbot.config               :as cfg]
+            [futbot.source.football-data :as fd]
+            [futbot.jobs                 :as job]
+            [futbot.chat                 :as chat]))
 
 (defstate gc-job
           :start (let [seven-past-the-hour-UTC               (tm/with-clock (tm/system-clock "UTC") (tm/plus (tm/truncate-to (tm/zoned-date-time) :hours) (tm/minutes 7)))
@@ -65,7 +65,7 @@
                                          (log/info "Daily schedule job finished"))))))
           :stop (.close ^java.lang.AutoCloseable daily-schedule-job))
 
-; This job runs in Europe/Amsterdam timezone, since that's wheer the Dutch Referee Blog is located
+; This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
 (defstate dutch-referee-blog-quiz-job
           :start (let [next-nine-am         (let [now              (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/zoned-date-time))
                                                   today-at-nine-am (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
@@ -108,6 +108,45 @@
                                        (finally
                                          (log/info "CNRA quiz job finished"))))))
           :stop (.close ^java.lang.AutoCloseable cnra-quiz-job))
+
+(defn schedule-youtube-job
+  [job-time youtube-channel-id]
+  (let [youtube-channel-name (:title (get cfg/youtube-channels-info youtube-channel-id))]
+    (log/info (str "Scheduling Youtube channel " youtube-channel-name " job; first run will be at " job-time))
+    (chime/chime-at (chime/periodic-seq job-time (tm/period 1 :days))
+                    (fn [_]
+                      (try
+                        (log/info (str "Youtube channel " youtube-channel-name " job started..."))
+                        (job/check-for-new-youtube-video-and-post-to-channel! cfg/youtube-api-token
+                                                                              cfg/discord-message-channel
+                                                                              cfg/video-channel-id
+                                                                              youtube-channel-id
+                                                                              cfg/youtube-channels-info)
+                        (catch Exception e
+                          (log/error e (str "Unexpected exception in Youtube channel " youtube-channel-name " job")))
+                        (finally
+                          (log/info (str "Youtube channel " youtube-channel-name " job finished"))))))))
+
+(defstate youtube-jobs
+          :start (let [interval     (int (/ (* 24 60) (count cfg/youtube-channels)))
+                       now-UTC      (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+                       midnight-UTC (tm/truncate-to now-UTC :days)]
+                   (loop [f      (first cfg/youtube-channels)
+                          r      (rest cfg/youtube-channels)
+                          index  1
+                          result []]
+                     (let [job-time (tm/plus midnight-UTC (tm/minutes (* index interval)))
+                           job-time (if (tm/before? job-time now-UTC)
+                                      (tm/plus job-time (tm/days 1))
+                                      job-time)]
+                       (if-not f
+                         result
+                         (recur (first r)
+                                (rest r)
+                                (inc index)
+                                (conj result (schedule-youtube-job job-time f)))))))
+          :stop (doall (map #(.close ^java.lang.AutoCloseable %) youtube-jobs)))
+
 
 ; Bot functionality
 (defn start-bot!

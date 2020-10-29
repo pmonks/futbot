@@ -16,7 +16,7 @@
 ; SPDX-License-Identifier: Apache-2.0
 ;
 
-(ns futbot.football-data
+(ns futbot.source.football-data
   (:require [clojure.string        :as s]
             [clojure.tools.logging :as log]
             [java-time             :as tm]
