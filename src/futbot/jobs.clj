@@ -17,17 +17,18 @@
 ;
 
 (ns futbot.jobs
-  (:require [clojure.string            :as s]
-            [clojure.java.io           :as io]
-            [clojure.tools.logging     :as log]
-            [java-time                 :as tm]
-            [chime.core                :as chime]
-            [discljord.messaging       :as dm]
-            [futbot.football-data      :as fd]
-            [futbot.dutch-referee-blog :as drb]
-            [futbot.cnra               :as cnra]
-            [futbot.pdf                :as pdf]
-            [futbot.flags              :as fl]))
+  (:require [clojure.string                   :as s]
+            [clojure.java.io                  :as io]
+            [clojure.tools.logging            :as log]
+            [java-time                        :as tm]
+            [chime.core                       :as chime]
+            [discljord.messaging              :as dm]
+            [futbot.source.football-data      :as fd]
+            [futbot.source.dutch-referee-blog :as drb]
+            [futbot.source.cnra               :as cnra]
+            [futbot.source.youtube            :as yt]
+            [futbot.pdf                       :as pdf]
+            [futbot.flags                     :as fl]))
 
 (defn post-daily-schedule-to-channel!
   "Generates and posts the daily-schedule (as an attachment) to the Discord channel identified by channel-id."
@@ -175,7 +176,7 @@
    (if-let [new-quizzes (drb/quizzes (tm/minus (tm/instant) (tm/hours time-period-hours)))]
      (let [message    (str "<:dfb:753779768306040863> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
                            (:link (first new-quizzes))
-                           "\nPuzzled by an answer? Click the react and we'll discuss!")
+                           "\nPuzzled by an answer? Click the react and we'll discuss in <#686439362291826694>!")
            message-id (:id @(dm/create-message! discord-message-channel   ; Note: dereferences the promise, blocking until the message is sent
                                                 channel-id
                                                 :content message))]
@@ -196,9 +197,28 @@
                           (:topic (first new-quizzes))
                           "**: "
                           (:link (first new-quizzes))
-                          "\nPuzzled by an answer? React or comment and we can discuss!")]
+                          "\nPuzzled by an answer? React and we'll discuss in <#686439362291826694>!")]
       (dm/create-message! discord-message-channel
                           channel-id
                           :content message)
       nil)
     (log/info "No new CNRA quizzes found")))
+
+(defn check-for-new-youtube-video-and-post-to-channel!
+  "Checks whether any new videos have been posted to the given Youtube channel in the last day, and posts it to the given Discord channel if so."
+  [youtube-api-token discord-message-channel discord-channel-id youtube-channel-id youtube-channel-info-fn]
+  (if-let [new-videos (yt/videos youtube-api-token
+                                 (tm/minus (tm/instant) (tm/days 1))
+                                 youtube-channel-id)]
+    (do
+      (doall (map #(let [message (str (if (= youtube-channel-id "UCmzFaEBQlLmMTWS0IQ90tgA") "<:ist:733173880403001394>" "<:youtube:771103353454460938>")
+                                      " A new **" (:title (youtube-channel-info-fn youtube-channel-id)) "** Youtube video has been posted: **"
+                                      (:title %)
+                                      "**: https://www.youtube.com/watch?v=" (:id %)
+                                      "\nDiscuss in <#686439362291826694>!")]
+                     (dm/create-message! discord-message-channel
+                                         discord-channel-id
+                                         :content message))
+                  new-videos))
+      nil)
+    (log/info (str "No new " (:title (youtube-channel-info-fn youtube-channel-id)) " Youtube videos found"))))

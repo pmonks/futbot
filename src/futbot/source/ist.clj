@@ -16,7 +16,7 @@
 ; SPDX-License-Identifier: Apache-2.0
 ;
 
-(ns futbot.ist
+(ns futbot.source.ist
   (:require [clojure.string     :as s]
             [clojure.java.io    :as io]
             [clojure.edn        :as edn]

@@ -16,7 +16,7 @@
 ; SPDX-License-Identifier: Apache-2.0
 ;
 
-(ns futbot.dutch-referee-blog
+(ns futbot.source.dutch-referee-blog
   (:require [clojure.string :as s]
             [java-time      :as tm]
             [remus          :as rss]))

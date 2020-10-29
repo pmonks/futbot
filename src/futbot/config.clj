@@ -26,7 +26,8 @@
             [aero.core             :as a]
             [mount.core            :as mnt :refer [defstate]]
             [discljord.connections :as dc]
-            [discljord.messaging   :as dm]))
+            [discljord.messaging   :as dm]
+            [futbot.source.youtube :as yt]))
 
 ; Because java.util.logging is a hot mess
 (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
@@ -112,6 +113,24 @@
                    (if-not (s/blank? channel-id)
                      channel-id
                      (throw (ex-info "Quiz Discord channel id not provided" {})))))
+
+(defstate video-channel-id
+          :start (let [channel-id (:video-channel-id config)]
+                   (if-not (s/blank? channel-id)
+                     channel-id
+                     (throw (ex-info "Video Discord channel id not provided" {})))))
+
+(defstate youtube-api-token
+          :start (let [token (:youtube-api-token config)]
+                   (if-not (s/blank? token)
+                     token
+                     (throw (ex-info "Youtube API token not provided" {})))))
+
+(defstate youtube-channels
+          :start (seq (:youtube-channels config)))
+
+(defstate youtube-channels-info
+          :start (apply assoc nil (mapcat (fn [youtube-channel-id] [youtube-channel-id (yt/channel-info youtube-api-token youtube-channel-id)]) youtube-channels)))
 
 (def ^:private build-info
   (if-let [deploy-info (io/resource "deploy-info.edn")]

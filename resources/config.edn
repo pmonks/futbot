@@ -17,5 +17,9 @@
 
   :referee-emoji {}  ; TODO: Figure out how to parse a map out of an environment variable using aero...
 
-  :quiz-channel-id #env QUIZ_DISCORD_CHANNEL_ID
+  :quiz-channel-id  #env QUIZ_DISCORD_CHANNEL_ID
+  :video-channel-id #env VIDEO_DISCORD_CHANNEL_ID
+
+  :youtube-api-token #env YOUTUBE_API_TOKEN
+  :youtube-channels #split [#env MUTED_LEAGUES "\\s*,\\s*"]
 }

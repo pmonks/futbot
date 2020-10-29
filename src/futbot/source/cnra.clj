@@ -16,7 +16,7 @@
 ; SPDX-License-Identifier: Apache-2.0
 ;
 
-(ns futbot.cnra
+(ns futbot.source.cnra
   (:require [clojure.string :as s]
             [java-time      :as tm]
             [remus          :as rss]
