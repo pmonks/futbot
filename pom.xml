@@ -10,7 +10,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.clojars.pmonks</groupId>
   <artifactId>futbot</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.117</version>
   <name>futbot</name>
   <description>A Discord bot that delivers football (soccer) information to Discord.</description>
   <url>https://github.com/pmonks/futbot</url>

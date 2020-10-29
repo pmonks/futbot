@@ -204,6 +204,10 @@
       nil)
     (log/info "No new CNRA quizzes found")))
 
+(def ist-youtube-channel-id                    "UCmzFaEBQlLmMTWS0IQ90tgA")
+(def training-and-resources-discord-channel-id "<#686439362291826694>")
+(def memes-and-junk-discord-channel-id         "<#683853455038742610>")
+
 (defn check-for-new-youtube-video-and-post-to-channel!
   "Checks whether any new videos have been posted to the given Youtube channel in the last day, and posts it to the given Discord channel if so."
   [youtube-api-token discord-message-channel discord-channel-id youtube-channel-id youtube-channel-info-fn]
@@ -211,11 +215,13 @@
                                  (tm/minus (tm/instant) (tm/days 1))
                                  youtube-channel-id)]
     (do
-      (doall (map #(let [message (str (if (= youtube-channel-id "UCmzFaEBQlLmMTWS0IQ90tgA") "<:ist:733173880403001394>" "<:youtube:771103353454460938>")
+      (doall (map #(let [message (str (if (= youtube-channel-id ist-youtube-channel-id) "<:ist:733173880403001394>" "<:youtube:771103353454460938>")
                                       " A new **" (:title (youtube-channel-info-fn youtube-channel-id)) "** Youtube video has been posted: **"
                                       (:title %)
                                       "**: https://www.youtube.com/watch?v=" (:id %)
-                                      "\nDiscuss in <#686439362291826694>!")]
+                                      "\nDiscuss in "
+                                      (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-id training-and-resources-discord-channel-id)
+                                      "!")]
                      (dm/create-message! discord-message-channel
                                          discord-channel-id
                                          :content message))
