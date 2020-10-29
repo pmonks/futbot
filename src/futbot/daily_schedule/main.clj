@@ -17,11 +17,11 @@
 ;
 
 (ns futbot.daily-schedule.main
-  (:require [clojure.stacktrace   :as st]
-            [java-time            :as tm]
-            [futbot.football-data :as fd]
-            [futbot.pdf           :as pdf]
-            [futbot.util          :as u]))
+  (:require [clojure.stacktrace          :as st]
+            [java-time                   :as tm]
+            [futbot.source.football-data :as fd]
+            [futbot.pdf                  :as pdf]
+            [futbot.util                 :as u]))
 
 (defn -main
   [& args]

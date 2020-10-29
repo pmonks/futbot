@@ -7,7 +7,7 @@
 
 # futbot
 
-A small [Discord](https://discord.com/) bot that provides football (soccer) competition information sourced from [football-data.org](https://www.football-data.org/), as well as posting new LotG quizzes posted by the [Dutch Referee Blog](https://www.dutchreferee.com/) and [CNRA](http://www.cnra.net/monthly-video-quizzes/).  This bot has been deployed to the [Referee Discord Server](https://invite.gg/referees), and was specifically designed and implemented for that community, and may therefore have limited utility elsewhere.
+A small [Discord](https://discord.com/) bot that provides football (soccer) competition information sourced from [football-data.org](https://www.football-data.org/), as well as posting new LotG quizzes posted by the [Dutch Referee Blog](https://www.dutchreferee.com/) and [CNRA](http://www.cnra.net/monthly-video-quizzes/), and videos posted by [a number of referee-focused Youtube channels](https://github.com/pmonks/futbot/blob/main/heroku-config.edn).  This bot has been deployed to the [Referee Discord Server](https://invite.gg/referees), and was specifically designed and implemented for that community, and may therefore have limited utility elsewhere.
 
 The bot also has a small, but growing number of ["responsive functions"](https://github.com/pmonks/futbot/milestone/2?closed=1) - command messages that it will respond to in any channels it has been added to.
 
@@ -21,7 +21,7 @@ Configure a Discord bot using the [Discord developer portal](https://discord.com
 
 Obtain an API key for [football-data.org](https://football-data.org/).
 
-If you wish to regenerate the [IST Markov chain](https://github.com/pmonks/futbot/blob/main/resources/ist-markov-chain.edn), you will also need a [Google API key](https://developers.google.com/youtube/registering_an_application).
+Obtain a [Google API key](https://developers.google.com/youtube/registering_an_application).
 
 ### Running the Bot
 
