@@ -18,3 +18,4 @@ resources/deploy-info.edn
 .eastwood
 titles-*.edn
 daily-schedule-*.pdf
+attic/

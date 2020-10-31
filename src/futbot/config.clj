@@ -130,7 +130,15 @@
           :start (seq (:youtube-channels config)))
 
 (defstate youtube-channels-info
-          :start (apply assoc nil (mapcat (fn [youtube-channel-id] [youtube-channel-id (yt/channel-info youtube-api-token youtube-channel-id)]) youtube-channels)))
+          :start (apply assoc nil (mapcat (fn [youtube-channel-id]
+                                            (try
+                                              [youtube-channel-id (yt/channel-info youtube-api-token youtube-channel-id)]
+                                              (catch Exception e
+                                                (log/warn e (str "Error retrieving Youtube channel info for " youtube-channel-id
+                                                                 ": status code=" (:status (ex-data e))
+                                                                 ", message="     (:message (:error (:body (ex-data e))))))
+                                                [youtube-channel-id nil])))
+                                          youtube-channels)))
 
 (def ^:private build-info
   (if-let [deploy-info (io/resource "deploy-info.edn")]
