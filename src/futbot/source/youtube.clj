@@ -35,7 +35,7 @@
         _                           (log/debug "Calling" (str api-url "&key=REDACTED"))
         {:keys [status body error]} @(http/get (str api-url "&key=" youtube-api-token) options)]
     (if (or error (not= status 200))
-      (throw (ex-info (format "Google API call (%s) failed" (str api-url "&key=REDACTED")) {:status status :body body} error))
+      (throw (ex-info (format "Google API call (%s) failed" (str api-url "&key=REDACTED")) {:status status :body (ch/parse-string body u/clojurise-json-key)} error))
       (ch/parse-string body u/clojurise-json-key))))
 
 (defn channel-info

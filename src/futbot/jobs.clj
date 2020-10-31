@@ -215,8 +215,11 @@
                                  (tm/minus (tm/instant) (tm/days 1))
                                  youtube-channel-id)]
     (do
-      (doall (map #(let [message (str (if (= youtube-channel-id ist-youtube-channel-id) "<:ist:733173880403001394>" "<:youtube:771103353454460938>")
-                                      " A new **" (:title (youtube-channel-info-fn youtube-channel-id)) "** Youtube video has been posted: **"
+      (doall (map #(let [channel-title (:title (youtube-channel-info-fn youtube-channel-id))
+                         message (str (if (= youtube-channel-id ist-youtube-channel-id) "<:ist:733173880403001394>" "<:youtube:771103353454460938>")
+                                      (if channel-title
+                                        (str " A new **" channel-title "** Youtube video has been posted: **")
+                                        " A new Youtube video has been posted: **")
                                       (:title %)
                                       "**: https://www.youtube.com/watch?v=" (:id %)
                                       "\nDiscuss in "
