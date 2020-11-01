@@ -111,7 +111,7 @@
 
 (defn schedule-youtube-job
   [job-time youtube-channel-id]
-  (let [youtube-channel-name (:title (get cfg/youtube-channels-info youtube-channel-id {:title "Unknown"}))]
+  (let [youtube-channel-name (get-in cfg/youtube-channels-info [youtube-channel-id :title] "-unknown-")]
     (log/info (str "Scheduling Youtube channel " youtube-channel-name " job; first run will be at " job-time))
     (chime/chime-at (chime/periodic-seq job-time (tm/period 1 :days))
                     (fn [_]
