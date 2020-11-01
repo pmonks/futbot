@@ -211,23 +211,23 @@
 (defn check-for-new-youtube-video-and-post-to-channel!
   "Checks whether any new videos have been posted to the given Youtube channel in the last day, and posts it to the given Discord channel if so."
   [youtube-api-token discord-message-channel discord-channel-id youtube-channel-id youtube-channel-info-fn]
-  (if-let [new-videos (yt/videos youtube-api-token
-                                 (tm/minus (tm/instant) (tm/days 1))
-                                 youtube-channel-id)]
-    (do
-      (doall (map #(let [channel-title (:title (youtube-channel-info-fn youtube-channel-id))
-                         message (str (if (= youtube-channel-id ist-youtube-channel-id) "<:ist:733173880403001394>" "<:youtube:771103353454460938>")
-                                      (if channel-title
-                                        (str " A new **" channel-title "** Youtube video has been posted: **")
-                                        " A new Youtube video has been posted: **")
-                                      (:title %)
-                                      "**: https://www.youtube.com/watch?v=" (:id %)
-                                      "\nDiscuss in "
-                                      (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-id training-and-resources-discord-channel-id)
-                                      "!")]
-                     (dm/create-message! discord-message-channel
-                                         discord-channel-id
-                                         :content message))
-                  new-videos))
-      nil)
-    (log/info (str "No new " (:title (youtube-channel-info-fn youtube-channel-id)) " Youtube videos found"))))
+  (let [channel-title (get (youtube-channel-info-fn youtube-channel-id) :title "-unknown-")]
+    (if-let [new-videos (yt/videos youtube-api-token
+                                   (tm/minus (tm/instant) (tm/days 1))
+                                   youtube-channel-id)]
+      (do
+        (doall (map #(let [message (str (if (= youtube-channel-id ist-youtube-channel-id) "<:ist:733173880403001394>" "<:youtube:771103353454460938>")
+                                        (if (not= channel-title "-unknown-")
+                                          (str " A new **" channel-title "** Youtube video has been posted: **")
+                                          " A new Youtube video has been posted: **")
+                                        (:title %)
+                                        "**: https://www.youtube.com/watch?v=" (:id %)
+                                        "\nDiscuss in "
+                                        (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-id training-and-resources-discord-channel-id)
+                                        "!")]
+                       (dm/create-message! discord-message-channel
+                                           discord-channel-id
+                                           :content message))
+                    new-videos))
+        nil)
+      (log/info (str "No new " channel-title " Youtube videos found")))))
