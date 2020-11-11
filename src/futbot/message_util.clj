@@ -27,7 +27,7 @@
     response))
 
 (defn create-message!
-  "A version of discljord.message/create-message! that hides some of the API complexity, and (more importantly) throws errors."
+  "A version of discljord.message/create-message! that hides some of the parameter complexity, and (more importantly) throws errors."
   ([discord-message-channel channel-id message] (create-message! discord-message-channel channel-id message nil nil))
   ([discord-message-channel channel-id message file-is filename]
    (log/debug "Sending message to Discord channel" (str channel-id ":") message)
