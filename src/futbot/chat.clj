@@ -20,53 +20,50 @@
   (:require [clojure.string        :as s]
             [clojure.tools.logging :as log]
             [java-time             :as tm]
-            [discljord.messaging   :as dm]
             [futbot.util           :as u]
+            [futbot.message-util   :as mu]
             [futbot.config         :as cfg]
             [futbot.source.ist     :as ist]))
 
 (def prefix "!")
 
-(defn send-message!
-  [channel-id message]
-  (log/debug "Sending message to channel-id" channel-id ":" message)
-  (dm/create-message! cfg/discord-message-channel
-                      channel-id
-                      :content message))
-
 (defn ist-command!
   "Generates a fake IST video title"
   [_ event-data]
-  (send-message! (:channel-id event-data)
-                 (str "<:ist:733173880403001394>: \"" (ist/gen-title) "\"")))
-
-(declare help-command!)
+  (mu/create-message! cfg/discord-message-channel
+                      (:channel-id event-data)
+                      (str "<:ist:733173880403001394>: \"" (ist/gen-title) "\"")))
 
 (defn privacy-command!
   "Provides a link to the futbot privacy policy"
   [_ event-data]
-  (send-message! (:channel-id event-data)
-                 "Privacy policy: <https://github.com/pmonks/futbot/blob/main/PRIVACY.md>"))
+  (mu/create-message! cfg/discord-message-channel
+                      (:channel-id event-data)
+                      "Privacy policy: <https://github.com/pmonks/futbot/blob/main/PRIVACY.md>"))
 
 (defn status-command!
   "Provides technical status of futbot"
   [_ event-data]
   (let [now (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time)))]
-    (send-message! (:channel-id event-data)
-                   (str "futbot running on Clojure " (clojure-version) " / " (System/getProperty "java.vm.vendor") " JVM " (System/getProperty "java.vm.version") " (" (System/getProperty "os.arch") ")"
-                        "\nBuilt at " (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str " from <" cfg/git-url ">") "")
-                        "\nRunning for " (u/human-readable-date-diff cfg/boot-time now)))))
+    (mu/create-message! cfg/discord-message-channel
+                        (:channel-id event-data)
+                        (str "futbot running on Clojure " (clojure-version) " / " (System/getProperty "java.vm.vendor") " JVM " (System/getProperty "java.vm.version") " (" (System/getProperty "os.name") "/" (System/getProperty "os.arch") ")"
+                             "\nBuilt at " (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str " from <" cfg/git-url ">") "")
+                             "\nRunning for " (u/human-readable-date-diff cfg/boot-time now)))))
 
 (defn gc-command!
   "Requests that the JVM perform a GC cycle."
   [_ event-data]
   (System/gc)
-  (send-message! (:channel-id event-data)
-                 "Garbage collection requested."))
+  (mu/create-message! cfg/discord-message-channel
+                      (:channel-id event-data)
+                      "Garbage collection requested."))
 
 ; Table of "public" commands; those that can be used in any channel, group or DM
 (def public-command-dispatch-table
   {"ist" #'ist-command!})
+
+(declare help-command!)
 
 ; Table of "private" commands; those that can only be used in a DM channel
 (def private-command-dispatch-table
@@ -80,13 +77,14 @@
 (defn help-command!
   "Displays this help message"
   [_ event-data]
-  (send-message! (:channel-id event-data)
-                 (str "I understand the following commands in any channel:\n"
-                      (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
-                                        (sort-by key public-command-dispatch-table)))
-                      "\nAnd the following commands in a DM channel:\n"
-                      (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
-                                        (sort-by key private-command-dispatch-table))))))
+  (mu/create-message! cfg/discord-message-channel
+                      (:channel-id event-data)
+                      (str "I understand the following commands in any channel:\n"
+                           (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
+                                             (sort-by key public-command-dispatch-table)))
+                           "\nAnd the following commands in a DM channel:\n"
+                           (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
+                                             (sort-by key private-command-dispatch-table))))))
 
 ; Responsive fns
 (defmulti handle-discord-event

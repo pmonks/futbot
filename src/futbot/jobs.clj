@@ -22,7 +22,7 @@
             [clojure.tools.logging            :as log]
             [java-time                        :as tm]
             [chime.core                       :as chime]
-            [discljord.messaging              :as dm]
+            [futbot.message-util              :as mu]
             [futbot.source.football-data      :as fd]
             [futbot.source.dutch-referee-blog :as drb]
             [futbot.source.cnra               :as cnra]
@@ -42,13 +42,14 @@
     (if (seq todays-matches)
       (let [pdf-file    (pdf/generate-daily-schedule match-details-fn today todays-matches)
             pdf-file-is (io/input-stream pdf-file)]
-        (dm/create-message! discord-message-channel
+        (mu/create-message! discord-message-channel
                             channel-id
-                            :content (str "Here are the scheduled matches for " today-str ":")
-                            :stream {:content pdf-file-is :filename (str "daily-schedule-" today-str ".pdf")}))
-      (dm/create-message! discord-message-channel
+                            (str "Here are the scheduled matches for " today-str ":")
+                            pdf-file-is
+                            (str "daily-schedule-" today-str ".pdf")))
+      (mu/create-message! discord-message-channel
                           channel-id
-                          :content (str "There are no matches scheduled for today (" today-str ").")))))
+                          (str "There are no matches scheduled for today (" today-str ").")))))
 
 (defn- referee-name
   [referee-emoji
@@ -95,13 +96,13 @@
                             "CANCELED"  (str match-prefix ", which was due to start in " starts-in-min " minutes, has been canceled.")
                             nil)]
         (if message
-          (dm/create-message! discord-message-channel
+          (mu/create-message! discord-message-channel
                               channel-id
-                              :content message)
+                              message)
           (log/warn (str "Match " match-id " had an unexpected status: " (:status match) ". No reminder message sent."))))
       (log/warn (str "Match " match-id " was not found by football-data.org. No reminder message sent.")))
     (catch Exception e
-      (log/error e "Unexpected exception while sending reminder for match " match-id))
+      (log/error e (str "Unexpected exception while sending reminder for match " match-id)))
     (finally
       (log/info (str "Finished sending reminder for match " match-id)))))
 
@@ -178,17 +179,17 @@
            message    (str "<:dfb:753779768306040863> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
                            (:link (first new-quizzes))
                            "\nPuzzled by an answer? Click the react and we'll discuss in <#686439362291826694>!")
-           message-id (:id @(dm/create-message! discord-message-channel   ; Note: dereferences the promise, blocking until the message is sent
-                                                channel-id
-                                                :content message))]
+           message-id (:id (mu/create-message! discord-message-channel
+                                               channel-id
+                                               message))]
        (if message-id
          (do
-           @(dm/create-reaction! discord-message-channel channel-id message-id "1️⃣")  ; Note: wait for each promise to comnplete, to make sure reactions are added in numerical order
-           @(dm/create-reaction! discord-message-channel channel-id message-id "2️⃣")
-           @(dm/create-reaction! discord-message-channel channel-id message-id "3️⃣")
-           @(dm/create-reaction! discord-message-channel channel-id message-id "4️⃣")
-           @(dm/create-reaction! discord-message-channel channel-id message-id "5️⃣"))
-         (log/warn "No message id returned for Dutch referee blog message - skipped adding reactions"))
+           (mu/create-reaction! discord-message-channel channel-id message-id "1️⃣")
+           (mu/create-reaction! discord-message-channel channel-id message-id "2️⃣")
+           (mu/create-reaction! discord-message-channel channel-id message-id "3️⃣")
+           (mu/create-reaction! discord-message-channel channel-id message-id "4️⃣")
+           (mu/create-reaction! discord-message-channel channel-id message-id "5️⃣"))
+         (log/warn "No message id found for Dutch referee blog message - skipped adding reactions"))
        nil)
      (log/info "No new Dutch referee blog quizzes found"))))
 
@@ -201,9 +202,9 @@
                           "**: "
                           (:link (first new-quizzes))
                           "\nPuzzled by an answer? React and we'll discuss in <#686439362291826694>!")]
-      (dm/create-message! discord-message-channel
+      (mu/create-message! discord-message-channel
                           channel-id
-                          :content message)
+                          message)
       nil)
     (log/info "No new CNRA quizzes found")))
 
@@ -228,9 +229,9 @@
                                         "\nDiscuss in "
                                         (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-id training-and-resources-discord-channel-id)
                                         "!")]
-                       (dm/create-message! discord-message-channel
+                       (mu/create-message! discord-message-channel
                                            discord-channel-id
-                                           :content message))
+                                           message))
                     new-videos))
         nil)
       (log/info (str "No new Youtube videos found in channel " (if channel-title channel-title (str "-unknown (" youtube-channel-id ")-")))))))
