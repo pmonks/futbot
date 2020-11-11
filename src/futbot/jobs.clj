@@ -174,18 +174,21 @@
     channel-id
     time-period-hours]
    (if-let [new-quizzes (drb/quizzes (tm/minus (tm/instant) (tm/hours time-period-hours)))]
-     (let [message    (str "<:dfb:753779768306040863> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
+     (let [_          (log/info (str (count new-quizzes) " new Dutch referee blog quizz(es) found"))
+           message    (str "<:dfb:753779768306040863> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
                            (:link (first new-quizzes))
                            "\nPuzzled by an answer? Click the react and we'll discuss in <#686439362291826694>!")
            message-id (:id @(dm/create-message! discord-message-channel   ; Note: dereferences the promise, blocking until the message is sent
                                                 channel-id
                                                 :content message))]
-       (when message-id
-         @(dm/create-reaction! discord-message-channel channel-id message-id "1️⃣")  ; Note: wait for each promise to comnplete, to make sure reactions are added in numerical order
-         @(dm/create-reaction! discord-message-channel channel-id message-id "2️⃣")
-         @(dm/create-reaction! discord-message-channel channel-id message-id "3️⃣")
-         @(dm/create-reaction! discord-message-channel channel-id message-id "4️⃣")
-         @(dm/create-reaction! discord-message-channel channel-id message-id "5️⃣"))
+       (if message-id
+         (do
+           @(dm/create-reaction! discord-message-channel channel-id message-id "1️⃣")  ; Note: wait for each promise to comnplete, to make sure reactions are added in numerical order
+           @(dm/create-reaction! discord-message-channel channel-id message-id "2️⃣")
+           @(dm/create-reaction! discord-message-channel channel-id message-id "3️⃣")
+           @(dm/create-reaction! discord-message-channel channel-id message-id "4️⃣")
+           @(dm/create-reaction! discord-message-channel channel-id message-id "5️⃣"))
+         (log/warn "No message id returned for Dutch referee blog message - skipped adding reactions"))
        nil)
      (log/info "No new Dutch referee blog quizzes found"))))
 
