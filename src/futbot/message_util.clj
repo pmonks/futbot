@@ -43,4 +43,5 @@
 (defn create-reaction!
   "A version of discljord.message/create-reaction! that throws errors."
   [discord-message-channel channel-id message-id reaction]
+  (log/debug "Adding reaction" reaction " to message-id " message-id)
   (check-response-and-throw @(dm/create-reaction! discord-message-channel channel-id message-id reaction)))
