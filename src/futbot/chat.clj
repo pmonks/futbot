@@ -47,7 +47,7 @@
   (let [now (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time)))]
     (mu/create-message! cfg/discord-message-channel
                         (:channel-id event-data)
-                        (str "futbot running on Clojure " (clojure-version) " / " (System/getProperty "java.vm.vendor") " JVM " (System/getProperty "java.vm.version") " (" (System/getProperty "os.arch") ")"
+                        (str "futbot running on Clojure " (clojure-version) " / " (System/getProperty "java.vm.vendor") " JVM " (System/getProperty "java.vm.version") " (" (System/getProperty "os.name") "/" (System/getProperty "os.arch") ")"
                              "\nBuilt at " (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str " from <" cfg/git-url ">") "")
                              "\nRunning for " (u/human-readable-date-diff cfg/boot-time now)))))
 
