@@ -67,15 +67,15 @@
 
 ; This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
 (defstate dutch-referee-blog-quiz-job
-          :start (let [next-nine-am         (let [now              (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/zoned-date-time))
-                                                  today-at-nine-am (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
-                                              (if (tm/before? now today-at-nine-am)
-                                                today-at-nine-am
-                                                (tm/plus today-at-nine-am (tm/days 1))))
-                       every-day-at-nine-am (chime/periodic-seq next-nine-am
-                                                                (tm/period 1 :days))]
-                   (log/info (str "Scheduling Dutch referee blog quiz job; first run will be at " (first every-day-at-nine-am)))
-                   (chime/chime-at every-day-at-nine-am
+          :start (let [next-six-pm         (let [now             (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/zoned-date-time))
+                                                 today-at-six-pm (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/plus (tm/truncate-to now :days) (tm/hours 18)))]
+                                             (if (tm/before? now today-at-six-pm)
+                                               today-at-six-pm
+                                               (tm/plus today-at-six-pm (tm/days 1))))
+                       every-day-at-six-pm (chime/periodic-seq next-six-pm
+                                                              (tm/period 1 :days))]
+                   (log/info (str "Scheduling Dutch referee blog quiz job; first run will be at " (first every-day-at-six-pm)))
+                   (chime/chime-at every-day-at-six-pm
                                    (fn [_]
                                      (try
                                        (log/info "Dutch referee blog quiz job started...")
