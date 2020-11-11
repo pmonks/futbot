@@ -23,9 +23,7 @@
 (defn- check-response-and-throw
   [response]
   (if (= (class response) clojure.lang.ExceptionInfo)
-    (if (:retry-after (ex-data response))
-      (log/info "Discord API call was rate limited (retry is automatic)")
-      (throw response))
+    (throw response)
     response))
 
 (defn create-message!
