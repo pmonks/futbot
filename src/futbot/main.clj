@@ -26,6 +26,7 @@
             [mount.core            :as mnt]
             [java-time             :as tm]
             [futbot.util           :as u]
+            [futbot.jobs           :as job]
             [futbot.core           :as core])
   (:gen-class))
 
@@ -62,6 +63,7 @@
       ; Start the bot
       (mnt/with-args options)
       (mnt/start)
+      (job/start-jobs!)
       (core/start-bot!))  ; This must go last, as it blocks
     (catch Exception e
       (log/error e)
