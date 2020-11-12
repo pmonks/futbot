@@ -27,93 +27,78 @@
             [futbot.jobs                 :as job]
             [futbot.chat                 :as chat]))
 
-(defstate gc-job
-          :start (let [seven-past-the-hour-UTC               (tm/with-clock (tm/system-clock "UTC") (tm/plus (tm/truncate-to (tm/zoned-date-time) :hours) (tm/minutes 7)))
-                       every-hour-at-seven-past-the-hour-UTC (chime/periodic-seq (tm/instant seven-past-the-hour-UTC)
-                                                                                 (tm/duration 1 :hours))]
-                   (log/info (str "Scheduling GC job; first run will be at " (first every-hour-at-seven-past-the-hour-UTC)))
-                   (chime/chime-at every-hour-at-seven-past-the-hour-UTC
-                                   (fn [_] (System/gc))))
-          :stop (.close ^java.lang.AutoCloseable gc-job))
+(defn- close-job
+  "Closes a timed job defined by the defjob macro."
+  [^java.lang.AutoCloseable job]
+  (.close job))
 
-(defstate daily-schedule-job
-          :start (let [tomorrow-at-midnight-UTC  (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days))
-                       every-day-at-midnight-UTC (chime/periodic-seq (tm/instant tomorrow-at-midnight-UTC)
-                                                                     (tm/period 1 :days))]
-                   (log/info (str "Scheduling daily schedule job; first run will be at " (first every-day-at-midnight-UTC)))
-                   (chime/chime-at every-day-at-midnight-UTC
-                                   (fn [_]
-                                     (try
-                                       (log/info "Daily schedule job started...")
-                                       (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
-                                             todays-scheduled-matches (fd/scheduled-matches-on-day cfg/football-data-api-token today)]
-                                         (job/post-daily-schedule-to-channel! cfg/discord-message-channel
-                                                                              cfg/daily-schedule-discord-channel-id
-                                                                              (partial fd/match cfg/football-data-api-token)
-                                                                              today
-                                                                              todays-scheduled-matches)
-                                         (job/schedule-todays-reminders! cfg/football-data-api-token
-                                                                         cfg/discord-message-channel
-                                                                         cfg/match-reminder-duration
-                                                                         cfg/muted-leagues
-                                                                         #(get cfg/country-to-channel % cfg/default-reminder-channel-id)
-                                                                         cfg/referee-emoji
-                                                                         todays-scheduled-matches))
-                                       (catch Exception e
-                                         (log/error e "Unexpected exception in daily schedule job"))
-                                       (finally
-                                         (log/info "Daily schedule job finished"))))))
-          :stop (.close ^java.lang.AutoCloseable daily-schedule-job))
+(defmacro defjob
+  "Defines a timed job."
+  [name start recurrence & body]
+  (let [job-name# (str name)]
+    `(mount.core/defstate ~name
+       :start (let [~'start ~start]
+                (log/info ~(str "Scheduling " job-name# "; first run will be at") (str ~'start))
+                (chime/chime-at (chime/periodic-seq ~'start ~recurrence)
+                                (fn [~'_]
+                                  (try
+                                    (log/info ~(str job-name# " started..."))
+                                    ~@body
+                                    (log/info ~(str job-name# " finished"))
+                                    (catch Exception ~'e
+                                      (log/error ~'e ~(str "Unexpected exception in " job-name#)))))))
+       :stop (close-job ~name))))
 
-; This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
-(defstate dutch-referee-blog-quiz-job
-          :start (let [next-nine-am         (let [now              (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/zoned-date-time))
-                                                  today-at-nine-am (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
-                                              (if (tm/before? now today-at-nine-am)
-                                                today-at-nine-am
-                                                (tm/plus today-at-nine-am (tm/days 1))))
-                       every-day-at-nine-am (chime/periodic-seq next-nine-am
-                                                                (tm/period 1 :days))]
-                   (log/info (str "Scheduling Dutch referee blog quiz job; first run will be at " (first every-day-at-nine-am)))
-                   (chime/chime-at every-day-at-nine-am
-                                   (fn [_]
-                                     (try
-                                       (log/info "Dutch referee blog quiz job started...")
-                                       (job/check-for-new-dutch-referee-blog-quiz-and-post-to-channel! cfg/discord-message-channel
-                                                                                                       cfg/quiz-channel-id)
-                                       (catch Exception e
-                                         (log/error e "Unexpected exception in Dutch referee blog quiz job"))
-                                       (finally
-                                         (log/info "Dutch referee blog quiz job finished"))))))
-          :stop (.close ^java.lang.AutoCloseable dutch-referee-blog-quiz-job))
+(defjob gc-job
+        (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/plus (tm/truncate-to (tm/zoned-date-time) :hours) (tm/minutes 67))))
+        (tm/hours 1)
+        (System/gc))
 
-; This job runs in America/Los_Angeles timezone, since that's where CNRA is located
-(defstate cnra-quiz-job
-          :start (let [next-16th-of-the-month-at-midnight  (let [now                                (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/zoned-date-time))
-                                                                 sixteenth-of-the-month-at-midnight (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/truncate-to (tm/plus (tm/adjust now :first-day-of-month) (tm/days 15)) :days))]
-                                                             (if (tm/before? now sixteenth-of-the-month-at-midnight)
-                                                               sixteenth-of-the-month-at-midnight
-                                                               (tm/plus sixteenth-of-the-month-at-midnight (tm/months 1))))
-                       sixteenth-of-every-month-at-midnight (chime/periodic-seq next-16th-of-the-month-at-midnight
-                                                                                (tm/period 1 :months))]
-                   (log/info (str "Scheduling CNRA quiz job; first run will be at " (first sixteenth-of-every-month-at-midnight)))
-                   (chime/chime-at sixteenth-of-every-month-at-midnight
-                                   (fn [_]
-                                     (try
-                                       (log/info "CNRA quiz job started...")
-                                       (job/check-for-new-cnra-quiz-and-post-to-channel! cfg/discord-message-channel
-                                                                                         cfg/quiz-channel-id)
-                                       (catch Exception e
-                                         (log/error e "Unexpected exception in CNRA quiz job"))
-                                       (finally
-                                         (log/info "CNRA quiz job finished"))))))
-          :stop (.close ^java.lang.AutoCloseable cnra-quiz-job))
+(defjob daily-schedule-job
+        (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days))
+        (tm/days 1)
+        (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+              todays-scheduled-matches (fd/scheduled-matches-on-day cfg/football-data-api-token today)]
+          (job/post-daily-schedule-to-channel! cfg/discord-message-channel
+                                               cfg/daily-schedule-discord-channel-id
+                                               (partial fd/match cfg/football-data-api-token)
+                                               today
+                                               todays-scheduled-matches)
+          (job/schedule-todays-reminders! cfg/football-data-api-token
+                                          cfg/discord-message-channel
+                                          cfg/match-reminder-duration
+                                          cfg/muted-leagues
+                                          #(get cfg/country-to-channel % cfg/default-reminder-channel-id)
+                                          cfg/referee-emoji
+                                          todays-scheduled-matches)))
 
+(defjob dutch-referee-blog-quiz-job
+        (let [now              (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/zoned-date-time))
+              today-at-nine-am (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
+          (if (tm/before? now today-at-nine-am)
+            today-at-nine-am
+            (tm/plus today-at-nine-am (tm/days 1))))
+        (tm/days 1)
+        (job/check-for-new-dutch-referee-blog-quiz-and-post-to-channel! cfg/discord-message-channel
+                                                                        cfg/quiz-channel-id))
+
+(defjob cnra-quiz-job
+        (let [now                                (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/zoned-date-time))
+              sixteenth-of-the-month-at-midnight (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/truncate-to (tm/plus (tm/adjust now :first-day-of-month) (tm/days 15)) :days))]
+          (if (tm/before? now sixteenth-of-the-month-at-midnight)
+            sixteenth-of-the-month-at-midnight
+            (tm/plus sixteenth-of-the-month-at-midnight (tm/months 1))))
+        (tm/months 1)
+        (job/check-for-new-cnra-quiz-and-post-to-channel! cfg/discord-message-channel
+                                                          cfg/quiz-channel-id))
+
+
+; Youtube jobs are a bit messy, since the total number is defined in config, not hardcoded as the jobs above are
 (defn schedule-youtube-job
   [job-time youtube-channel-id]
   (let [youtube-channel-name (get-in cfg/youtube-channels-info [youtube-channel-id :title] (str "-unknown (" youtube-channel-id ")-"))]
     (log/info (str "Scheduling Youtube channel " youtube-channel-name " job; first run will be at " job-time))
-    (chime/chime-at (chime/periodic-seq job-time (tm/period 1 :days))
+    (chime/chime-at (chime/periodic-seq job-time (tm/days 1))
                     (fn [_]
                       (try
                         (log/info (str "Youtube channel " youtube-channel-name " job started..."))
@@ -122,10 +107,9 @@
                                                                               cfg/video-channel-id
                                                                               youtube-channel-id
                                                                               cfg/youtube-channels-info)
+                        (log/info (str "Youtube channel " youtube-channel-name " job finished"))
                         (catch Exception e
-                          (log/error e (str "Unexpected exception in Youtube channel " youtube-channel-name " job")))
-                        (finally
-                          (log/info (str "Youtube channel " youtube-channel-name " job finished"))))))))
+                          (log/error e (str "Unexpected exception in Youtube channel " youtube-channel-name " job"))))))))
 
 (defstate youtube-jobs
           :start (let [interval     (int (/ (* 24 60) (count cfg/youtube-channels)))
@@ -144,8 +128,10 @@
                          (recur (first r)
                                 (rest r)
                                 (inc index)
-                                (conj result (schedule-youtube-job job-time f)))))))
+                                (conj result (schedule-youtube-job (tm/instant job-time) f)))))))
           :stop (doall (map #(.close ^java.lang.AutoCloseable %) youtube-jobs)))
+
+
 
 
 ; Bot functionality
