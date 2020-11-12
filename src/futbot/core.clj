@@ -55,7 +55,7 @@
         (System/gc))
 
 (defjob daily-schedule-job
-        (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days))
+        (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days)))
         (tm/days 1)
         (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
               todays-scheduled-matches (fd/scheduled-matches-on-day cfg/football-data-api-token today)]
@@ -72,6 +72,7 @@
                                           cfg/referee-emoji
                                           todays-scheduled-matches)))
 
+; This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
 (defjob dutch-referee-blog-quiz-job
         (let [now              (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/zoned-date-time))
               today-at-nine-am (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
@@ -82,6 +83,7 @@
         (job/check-for-new-dutch-referee-blog-quiz-and-post-to-channel! cfg/discord-message-channel
                                                                         cfg/quiz-channel-id))
 
+; This job runs in America/Los_Angeles timezone, since that's where CNRA is located
 (defjob cnra-quiz-job
         (let [now                                (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/zoned-date-time))
               sixteenth-of-the-month-at-midnight (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/truncate-to (tm/plus (tm/adjust now :first-day-of-month) (tm/days 15)) :days))]
