@@ -22,9 +22,6 @@
             [clojure.tools.logging            :as log]
             [java-time                        :as tm]
             [chime.core                       :as chime]
-            [discljord.events                 :as de]
-            [futbot.config                    :as cfg]
-            [futbot.chat                      :as chat]
             [futbot.message-util              :as mu]
             [futbot.source.football-data      :as fd]
             [futbot.source.dutch-referee-blog :as drb]
@@ -237,17 +234,3 @@
                     new-videos))
         nil)
       (log/info (str "No new Youtube videos found in channel " (if channel-title channel-title (str "-unknown (" youtube-channel-id ")-")))))))
-
-
-; Bot functionality
-(defn start-bot!
-  "Starts the bot."
-  []
-  (schedule-todays-reminders! cfg/football-data-api-token
-                              cfg/discord-message-channel
-                              cfg/match-reminder-duration
-                              cfg/muted-leagues
-                              #(get cfg/country-to-channel % cfg/default-reminder-channel-id)
-                              cfg/referee-emoji)
-  (log/info "futbot started")
-  (de/message-pump! cfg/discord-event-channel chat/handle-discord-event))   ; Note: blocking fn

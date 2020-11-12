@@ -25,6 +25,10 @@
             [futbot.source.football-data :as fd]
             [futbot.core                 :as core]))
 
+(defmacro in-tz
+  [tz & body]
+  `(tm/with-clock (tm/system-clock ~tz) ~@body))
+
 (defn- close-job
   "Closes a timed job defined by the defjob macro."
   [^java.lang.AutoCloseable job]
@@ -32,12 +36,12 @@
 
 (defmacro defjob
   "Defines a timed job."
-  [name start recurrence & body]
+  [name start interval & body]
   (let [job-name# (str name)]
-    `(mount.core/defstate ~name
+    `(defstate ~name
        :start (let [~'start ~start]
                 (log/info ~(str "Scheduling " job-name# "; first run will be at") (str ~'start))
-                (chime/chime-at (chime/periodic-seq ~'start ~recurrence)
+                (chime/chime-at (chime/periodic-seq ~'start ~interval)
                                 (fn [~'_]
                                   (try
                                     (log/info ~(str job-name# " started..."))
@@ -55,7 +59,7 @@
 
 ; Prepare the daily schedule at midnight UTC every day
 (defjob daily-schedule-job
-        (tm/truncate-to (tm/plus (tm/instant) (tm/days 1)) :days)
+        (tm/plus (tm/truncate-to (tm/instant) :days) (tm/days 1))
         (tm/days 1)
         (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))   ; Note: can't use a tm/instant here as football-data code doesn't support it (TODO)
               todays-scheduled-matches (fd/scheduled-matches-on-day cfg/football-data-api-token today)]
@@ -74,8 +78,8 @@
 
 ; Check for new Dutch Referee Blog Quizzes at 9am Amsterdam each day. This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
 (defjob dutch-referee-blog-quiz-job
-        (let [now              (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/zoned-date-time))
-              today-at-nine-am (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
+        (let [now              (in-tz "Europe/Amsterdam" (tm/zoned-date-time))
+              today-at-nine-am (in-tz "Europe/Amsterdam" (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
           (if (tm/before? now today-at-nine-am)
             today-at-nine-am
             (tm/plus today-at-nine-am (tm/days 1))))
@@ -85,8 +89,8 @@
 
 ; Check for new CNRA Quizzes at midnight Los Angeles on the 16th of the month. This job runs in America/Los_Angeles timezone, since that's where CNRA is located
 (defjob cnra-quiz-job
-        (let [now                                (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/zoned-date-time))
-              sixteenth-of-the-month-at-midnight (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/truncate-to (tm/plus (tm/adjust now :first-day-of-month) (tm/days 15)) :days))]
+        (let [now                                (in-tz "America/Los_Angeles" (tm/zoned-date-time))
+              sixteenth-of-the-month-at-midnight (in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
           (if (tm/before? now sixteenth-of-the-month-at-midnight)
             sixteenth-of-the-month-at-midnight
             (tm/plus sixteenth-of-the-month-at-midnight (tm/months 1))))
@@ -115,15 +119,15 @@
 
 ; Each Youtube job is run once per day, and they're equally spaced throughout the day to spread out the load
 (defstate youtube-jobs
-          :start (let [interval     (int (/ (* 24 60) (count cfg/youtube-channels)))
-                       now-UTC      (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
-                       midnight-UTC (tm/truncate-to now-UTC :days)]
+          :start (let [interval (int (/ (* 24 60) (count cfg/youtube-channels)))
+                       now      (tm/instant)
+                       midnight (tm/truncate-to now :days)]
                    (loop [f      (first cfg/youtube-channels)
                           r      (rest cfg/youtube-channels)
                           index  1
                           result []]
-                     (let [job-time (tm/plus midnight-UTC (tm/minutes (* index interval)))
-                           job-time (if (tm/before? job-time now-UTC)
+                     (let [job-time (tm/plus midnight (tm/minutes (* index interval)))
+                           job-time (if (tm/before? job-time now)
                                       (tm/plus job-time (tm/days 1))
                                       job-time)]
                        (if-not f
@@ -133,7 +137,3 @@
                                 (inc index)
                                 (conj result (schedule-youtube-job (tm/instant job-time) f)))))))
           :stop (doall (map #(.close ^java.lang.AutoCloseable %) youtube-jobs)))
-
-(defn start-jobs!
-  "Placeholder in case registering jobs ever needs to be explicit (right now it's implicit via mount)."
-  [])
