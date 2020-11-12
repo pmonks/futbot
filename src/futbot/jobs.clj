@@ -47,15 +47,17 @@
                                       (log/error ~'e ~(str "Unexpected exception in " job-name#)))))))
        :stop (close-job ~name))))
 
+; Run the GC 7 minutes after startup, then every hour after that
 (defjob gc-job
-        (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/plus (tm/truncate-to (tm/zoned-date-time) :hours) (tm/minutes 67))))
+        (tm/plus (tm/instant) (tm/minutes 7))
         (tm/hours 1)
         (System/gc))
 
+; Prepare the daily schedule at midnight UTC every day
 (defjob daily-schedule-job
-        (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/truncate-to (tm/plus (tm/zoned-date-time) (tm/days 1)) :days)))
+        (tm/truncate-to (tm/plus (tm/instant) (tm/days 1)) :days)
         (tm/days 1)
-        (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+        (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))   ; Note: can't use a tm/instant here as football-data code doesn't support it (TODO)
               todays-scheduled-matches (fd/scheduled-matches-on-day cfg/football-data-api-token today)]
           (core/post-daily-schedule-to-channel! cfg/discord-message-channel
                                                 cfg/daily-schedule-discord-channel-id
@@ -70,7 +72,7 @@
                                            cfg/referee-emoji
                                            todays-scheduled-matches)))
 
-; This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
+; Check for new Dutch Referee Blog Quizzes at 9am Amsterdam each day. This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
 (defjob dutch-referee-blog-quiz-job
         (let [now              (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/zoned-date-time))
               today-at-nine-am (tm/with-clock (tm/system-clock "Europe/Amsterdam") (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
@@ -81,7 +83,7 @@
         (core/check-for-new-dutch-referee-blog-quiz-and-post-to-channel! cfg/discord-message-channel
                                                                          cfg/quiz-channel-id))
 
-; This job runs in America/Los_Angeles timezone, since that's where CNRA is located
+; Check for new CNRA Quizzes at midnight Los Angeles on the 16th of the month. This job runs in America/Los_Angeles timezone, since that's where CNRA is located
 (defjob cnra-quiz-job
         (let [now                                (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/zoned-date-time))
               sixteenth-of-the-month-at-midnight (tm/with-clock (tm/system-clock "America/Los_Angeles") (tm/truncate-to (tm/plus (tm/adjust now :first-day-of-month) (tm/days 15)) :days))]
@@ -111,6 +113,7 @@
                         (catch Exception e
                           (log/error e (str "Unexpected exception in Youtube channel " youtube-channel-name " job"))))))))
 
+; Each Youtube job is run once per day, and they're equally spaced throughout the day to spread out the load
 (defstate youtube-jobs
           :start (let [interval     (int (/ (* 24 60) (count cfg/youtube-channels)))
                        now-UTC      (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
