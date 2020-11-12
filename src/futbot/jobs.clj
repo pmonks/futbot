@@ -101,10 +101,9 @@
                               message)
           (log/warn (str "Match " match-id " had an unexpected status: " (:status match) ". No reminder message sent."))))
       (log/warn (str "Match " match-id " was not found by football-data.org. No reminder message sent.")))
+    (log/info (str "Finished sending reminder for match " match-id))
     (catch Exception e
-      (log/error e (str "Unexpected exception while sending reminder for match " match-id)))
-    (finally
-      (log/info (str "Finished sending reminder for match " match-id)))))
+      (log/error e (str "Unexpected exception while sending reminder for match " match-id)))))
 
 (defn schedule-match-reminder!
   "Schedules a reminder for the given match."
