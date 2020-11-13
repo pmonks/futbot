@@ -30,6 +30,10 @@
             [futbot.pdf                       :as pdf]
             [futbot.flags                     :as fl]))
 
+(def ist-youtube-channel-id                    "UCmzFaEBQlLmMTWS0IQ90tgA")
+(def training-and-resources-discord-channel-id "<#686439362291826694>")
+(def memes-and-junk-discord-channel-id         "<#683853455038742610>")
+
 (defn post-daily-schedule-to-channel!
   "Generates and posts the daily-schedule (as an attachment) to the Discord channel identified by channel-id."
   [discord-message-channel
@@ -177,7 +181,7 @@
      (let [_          (log/info (str (count new-quizzes) " new Dutch referee blog quizz(es) found"))
            message    (str "<:dfb:753779768306040863> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
                            (:link (first new-quizzes))
-                           "\nPuzzled by an answer? Click the react and we'll discuss in <#686439362291826694>!")
+                           "\nPuzzled by an answer? Click the react and we'll discuss in " training-and-resources-discord-channel-id "!")
            message-id (:id (mu/create-message! discord-message-channel
                                                channel-id
                                                message))]
@@ -200,16 +204,12 @@
                           (:topic (first new-quizzes))
                           "**: "
                           (:link (first new-quizzes))
-                          "\nPuzzled by an answer? React and we'll discuss in <#686439362291826694>!")]
+                          "\nPuzzled by an answer? React and we'll discuss in " training-and-resources-discord-channel-id "!")]
       (mu/create-message! discord-message-channel
                           channel-id
                           message)
       nil)
     (log/info "No new CNRA quizzes found")))
-
-(def ist-youtube-channel-id                    "UCmzFaEBQlLmMTWS0IQ90tgA")
-(def training-and-resources-discord-channel-id "<#686439362291826694>")
-(def memes-and-junk-discord-channel-id         "<#683853455038742610>")
 
 (defn check-for-new-youtube-video-and-post-to-channel!
   "Checks whether any new videos have been posted to the given Youtube channel in the last day, and posts it to the given Discord channel if so."

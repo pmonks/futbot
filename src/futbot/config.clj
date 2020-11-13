@@ -39,7 +39,7 @@
    (uncaughtException [_ t e]
      (log/error e "Uncaught exception on" (.getName t)))))
 
-(def boot-time (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))))
+(def boot-time (tm/instant))
 
 ; Adds a #split reader macro to aero - see https://github.com/juxt/aero/issues/55
 (defmethod a/reader 'split

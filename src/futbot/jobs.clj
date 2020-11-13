@@ -21,13 +21,10 @@
             [mount.core                  :as mnt :refer [defstate]]
             [java-time                   :as tm]
             [chime.core                  :as chime]
+            [futbot.util                 :as u]
             [futbot.config               :as cfg]
             [futbot.source.football-data :as fd]
             [futbot.core                 :as core]))
-
-(defmacro in-tz
-  [tz & body]
-  `(tm/with-clock (tm/system-clock ~tz) ~@body))
 
 (defn- close-job
   "Closes a timed job defined by the defjob macro."
@@ -61,7 +58,7 @@
 (defjob daily-schedule-job
         (tm/plus (tm/truncate-to (tm/instant) :days) (tm/days 1))
         (tm/days 1)
-        (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))   ; Note: can't use a tm/instant here as football-data code doesn't support it (TODO)
+        (let [today                    (u/in-tz "UTC" (tm/zoned-date-time))   ; Note: can't use a tm/instant here as football-data code doesn't support it (TODO)
               todays-scheduled-matches (fd/scheduled-matches-on-day cfg/football-data-api-token today)]
           (core/post-daily-schedule-to-channel! cfg/discord-message-channel
                                                 cfg/daily-schedule-discord-channel-id
@@ -78,8 +75,8 @@
 
 ; Check for new Dutch Referee Blog Quizzes at 9am Amsterdam each day. This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
 (defjob dutch-referee-blog-quiz-job
-        (let [now              (in-tz "Europe/Amsterdam" (tm/zoned-date-time))
-              today-at-nine-am (in-tz "Europe/Amsterdam" (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
+        (let [now              (u/in-tz "Europe/Amsterdam" (tm/zoned-date-time))
+              today-at-nine-am (u/in-tz "Europe/Amsterdam" (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
           (if (tm/before? now today-at-nine-am)
             today-at-nine-am
             (tm/plus today-at-nine-am (tm/days 1))))
@@ -89,8 +86,8 @@
 
 ; Check for new CNRA Quizzes at midnight Los Angeles on the 16th of the month. This job runs in America/Los_Angeles timezone, since that's where CNRA is located
 (defjob cnra-quiz-job
-        (let [now                                (in-tz "America/Los_Angeles" (tm/zoned-date-time))
-              sixteenth-of-the-month-at-midnight (in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
+        (let [now                                (u/in-tz "America/Los_Angeles" (tm/zoned-date-time))
+              sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
           (if (tm/before? now sixteenth-of-the-month-at-midnight)
             sixteenth-of-the-month-at-midnight
             (tm/plus sixteenth-of-the-month-at-midnight (tm/months 1))))
