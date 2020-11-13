@@ -54,7 +54,7 @@
 
 (defn matches-on-day
   "Returns a list of all matches visible to the given token, on the given day (defaults to today UTC if not otherwise specified), sorted by scheduled time and then by competition."
-  ([token] (matches-on-day token (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))))
+  ([token] (matches-on-day token (u/in-tz "UTC" (tm/zoned-date-time))))
   ([token day]
     (let [day-as-string (tm/format "yyyy-MM-dd" day)
           api-call      (format endpoint-matches-on-date day-as-string day-as-string)]

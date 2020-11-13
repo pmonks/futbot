@@ -44,7 +44,7 @@
 (defn status-command!
   "Provides technical status of futbot"
   [_ event-data]
-  (let [now (tm/instant (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time)))]
+  (let [now (tm/instant)]
     (mu/create-message! cfg/discord-message-channel
                         (:channel-id event-data)
                         (str "futbot running on Clojure " (clojure-version) " / " (System/getProperty "java.vm.vendor") " JVM " (System/getProperty "java.vm.version") " (" (System/getProperty "os.name") "/" (System/getProperty "os.arch") ")"

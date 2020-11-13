@@ -30,7 +30,7 @@
       (u/exit -1 "Please provide a football-data.org API token on the command line."))
 
     (let [football-data-api-token (first args)
-          day                     (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+          day                     (u/in-tz "UTC" (tm/zoned-date-time))
           matches                 (fd/matches-on-day football-data-api-token day)
           pdf-filename            (str "daily-schedule-" (tm/format "yyyy-MM-dd" day) ".pdf")]
       (if (seq matches)

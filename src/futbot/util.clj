@@ -17,7 +17,8 @@
 ;
 
 (ns futbot.util
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s]
+            [java-time      :as tm]))
 
 (defn parse-int
   [s]
@@ -48,6 +49,10 @@
              (first r)
              (rest  r))
       s)))
+
+(defmacro in-tz
+  [tz & body]
+  `(tm/with-clock (tm/system-clock ~tz) ~@body))
 
 (defn human-readable-date-diff
   "Returns a string containing the human readable difference between two instants."
