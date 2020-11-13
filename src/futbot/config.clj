@@ -140,6 +140,7 @@
                                                 [youtube-channel-id nil])))
                                           youtube-channels)))
 
+; Note: do NOT use mount for this, since it's used before mount has started
 (def ^:private build-info
   (if-let [deploy-info (io/resource "deploy-info.edn")]
     (edn/read-string (slurp deploy-info))

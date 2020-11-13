@@ -17,221 +17,123 @@
 ;
 
 (ns futbot.jobs
-  (:require [clojure.string                   :as s]
-            [clojure.java.io                  :as io]
-            [clojure.tools.logging            :as log]
-            [java-time                        :as tm]
-            [chime.core                       :as chime]
-            [futbot.message-util              :as mu]
-            [futbot.source.football-data      :as fd]
-            [futbot.source.dutch-referee-blog :as drb]
-            [futbot.source.cnra               :as cnra]
-            [futbot.source.youtube            :as yt]
-            [futbot.pdf                       :as pdf]
-            [futbot.flags                     :as fl]))
+  (:require [clojure.tools.logging       :as log]
+            [mount.core                  :as mnt :refer [defstate]]
+            [java-time                   :as tm]
+            [chime.core                  :as chime]
+            [futbot.config               :as cfg]
+            [futbot.source.football-data :as fd]
+            [futbot.core                 :as core]))
 
-(defn post-daily-schedule-to-channel!
-  "Generates and posts the daily-schedule (as an attachment) to the Discord channel identified by channel-id."
-  [discord-message-channel
-   channel-id
-   match-details-fn
-   today
-   todays-matches]
-  (System/gc)   ; Dear Mx JVM, now would be a *great* time to garbage collect...
-  (let [today-str (tm/format "yyyy-MM-dd" today)]
-    (if (seq todays-matches)
-      (let [pdf-file    (pdf/generate-daily-schedule match-details-fn today todays-matches)
-            pdf-file-is (io/input-stream pdf-file)]
-        (mu/create-message! discord-message-channel
-                            channel-id
-                            (str "Here are the scheduled matches for " today-str ":")
-                            pdf-file-is
-                            (str "daily-schedule-" today-str ".pdf")))
-      (mu/create-message! discord-message-channel
-                          channel-id
-                          (str "There are no matches scheduled for today (" today-str ").")))))
+(defmacro in-tz
+  [tz & body]
+  `(tm/with-clock (tm/system-clock ~tz) ~@body))
 
-(defn- referee-name
-  [referee-emoji
-   referee]
-  (let [name (:name referee)]
-    (if (s/blank? name)
-      "[unnamed referee]"
-      (if-let [emoji (get referee-emoji name)]
-        (str name " " emoji)
-        name))))
+(defn- close-job
+  "Closes a timed job defined by the defjob macro."
+  [^java.lang.AutoCloseable job]
+  (.close job))
 
-(defn- referee-names
-  [referee-emoji
-   referees]
-  (if (seq (remove s/blank? (map :name referees)))   ; Make sure we have at least one named referee
-    (s/join ", " (map (partial referee-name referee-emoji) referees))  ; And if so, include "unnamed" referees in the result, since position matters (CR, AR1, AR2, 4TH, VAR, etc.)
-    "¯\\_(ツ)_/¯"))
+(defmacro defjob
+  "Defines a timed job."
+  [name start interval & body]
+  (let [job-name# (str name)]
+    `(defstate ~name
+       :start (let [~'start ~start]
+                (log/info ~(str "Scheduling " job-name# "; first run will be at") (str ~'start))
+                (chime/chime-at (chime/periodic-seq ~'start ~interval)
+                                (fn [~'_]
+                                  (try
+                                    (log/info ~(str job-name# " started..."))
+                                    ~@body
+                                    (log/info ~(str job-name# " finished"))
+                                    (catch Exception ~'e
+                                      (log/error ~'e ~(str "Unexpected exception in " job-name#)))))))
+       :stop (close-job ~name))))
 
-(defn post-match-reminder-to-channel!
-  [football-data-api-token
-   discord-message-channel
-   match-reminder-duration
-   country-to-channel-fn
-   referee-emoji
-   match-id & _]
-  (try
-    (log/info (str "Sending reminder for match " match-id "..."))
-    (if-let [{match :match} (fd/match football-data-api-token match-id)]
-      (let [league        (s/trim (get-in match [:competition :name]))
-            country       (s/trim (get-in match [:competition :area :code]))
-            channel-id    (country-to-channel-fn country)
-            starts-in-min (try
-                            (.toMinutes (tm/duration (tm/zoned-date-time)
-                                                     (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time (:utc-date match)))))
-                            (catch Exception e
-                              (.toMinutes ^java.time.Duration match-reminder-duration)))
-            flag          (if-let [flag (fl/emoji (get-in match [:competition :area :code]))]
-                            flag
-                            "🏴‍☠️")
-            match-prefix  (str flag " " league ": **" (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown") "**")
-            message       (case (:status match)
-                            "SCHEDULED" (str match-prefix " starts in " starts-in-min " minutes.\nReferees: " (referee-names referee-emoji (:referees match)))
-                            "POSTPONED" (str match-prefix ", which was due to start in " starts-in-min " minutes, has been postponed.")
-                            "CANCELED"  (str match-prefix ", which was due to start in " starts-in-min " minutes, has been canceled.")
-                            nil)]
-        (if message
-          (mu/create-message! discord-message-channel
-                              channel-id
-                              message)
-          (log/warn (str "Match " match-id " had an unexpected status: " (:status match) ". No reminder message sent."))))
-      (log/warn (str "Match " match-id " was not found by football-data.org. No reminder message sent.")))
-    (catch Exception e
-      (log/error e (str "Unexpected exception while sending reminder for match " match-id)))
-    (finally
-      (log/info (str "Finished sending reminder for match " match-id)))))
+; Run the GC 7 minutes after startup, then every hour after that
+(defjob gc-job
+        (tm/plus (tm/instant) (tm/minutes 7))
+        (tm/hours 1)
+        (System/gc))
 
-(defn schedule-match-reminder!
-  "Schedules a reminder for the given match."
-  [football-data-api-token
-   discord-message-channel
-   match-reminder-duration
-   muted-leagues
-   country-to-channel-fn
-   referee-emoji
-   match]
-  (let [now           (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
-        match-time    (tm/zoned-date-time (:utc-date match))
-        match-league  (get-in match [:competition :name])
-        reminder-time (tm/minus match-time (tm/plus match-reminder-duration (tm/seconds 10)))]
-    (if-not (some (partial = match-league) muted-leagues)
-      (if (tm/before? now reminder-time)
-        (do
-          (log/info (str "Scheduling reminder for match " (:id match) " at " reminder-time))
-          (chime/chime-at [reminder-time]
-                          (partial post-match-reminder-to-channel!
-                                   football-data-api-token
-                                   discord-message-channel
-                                   match-reminder-duration
-                                   country-to-channel-fn
-                                   referee-emoji
-                                   (:id match))))
-        (log/info (str "Reminder time " reminder-time " for match " (:id match) " has already passed - not scheduling a reminder.")))
-      (log/info (str "Match " (:id match) " is in a muted league - not scheduling a reminder.")))))
+; Prepare the daily schedule at midnight UTC every day
+(defjob daily-schedule-job
+        (tm/plus (tm/truncate-to (tm/instant) :days) (tm/days 1))
+        (tm/days 1)
+        (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))   ; Note: can't use a tm/instant here as football-data code doesn't support it (TODO)
+              todays-scheduled-matches (fd/scheduled-matches-on-day cfg/football-data-api-token today)]
+          (core/post-daily-schedule-to-channel! cfg/discord-message-channel
+                                                cfg/daily-schedule-discord-channel-id
+                                                (partial fd/match cfg/football-data-api-token)
+                                                today
+                                                todays-scheduled-matches)
+          (core/schedule-todays-reminders! cfg/football-data-api-token
+                                           cfg/discord-message-channel
+                                           cfg/match-reminder-duration
+                                           cfg/muted-leagues
+                                           #(get cfg/country-to-channel % cfg/default-reminder-channel-id)
+                                           cfg/referee-emoji
+                                           todays-scheduled-matches)))
 
-(defn schedule-todays-reminders!
-  "Schedules reminders for the remainder of today's matches."
-  ([football-data-api-token
-    discord-message-channel
-    match-reminder-duration
-    muted-leagues
-    country-to-channel-fn
-    referee-emoji]
-    (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
-          todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
-      (schedule-todays-reminders! football-data-api-token
-                                  discord-message-channel
-                                  match-reminder-duration
-                                  muted-leagues
-                                  country-to-channel-fn
-                                  referee-emoji
-                                  todays-scheduled-matches)))
-  ([football-data-api-token
-    discord-message-channel
-    match-reminder-duration
-    muted-leagues
-    country-to-channel-fn
-    referee-emoji
-    todays-scheduled-matches]
-    (if (seq todays-scheduled-matches)
-      (doall (map (partial schedule-match-reminder! football-data-api-token
-                                                    discord-message-channel
-                                                    match-reminder-duration
-                                                    muted-leagues
-                                                    country-to-channel-fn
-                                                    referee-emoji)
-                  (distinct todays-scheduled-matches)))
-      (log/info "No matches remaining today - not scheduling any reminders."))))
+; Check for new Dutch Referee Blog Quizzes at 9am Amsterdam each day. This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
+(defjob dutch-referee-blog-quiz-job
+        (let [now              (in-tz "Europe/Amsterdam" (tm/zoned-date-time))
+              today-at-nine-am (in-tz "Europe/Amsterdam" (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
+          (if (tm/before? now today-at-nine-am)
+            today-at-nine-am
+            (tm/plus today-at-nine-am (tm/days 1))))
+        (tm/days 1)
+        (core/check-for-new-dutch-referee-blog-quiz-and-post-to-channel! cfg/discord-message-channel
+                                                                         cfg/quiz-channel-id))
 
-(defn check-for-new-dutch-referee-blog-quiz-and-post-to-channel!
-  "Checks whether a new Dutch referee blog quiz has been posted in the last time-period-hours hours (defaults to 24), and posts it to the given channel if so."
-  ([discord-message-channel channel-id] (check-for-new-dutch-referee-blog-quiz-and-post-to-channel! discord-message-channel channel-id 24))
-  ([discord-message-channel
-    channel-id
-    time-period-hours]
-   (if-let [new-quizzes (drb/quizzes (tm/minus (tm/instant) (tm/hours time-period-hours)))]
-     (let [_          (log/info (str (count new-quizzes) " new Dutch referee blog quizz(es) found"))
-           message    (str "<:dfb:753779768306040863> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
-                           (:link (first new-quizzes))
-                           "\nPuzzled by an answer? Click the react and we'll discuss in <#686439362291826694>!")
-           message-id (:id (mu/create-message! discord-message-channel
-                                               channel-id
-                                               message))]
-       (if message-id
-         (do
-           (mu/create-reaction! discord-message-channel channel-id message-id "1️⃣")
-           (mu/create-reaction! discord-message-channel channel-id message-id "2️⃣")
-           (mu/create-reaction! discord-message-channel channel-id message-id "3️⃣")
-           (mu/create-reaction! discord-message-channel channel-id message-id "4️⃣")
-           (mu/create-reaction! discord-message-channel channel-id message-id "5️⃣"))
-         (log/warn "No message id found for Dutch referee blog message - skipped adding reactions"))
-       nil)
-     (log/info "No new Dutch referee blog quizzes found"))))
+; Check for new CNRA Quizzes at midnight Los Angeles on the 16th of the month. This job runs in America/Los_Angeles timezone, since that's where CNRA is located
+(defjob cnra-quiz-job
+        (let [now                                (in-tz "America/Los_Angeles" (tm/zoned-date-time))
+              sixteenth-of-the-month-at-midnight (in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
+          (if (tm/before? now sixteenth-of-the-month-at-midnight)
+            sixteenth-of-the-month-at-midnight
+            (tm/plus sixteenth-of-the-month-at-midnight (tm/months 1))))
+        (tm/months 1)
+        (core/check-for-new-cnra-quiz-and-post-to-channel! cfg/discord-message-channel
+                                                           cfg/quiz-channel-id))
 
-(defn check-for-new-cnra-quiz-and-post-to-channel!
-  "Checks whether a new CNRA quiz has been posted since the first of the month, and posts it to the given channel if so."
-  [discord-message-channel channel-id]
-  (if-let [new-quizzes (cnra/quizzes (tm/adjust (tm/local-date) :first-day-of-month))]
-    (let [message    (str "<:cnra:769311341751959562> A new **CNRA Quiz** has been posted, on the topic of **"
-                          (:topic (first new-quizzes))
-                          "**: "
-                          (:link (first new-quizzes))
-                          "\nPuzzled by an answer? React and we'll discuss in <#686439362291826694>!")]
-      (mu/create-message! discord-message-channel
-                          channel-id
-                          message)
-      nil)
-    (log/info "No new CNRA quizzes found")))
 
-(def ist-youtube-channel-id                    "UCmzFaEBQlLmMTWS0IQ90tgA")
-(def training-and-resources-discord-channel-id "<#686439362291826694>")
-(def memes-and-junk-discord-channel-id         "<#683853455038742610>")
+; Youtube jobs are a bit messy, since the total number is defined in config, not hardcoded as the jobs above are
+(defn schedule-youtube-job
+  [job-time youtube-channel-id]
+  (let [youtube-channel-name (get-in cfg/youtube-channels-info [youtube-channel-id :title] (str "-unknown (" youtube-channel-id ")-"))]
+    (log/info (str "Scheduling Youtube channel " youtube-channel-name " job; first run will be at " job-time))
+    (chime/chime-at (chime/periodic-seq job-time (tm/days 1))
+                    (fn [_]
+                      (try
+                        (log/info (str "Youtube channel " youtube-channel-name " job started..."))
+                        (core/check-for-new-youtube-video-and-post-to-channel! cfg/youtube-api-token
+                                                                               cfg/discord-message-channel
+                                                                               cfg/video-channel-id
+                                                                               youtube-channel-id
+                                                                               cfg/youtube-channels-info)
+                        (log/info (str "Youtube channel " youtube-channel-name " job finished"))
+                        (catch Exception e
+                          (log/error e (str "Unexpected exception in Youtube channel " youtube-channel-name " job"))))))))
 
-(defn check-for-new-youtube-video-and-post-to-channel!
-  "Checks whether any new videos have been posted to the given Youtube channel in the last day, and posts it to the given Discord channel if so."
-  [youtube-api-token discord-message-channel discord-channel-id youtube-channel-id youtube-channel-info-fn]
-  (let [channel-title (:title (youtube-channel-info-fn youtube-channel-id))]
-    (if-let [new-videos (yt/videos youtube-api-token
-                                   (tm/minus (tm/instant) (tm/days 1))
-                                   youtube-channel-id)]
-      (do
-        (doall (map #(let [message (str (if (= youtube-channel-id ist-youtube-channel-id) "<:ist:733173880403001394>" "<:youtube:771103353454460938>")
-                                        (if channel-title
-                                          (str " A new **" channel-title "** Youtube video has been posted: **")
-                                          " A new Youtube video has been posted: **")
-                                        (:title %)
-                                        "**: https://www.youtube.com/watch?v=" (:id %)
-                                        "\nDiscuss in "
-                                        (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-id training-and-resources-discord-channel-id)
-                                        "!")]
-                       (mu/create-message! discord-message-channel
-                                           discord-channel-id
-                                           message))
-                    new-videos))
-        nil)
-      (log/info (str "No new Youtube videos found in channel " (if channel-title channel-title (str "-unknown (" youtube-channel-id ")-")))))))
+; Each Youtube job is run once per day, and they're equally spaced throughout the day to spread out the load
+(defstate youtube-jobs
+          :start (let [interval (int (/ (* 24 60) (count cfg/youtube-channels)))
+                       now      (tm/instant)
+                       midnight (tm/truncate-to now :days)]
+                   (loop [f      (first cfg/youtube-channels)
+                          r      (rest cfg/youtube-channels)
+                          index  1
+                          result []]
+                     (let [job-time (tm/plus midnight (tm/minutes (* index interval)))
+                           job-time (if (tm/before? job-time now)
+                                      (tm/plus job-time (tm/days 1))
+                                      job-time)]
+                       (if-not f
+                         result
+                         (recur (first r)
+                                (rest r)
+                                (inc index)
+                                (conj result (schedule-youtube-job (tm/instant job-time) f)))))))
+          :stop (doall (map #(.close ^java.lang.AutoCloseable %) youtube-jobs)))

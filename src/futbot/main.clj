@@ -25,8 +25,11 @@
             [clojure.tools.logging :as log]
             [mount.core            :as mnt]
             [java-time             :as tm]
+            [discljord.events      :as de]
             [futbot.util           :as u]
-            [futbot.core           :as core])
+            [futbot.jobs           :as job]    ; This is required, so that mount schedules all jobs
+            [futbot.core           :as core]
+            [futbot.chat           :as chat])
   (:gen-class))
 
 (def ^:private cli-opts
@@ -52,7 +55,7 @@
   [& args]
   (try
     (log/info "Starting futbot on Clojure" (clojure-version) "/" (System/getProperty "java.vm.vendor") "JVM" (System/getProperty "java.vm.version") (str "(" (System/getProperty "os.name") "/" (System/getProperty "os.arch") ")"))
-    (log/info "Built at" (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str "from " cfg/git-url) ""))
+    (log/info "Built at" (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str "from " cfg/git-url)))
     (let [{:keys [options errors summary]} (cli/parse-opts args cli-opts)]
       (cond
         (:help options) (u/exit 0 (usage summary))
@@ -62,7 +65,14 @@
       ; Start the bot
       (mnt/with-args options)
       (mnt/start)
-      (core/start-bot!))  ; This must go last, as it blocks
+      (core/schedule-todays-reminders! cfg/football-data-api-token
+                                       cfg/discord-message-channel
+                                       cfg/match-reminder-duration
+                                       cfg/muted-leagues
+                                       #(get cfg/country-to-channel % cfg/default-reminder-channel-id)
+                                       cfg/referee-emoji)
+      (log/info "futbot started")
+      (de/message-pump! cfg/discord-event-channel chat/handle-discord-event))   ; This must go last, as it blocks
     (catch Exception e
       (log/error e)
       (u/exit -1))
