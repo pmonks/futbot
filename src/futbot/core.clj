@@ -197,18 +197,22 @@
      (log/info "No new Dutch referee blog quizzes found"))))
 
 (defn check-for-new-cnra-quiz-and-post-to-channel!
-  "Checks whether a new CNRA quiz has been posted since the first of the month, and posts it to the given channel if so."
+  "Checks whether any new CNRA quizzes has been posted in the last month, and posts them to the given channel if so."
   [discord-message-channel channel-id]
-  (if-let [new-quizzes (cnra/quizzes (tm/adjust (tm/local-date) :first-day-of-month))]
-    (let [message    (str "<:cnra:769311341751959562> A new **CNRA Quiz** has been posted, on the topic of **"
-                          (:topic (first new-quizzes))
-                          "**: "
-                          (:link (first new-quizzes))
-                          "\nPuzzled by an answer? React and we'll discuss in " training-and-resources-discord-channel-id "!")]
-      (mu/create-message! discord-message-channel
-                          channel-id
-                          message)
-      nil)
+  (if-let [new-quizzes (cnra/quizzes (tm/minus (tm/local-date) (tm/months 1)))]
+    (doall
+      (map (fn [quiz]
+        (let [message (str "<:cnra:769311341751959562> The **"
+                           (:quiz-date quiz)
+                           " CNRA Quiz** has been posted, on the topic of **"
+                           (:topic quiz)
+                           "**: "
+                           (:link quiz)
+                           "\nPuzzled by an answer? React and we'll discuss in " training-and-resources-discord-channel-id "!")]
+          (mu/create-message! discord-message-channel
+                              channel-id
+                              message)))
+         new-quizzes))
     (log/info "No new CNRA quizzes found")))
 
 (defn check-for-new-youtube-video-and-post-to-channel!
