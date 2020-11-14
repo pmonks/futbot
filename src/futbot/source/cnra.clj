@@ -17,31 +17,40 @@
 ;
 
 (ns futbot.source.cnra
-  (:require [clojure.string :as s]
-            [java-time      :as tm]
-            [remus          :as rss]
-            [futbot.util    :as u]))
+  (:require [clojure.string     :as s]
+            [java-time          :as tm]
+            [org.httpkit.client :as http]
+            [futbot.util        :as u]))
 
-(def cnra-rss-feed-url "http://www.cnra.net/feed/atom/")   ; I prefer atom...
-(def quiz-post-title   "Monthly Video Quizzes")
+(def cnra-quiz-page-url "http://www.cnra.net/monthly-video-quizzes/")
 
-(defn para-to-quiz
+(defn- retrieve-and-parse-quiz-page
+  "Retrieves the CNRA quiz page and returns a JSoup-parsed represention. Throws an ex-info on failure."
+  []
+  (let [{:keys [status headers body error]} @(http/get cnra-quiz-page-url)]
+    (if error
+      (throw (ex-info (str "Error while retrieving CNRA quiz page " cnra-quiz-page-url) {:status status :headers headers :body body} error))
+      (org.jsoup.Jsoup/parse body))))
+
+(defn- para-to-quiz
   [^org.jsoup.nodes.Element p]
   (let [text               (u/replace-all (.text p)
                                          [[#"[–‑‒–—]" "-"]])  ; Normalise Unicode "dash" characters
-       [month-year topic] (s/split text #" - ")   ; NOTE: ASSUMES QUIZ LINK PARAS ARE CONSISTENT - NEED TO CONFIRM ON NOV 15 WHEN THEY PUBLISH A SECOND ONE!
+       [month-year topic] (s/split text #" - ")
        date               (tm/local-date "dd MMMM yyyy" (str "15 " month-year))
        link               (.attr (.selectFirst p "a[href*=forms.gle]") "href")]      ; Note: assumes the quiz is always the first link to a Google form
     (when link
       {
-        :date  date
-        :topic (s/lower-case topic)
-        :link  link
+        :date      date
+        :quiz-date month-year
+        :topic     (s/lower-case topic)
+        :link      link
       })))
 
-(defn html-to-quizzes
-  [html]
-  (let [quiz-paras (drop-last (drop 2 (.select (org.jsoup.Jsoup/parse html) "p")))]   ; NOTE: ASSUMES PAGE STRUCTURE STAYS CONSISTENT - NEED TO CONFIRM ON NOV 15 WHEN THEY PUBLISH A SECOND ONE!
+(defn- html-to-quizzes
+  [^org.jsoup.nodes.Document page]
+  (let [quiz-para  (.nextElementSibling ^org.jsoup.nodes.Element (first (.select page "hr[class=wp-block-separator]")))  ; Find the (single) paragraph containing the quizes
+        quiz-paras (.select (org.jsoup.Jsoup/parse (s/replace (str quiz-para) "<br>" "</p><p>")) "p")]                   ; Convert it into one paragraph per quiz
     (keep identity (map para-to-quiz quiz-paras))))
 
 (defn quizzes
@@ -49,8 +58,7 @@
   ([] (quizzes nil))
   ([since]
     (seq
-      (when-let [all-quizzes (html-to-quizzes (:value (first (:contents (first (filter #(= (:title %) quiz-post-title)
-                                                                                       (:entries (:feed (rss/parse-url cnra-rss-feed-url)))))))))]
+      (when-let [all-quizzes (html-to-quizzes (retrieve-and-parse-quiz-page))]
         (if since
           (filter #(tm/after? (:date %) since) all-quizzes)
           all-quizzes)))))
