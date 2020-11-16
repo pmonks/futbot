@@ -88,7 +88,9 @@
 ; Check for new CNRA Quizzes at midnight Los Angeles on the 16th of the month. This job runs in America/Los_Angeles timezone, since that's where CNRA is located
 (defjob cnra-quiz-job
         (let [now                                (u/in-tz "America/Los_Angeles" (tm/zoned-date-time))
-              sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
+; ####TEST TO FORCE CNRA JOB TO RUN AGAIN ON 2020-11-17!
+              sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 16)))]
+;              sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
           (if (tm/before? now sixteenth-of-the-month-at-midnight)
             sixteenth-of-the-month-at-midnight
             (tm/plus sixteenth-of-the-month-at-midnight (tm/months 1))))
