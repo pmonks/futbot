@@ -26,7 +26,7 @@
             [futbot.source.football-data :as fd]
             [futbot.core                 :as core]))
 
-(defn- close-job
+(defn close-job
   "Closes a timed job defined by the defjob macro."
   [^java.lang.AutoCloseable job]
   (.close job))
@@ -44,6 +44,8 @@
                                     (log/info ~(str job-name# " started..."))
                                     ~@body
                                     (log/info ~(str job-name# " finished"))
+                                    (catch clojure.lang.ExceptionInfo ~'ie
+                                      (log/error ~'ie (str "Unexpected exception in " ~job-name# "; data: " (ex-data ~'ie))))
                                     (catch Exception ~'e
                                       (log/error ~'e ~(str "Unexpected exception in " job-name#)))))))
        :stop (close-job ~name))))
@@ -81,19 +83,19 @@
             today-at-nine-am
             (tm/plus today-at-nine-am (tm/days 1))))
         (tm/days 1)
-        (core/check-for-new-dutch-referee-blog-quiz-and-post-to-channel! cfg/discord-message-channel
-                                                                         cfg/quiz-channel-id))
+        (core/check-for-new-dutch-referee-blog-quiz-and-post-to-channel! cfg/discord-message-channel cfg/quiz-channel-id))
 
 ; Check for new CNRA Quizzes at midnight Los Angeles on the 16th of the month. This job runs in America/Los_Angeles timezone, since that's where CNRA is located
 (defjob cnra-quiz-job
         (let [now                                (u/in-tz "America/Los_Angeles" (tm/zoned-date-time))
-              sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
+; ####TEST TO FORCE CNRA JOB TO RUN AGAIN ON 2020-11-17!
+              sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 16)))]
+;              sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
           (if (tm/before? now sixteenth-of-the-month-at-midnight)
             sixteenth-of-the-month-at-midnight
             (tm/plus sixteenth-of-the-month-at-midnight (tm/months 1))))
         (tm/months 1)
-        (core/check-for-new-cnra-quiz-and-post-to-channel! cfg/discord-message-channel
-                                                           cfg/quiz-channel-id))
+        (core/check-for-new-cnra-quiz-and-post-to-channel! cfg/discord-message-channel cfg/quiz-channel-id))
 
 
 ; Youtube jobs are a bit messy, since the total number is defined in config, not hardcoded as the jobs above are
@@ -111,6 +113,8 @@
                                                                                youtube-channel-id
                                                                                cfg/youtube-channels-info)
                         (log/info (str "Youtube channel " youtube-channel-name " job finished"))
+                        (catch clojure.lang.ExceptionInfo ie
+                          (log/error ie (str "Unexpected exception in Youtube channel " youtube-channel-name " job; data: " (ex-data ie))))
                         (catch Exception e
                           (log/error e (str "Unexpected exception in Youtube channel " youtube-channel-name " job"))))))))
 

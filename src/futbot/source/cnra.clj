@@ -34,7 +34,7 @@
 
 (defn- para-to-quiz
   [^org.jsoup.nodes.Element p]
-  (let [text               (u/replace-all (.text p)
+  (let [text              (u/replace-all (.text p)
                                          [[#"[–‑‒–—]" "-"]])  ; Normalise Unicode "dash" characters
        [month-year topic] (s/split text #" - ")
        date               (tm/local-date "dd MMMM yyyy" (str "15 " month-year))

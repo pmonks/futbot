@@ -22,8 +22,8 @@
 
 (defn- check-response-and-throw
   [response]
-  (if (= (class response) clojure.lang.ExceptionInfo)
-    (throw response)
+  (if (= (class response) java.lang.Throwable)
+    (throw (ex-info (str "Discord API error: " (.getMessage ^java.lang.Throwable response) (ex-data response) response)))
     response))
 
 (defn create-message!
