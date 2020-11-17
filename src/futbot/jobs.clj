@@ -34,21 +34,18 @@
 (defmacro defjob
   "Defines a timed job."
   [name start interval & body]
-  (let [job-name# (str name)]
-    `(defstate ~name
-       :start (let [~'start ~start]
-                (log/info ~(str "Scheduling " job-name# "; first run will be at") (str ~'start))
-                (chime/chime-at (chime/periodic-seq ~'start ~interval)
-                                (fn [~'_]
-                                  (try
-                                    (log/info ~(str job-name# " started..."))
-                                    ~@body
-                                    (log/info ~(str job-name# " finished"))
-                                    (catch clojure.lang.ExceptionInfo ~'ie
-                                      (log/error ~'ie (str "Unexpected exception in " ~job-name# "; data: " (ex-data ~'ie))))
-                                    (catch Exception ~'e
-                                      (log/error ~'e ~(str "Unexpected exception in " job-name#)))))))
-       :stop (close-job ~name))))
+  `(defstate ~name
+     :start (let [~'start ~start]    ; Evaluate and cache 'start', since it may be an expensive computation
+              (log/info ~(str "Scheduling " name "; first run will be at") (str ~'start))
+              (chime/chime-at (chime/periodic-seq ~'start ~interval)
+                              (fn [~'_]
+                                (try
+                                  (log/info ~(str name " started..."))
+                                  ~@body
+                                  (log/info ~(str name " finished"))
+                                  (catch Exception ~'e
+                                    (u/log-exception ~'e ~(str "Unexpected exception in " name)))))))
+     :stop (close-job ~name)))
 
 ; Run the GC 7 minutes after startup, then every hour after that
 (defjob gc-job
@@ -88,9 +85,7 @@
 ; Check for new CNRA Quizzes at midnight Los Angeles on the 16th of the month. This job runs in America/Los_Angeles timezone, since that's where CNRA is located
 (defjob cnra-quiz-job
         (let [now                                (u/in-tz "America/Los_Angeles" (tm/zoned-date-time))
-; ####TEST TO FORCE CNRA JOB TO RUN AGAIN ON 2020-11-17!
-              sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 16)))]
-;              sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
+              sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
           (if (tm/before? now sixteenth-of-the-month-at-midnight)
             sixteenth-of-the-month-at-midnight
             (tm/plus sixteenth-of-the-month-at-midnight (tm/months 1))))
@@ -113,10 +108,8 @@
                                                                                youtube-channel-id
                                                                                cfg/youtube-channels-info)
                         (log/info (str "Youtube channel " youtube-channel-name " job finished"))
-                        (catch clojure.lang.ExceptionInfo ie
-                          (log/error ie (str "Unexpected exception in Youtube channel " youtube-channel-name " job; data: " (ex-data ie))))
                         (catch Exception e
-                          (log/error e (str "Unexpected exception in Youtube channel " youtube-channel-name " job"))))))))
+                          (u/log-exception e (str "Unexpected exception in Youtube channel " youtube-channel-name " job"))))))))
 
 ; Each Youtube job is run once per day, and they're equally spaced throughout the day to spread out the load
 (defstate youtube-jobs

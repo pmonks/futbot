@@ -74,7 +74,7 @@
       (log/info "futbot started")
       (de/message-pump! cfg/discord-event-channel chat/handle-discord-event))   ; This must go last, as it blocks
     (catch Exception e
-      (log/error e)
+      (u/log-exception e)
       (u/exit -1))
     (finally
       (u/exit))))

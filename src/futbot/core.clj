@@ -22,6 +22,7 @@
             [clojure.tools.logging            :as log]
             [java-time                        :as tm]
             [chime.core                       :as chime]
+            [futbot.util                      :as u]
             [futbot.message-util              :as mu]
             [futbot.source.football-data      :as fd]
             [futbot.source.dutch-referee-blog :as drb]
@@ -107,7 +108,7 @@
       (log/warn (str "Match " match-id " was not found by football-data.org. No reminder message sent.")))
     (log/info (str "Finished sending reminder for match " match-id))
     (catch Exception e
-      (log/error e (str "Unexpected exception while sending reminder for match " match-id)))))
+      (u/log-exception e (str "Unexpected exception while sending reminder for match " match-id)))))
 
 (defn schedule-match-reminder!
   "Schedules a reminder for the given match."

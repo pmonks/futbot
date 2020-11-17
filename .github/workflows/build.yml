@@ -2,6 +2,9 @@ name: build
 
 on: [push, pull_request]
 
+env:
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,6 +23,6 @@ jobs:
           tools-deps: latest
 
       - name: Construct git info
-        run: clojure -Srepro -A:git-info-edn
+        run: clojure -Srepro -M:git-info-edn
       - name: Check code
-        run: clojure -Srepro -A:check
+        run: clojure -Srepro -M:check
