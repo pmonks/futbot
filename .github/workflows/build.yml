@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@latest
 
       - name: Install Java LTS
         uses: actions/setup-java@v1
@@ -20,6 +20,6 @@ jobs:
           tools-deps: latest
 
       - name: Construct git info
-        run: clojure -Srepro -A:git-info-edn
+        run: clojure -Srepro -M:git-info-edn
       - name: Check code
-        run: clojure -Srepro -A:check
+        run: clojure -Srepro -M:check
