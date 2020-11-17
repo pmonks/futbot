@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@latest
+      - uses: actions/checkout@v2
 
       - name: Install Java LTS
         uses: actions/setup-java@v1
