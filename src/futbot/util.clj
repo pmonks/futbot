@@ -17,10 +17,12 @@
 ;
 
 (ns futbot.util
-  (:require [clojure.string :as s]
-            [java-time      :as tm]))
+  (:require [clojure.string        :as s]
+            [clojure.tools.logging :as log]
+            [java-time             :as tm]))
 
 (defn parse-int
+  "Parses a string into an int, returning nil if parsing failed."
   [s]
   (try
     (Integer/parseInt s)
@@ -51,6 +53,7 @@
       s)))
 
 (defmacro in-tz
+  "Executes body (assumed to include java-time logic) within the given tzdata timezone (e.g. Americas/Los_Angeles)."
   [tz & body]
   `(tm/with-clock (tm/system-clock ~tz) ~@body))
 
@@ -63,6 +66,18 @@
                                  (mod (.until i1 i2 (java.time.temporal.ChronoUnit/MINUTES))   60)
                                  (mod (.until i1 i2 (java.time.temporal.ChronoUnit/SECONDS))   60)
                                  (mod (.until i1 i2 (java.time.temporal.ChronoUnit/MILLIS))  1000)))
+
+(defn log-exception
+  "Logs the given exception and (optional) message at ERROR level."
+  ([^java.lang.Throwable e] (log-exception e nil))
+  ([^java.lang.Throwable e msg]
+   (let [extra (ex-data e)
+         m     (case [(boolean msg) (boolean extra)]
+                 [true  true]  (str msg "; data: " extra)
+                 [true  false] msg
+                 [false true]  (str "Data: " extra)
+                 [false false] (if e (.getMessage e) "No exception information provided (this is probably a bug)"))]
+     (log/error e m))))
 
 (defn exit
   "Exits the program after printing the given message, and returns the given status code."

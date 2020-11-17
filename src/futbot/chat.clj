@@ -121,7 +121,7 @@
             (when-not (:guild-id event-data)
               (help-command! nil event-data))))
         (catch Exception e
-          (log/error e))))))
+          (u/log-exception e))))))
 
 ; Default Discord event handler (noop)
 (defmethod handle-discord-event :default

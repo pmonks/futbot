@@ -27,6 +27,7 @@
             [mount.core            :as mnt :refer [defstate]]
             [discljord.connections :as dc]
             [discljord.messaging   :as dm]
+            [futbot.util           :as u]
             [futbot.source.youtube :as yt]))
 
 ; Because java.util.logging is a hot mess
@@ -37,7 +38,7 @@
 (Thread/setDefaultUncaughtExceptionHandler
  (reify Thread$UncaughtExceptionHandler
    (uncaughtException [_ t e]
-     (log/error e "Uncaught exception on" (.getName t)))))
+     (u/log-exception e "Uncaught exception on" (.getName t)))))
 
 (def boot-time (tm/instant))
 
