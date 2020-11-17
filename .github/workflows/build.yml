@@ -2,6 +2,7 @@ name: build
 
 on: [push, pull_request]
 
+# Workaround until https://github.com/DeLaGuardo/setup-clojure/issues/17 is fixed
 env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
