@@ -75,6 +75,5 @@
       (de/message-pump! cfg/discord-event-channel chat/handle-discord-event))   ; This must go last, as it blocks
     (catch Exception e
       (u/log-exception e)
-      (u/exit -1))
-    (finally
-      (u/exit))))
+      (u/exit -1)))
+  (u/exit))
