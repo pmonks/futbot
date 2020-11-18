@@ -47,9 +47,9 @@
                                     (u/log-exception ~'e ~(str "Unexpected exception in " name)))))))
      :stop (close-job ~name)))
 
-; Run the GC 7 minutes after startup, then every hour after that
+; Run the GC 2 minutes after startup, then every hour after that
 (defjob gc-job
-        (tm/plus (tm/instant) (tm/minutes 7))
+        (tm/plus (tm/instant) (tm/minutes 2))
         (tm/hours 1)
         (System/gc))
 
