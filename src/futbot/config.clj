@@ -127,18 +127,25 @@
                      token
                      (throw (ex-info "Youtube API token not provided" {})))))
 
+(defstate default-youtube-emoji
+          :start (:default-youtube-emoji config))
+
+(defstate youtube-channels-emoji
+          :start (:youtube-channels config))
+
 (defstate youtube-channels
-          :start (seq (:youtube-channels config)))
+          :start (keys youtube-channels-emoji))
 
 (defstate youtube-channels-info
           :start (apply assoc nil (mapcat (fn [youtube-channel-id]
-                                            (try
-                                              [youtube-channel-id (yt/channel-info youtube-api-token youtube-channel-id)]
-                                              (catch Exception e
-                                                (log/warn e (str "Error retrieving Youtube channel info for " youtube-channel-id
-                                                                 ": status code=" (:status (ex-data e))
-                                                                 ", message="     (:message (:error (:body (ex-data e))))))
-                                                [youtube-channel-id nil])))
+                                            [youtube-channel-id (into {:emoji (get youtube-channels-emoji youtube-channel-id default-youtube-emoji)}
+                                                                      (try
+                                                                        (yt/channel-info youtube-api-token youtube-channel-id)
+                                                                        (catch Exception e
+                                                                          (log/warn e (str "Error retrieving Youtube channel info for " youtube-channel-id
+                                                                                           ": status code=" (:status (ex-data e))
+                                                                                           ", message="     (:message (:error (:body (ex-data e))))))
+                                                                          nil)))])
                                           youtube-channels)))
 
 ; Note: do NOT use mount for this, since it's used before mount has started

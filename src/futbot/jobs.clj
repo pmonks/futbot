@@ -47,9 +47,9 @@
                                     (u/log-exception ~'e ~(str "Unexpected exception in " name)))))))
      :stop (close-job ~name)))
 
-; Run the GC 7 minutes after startup, then every hour after that
+; Run the GC 2 minutes after startup, then every hour after that
 (defjob gc-job
-        (tm/plus (tm/instant) (tm/minutes 7))
+        (tm/plus (tm/instant) (tm/minutes 2))
         (tm/hours 1)
         (System/gc))
 
@@ -102,11 +102,11 @@
                     (fn [_]
                       (try
                         (log/info (str "Youtube channel " youtube-channel-name " job started..."))
-                        (core/check-for-new-youtube-video-and-post-to-channel! cfg/youtube-api-token
-                                                                               cfg/discord-message-channel
-                                                                               cfg/video-channel-id
-                                                                               youtube-channel-id
-                                                                               cfg/youtube-channels-info)
+                        (core/check-for-new-youtube-videos-and-post-to-channel! cfg/youtube-api-token
+                                                                                cfg/discord-message-channel
+                                                                                cfg/video-channel-id
+                                                                                youtube-channel-id
+                                                                                cfg/youtube-channels-info)
                         (log/info (str "Youtube channel " youtube-channel-name " job finished"))
                         (catch Exception e
                           (u/log-exception e (str "Unexpected exception in Youtube channel " youtube-channel-name " job"))))))))
