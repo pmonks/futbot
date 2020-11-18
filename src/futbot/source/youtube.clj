@@ -44,7 +44,7 @@
   (:snippet (first (:items (google-api-call youtube-api-token (format endpoint-get-channel-info channel-id))))))
 
 (defn videos
-  "Retrieves up to 50 videos for the given YouTube channel (or nil if there aren't any), optionally limited to those published since the given date."
+  "Retrieves up to 50 videos for the given YouTube channel (or nil if there aren't any) newest first, optionally limited to those published since the given date."
   ([youtube-api-token channel-id] (videos youtube-api-token nil channel-id))
   ([youtube-api-token since channel-id]
     (let [endpoint (if since

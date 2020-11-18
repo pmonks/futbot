@@ -102,11 +102,11 @@
                     (fn [_]
                       (try
                         (log/info (str "Youtube channel " youtube-channel-name " job started..."))
-                        (core/check-for-new-youtube-video-and-post-to-channel! cfg/youtube-api-token
-                                                                               cfg/discord-message-channel
-                                                                               cfg/video-channel-id
-                                                                               youtube-channel-id
-                                                                               cfg/youtube-channels-info)
+                        (core/check-for-new-youtube-videos-and-post-to-channel! cfg/youtube-api-token
+                                                                                cfg/discord-message-channel
+                                                                                cfg/video-channel-id
+                                                                                youtube-channel-id
+                                                                                cfg/youtube-channels-info)
                         (log/info (str "Youtube channel " youtube-channel-name " job finished"))
                         (catch Exception e
                           (u/log-exception e (str "Unexpected exception in Youtube channel " youtube-channel-name " job"))))))))

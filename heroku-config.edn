@@ -49,16 +49,17 @@
   :video-channel-id "771086596644274216"  ; Refereeing > quizzes-and-videos
 
   :youtube-api-token #env YOUTUBE_API_TOKEN
-  :youtube-channels [
-    "UCxdPyM0KXNhXGUChb1FaJSA"   ; Football Victoria Referees
-    "UCosXVB8eY3iF26k6iTHW9gw"   ; CONCACAF Center of Refereeing Excellence
-    "UCDWmPEiV6UehDyq-0yoigmQ"   ; PROreferees (Inside Videro Review)
-    "UCRvL3eeBF3MFGFn6vnqR0nw"   ; WASRC Webinars
-    "UCcMv5IAlVBy-7oHt7pdiLxQ"   ; RWISOA Referees
-    "UCH4fZCsZ3_4rPIzEeLbcLGA"   ; Ahmed Habib's Referee Channel
-    "UCjlAAUxk70KurpcLWcFL8Mg"   ; Victor Karimi's Referee Channel
-    "UCfWpYhMIs2xqq7-v9HDAxuQ"   ; Matthew Buckman (CNRA)
-    "UCjOMOGOifZ1NwpAgCXv0-rw"   ; REFSIX
-    "UCmzFaEBQlLmMTWS0IQ90tgA"   ; IST
-  ]
+  :youtube-channels {
+    "UCxdPyM0KXNhXGUChb1FaJSA" nil                          ; Football Victoria Referees
+    "UCosXVB8eY3iF26k6iTHW9gw" nil                          ; CONCACAF Center of Refereeing Excellence
+    "UCDWmPEiV6UehDyq-0yoigmQ" "<:pro:778688391608926278>"  ; PROreferees
+    "UCRvL3eeBF3MFGFn6vnqR0nw" nil                          ; WASRC Webinars
+    "UCcMv5IAlVBy-7oHt7pdiLxQ" nil                          ; RWISOA Referees
+    "UCH4fZCsZ3_4rPIzEeLbcLGA" nil                          ; Ahmed Habib's Referee Channel
+    "UCjlAAUxk70KurpcLWcFL8Mg" nil                          ; Victor Karimi's Referee Channel
+    "UCfWpYhMIs2xqq7-v9HDAxuQ" nil                          ; Matthew Buckman (CNRA)
+    "UCjOMOGOifZ1NwpAgCXv0-rw" nil                          ; REFSIX
+    "UCmzFaEBQlLmMTWS0IQ90tgA" "<:ist:733173880403001394>"  ; IST
+  }
+  :default-youtube-emoji "<:youtube:771103353454460938>"
 }

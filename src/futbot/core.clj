@@ -31,10 +31,6 @@
             [futbot.pdf                       :as pdf]
             [futbot.flags                     :as fl]))
 
-(def ist-youtube-channel-id                    "UCmzFaEBQlLmMTWS0IQ90tgA")
-(def training-and-resources-discord-channel-id "<#686439362291826694>")
-(def memes-and-junk-discord-channel-id         "<#683853455038742610>")
-
 (defn post-daily-schedule-to-channel!
   "Generates and posts the daily-schedule (as an attachment) to the Discord channel identified by channel-id."
   [discord-message-channel
@@ -172,6 +168,8 @@
                   (distinct todays-scheduled-matches)))
       (log/info "No matches remaining today - not scheduling any reminders."))))
 
+(def training-and-resources-discord-channel-id "<#686439362291826694>")
+
 (defn check-for-new-dutch-referee-blog-quiz-and-post-to-channel!
   "Checks whether a new Dutch referee blog quiz has been posted in the last time-period-hours hours (defaults to 24), and posts it to the given channel if so."
   ([discord-message-channel channel-id] (check-for-new-dutch-referee-blog-quiz-and-post-to-channel! discord-message-channel channel-id 24))
@@ -216,26 +214,29 @@
          new-quizzes))
     (log/info "No new CNRA quizzes found")))
 
-(defn check-for-new-youtube-video-and-post-to-channel!
+(def ist-youtube-channel-id            "UCmzFaEBQlLmMTWS0IQ90tgA")
+(def memes-and-junk-discord-channel-id "<#683853455038742610>")
+
+(defn post-youtube-video-to-channel!
+  [discord-message-channel discord-channel-id youtube-channel-info-fn youtube-channel-id video]
+  (let [channel-title (:title (youtube-channel-info-fn youtube-channel-id))
+        message       (str (:emoji (youtube-channel-info-fn youtube-channel-id))
+                           (if channel-title (str " A new **" channel-title "** Youtube video has been posted: **") " A new Youtube video has been posted: **")
+                           (:title video)
+                           "**: https://www.youtube.com/watch?v=" (:id video)
+                           "\nDiscuss in "
+                           (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-id training-and-resources-discord-channel-id)
+                           "!")]
+     (mu/create-message! discord-message-channel
+                         discord-channel-id
+                         message)))
+
+(defn check-for-new-youtube-videos-and-post-to-channel!
   "Checks whether any new videos have been posted to the given Youtube channel in the last day, and posts it to the given Discord channel if so."
   [youtube-api-token discord-message-channel discord-channel-id youtube-channel-id youtube-channel-info-fn]
   (let [channel-title (:title (youtube-channel-info-fn youtube-channel-id))]
     (if-let [new-videos (yt/videos youtube-api-token
                                    (tm/minus (tm/instant) (tm/days 1))
                                    youtube-channel-id)]
-      (do
-        (doall (map #(let [message (str (if (= youtube-channel-id ist-youtube-channel-id) "<:ist:733173880403001394>" "<:youtube:771103353454460938>")
-                                        (if channel-title
-                                          (str " A new **" channel-title "** Youtube video has been posted: **")
-                                          " A new Youtube video has been posted: **")
-                                        (:title %)
-                                        "**: https://www.youtube.com/watch?v=" (:id %)
-                                        "\nDiscuss in "
-                                        (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-id training-and-resources-discord-channel-id)
-                                        "!")]
-                       (mu/create-message! discord-message-channel
-                                           discord-channel-id
-                                           message))
-                    new-videos))
-        nil)
+      (doall (map (partial post-youtube-video-to-channel! discord-message-channel discord-channel-id youtube-channel-info-fn youtube-channel-id) new-videos))
       (log/info (str "No new Youtube videos found in channel " (if channel-title channel-title (str "-unknown (" youtube-channel-id ")-")))))))
