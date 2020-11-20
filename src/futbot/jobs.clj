@@ -93,25 +93,25 @@
         (core/check-for-new-cnra-quiz-and-post-to-channel! cfg/discord-message-channel cfg/quiz-channel-id))
 
 
-; Youtube jobs are a bit messy, since the total number is defined in config, not hardcoded as the jobs above are
+; YouTube jobs are a bit messy, since the total number is defined in config, not hardcoded as the jobs above are
 (defn schedule-youtube-job
   [job-time youtube-channel-id]
   (let [youtube-channel-name (get-in cfg/youtube-channels-info [youtube-channel-id :title] (str "-unknown (" youtube-channel-id ")-"))]
-    (log/info (str "Scheduling Youtube channel " youtube-channel-name " job; first run will be at " job-time))
+    (log/info (str "Scheduling YouTube channel " youtube-channel-name " job; first run will be at " job-time))
     (chime/chime-at (chime/periodic-seq job-time (tm/days 1))
                     (fn [_]
                       (try
-                        (log/info (str "Youtube channel " youtube-channel-name " job started..."))
+                        (log/info (str "YouTube channel " youtube-channel-name " job started..."))
                         (core/check-for-new-youtube-videos-and-post-to-channel! cfg/youtube-api-token
                                                                                 cfg/discord-message-channel
                                                                                 cfg/video-channel-id
                                                                                 youtube-channel-id
                                                                                 cfg/youtube-channels-info)
-                        (log/info (str "Youtube channel " youtube-channel-name " job finished"))
+                        (log/info (str "YouTube channel " youtube-channel-name " job finished"))
                         (catch Exception e
-                          (u/log-exception e (str "Unexpected exception in Youtube channel " youtube-channel-name " job"))))))))
+                          (u/log-exception e (str "Unexpected exception in YouTube channel " youtube-channel-name " job"))))))))
 
-; Each Youtube job is run once per day, and they're equally spaced throughout the day to spread out the load
+; Each YouTube job is run once per day, and they're equally spaced throughout the day to spread out the load
 (defstate youtube-jobs
           :start (let [interval (int (/ (* 24 60) (count cfg/youtube-channels)))
                        now      (tm/instant)

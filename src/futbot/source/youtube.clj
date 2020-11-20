@@ -50,5 +50,5 @@
     (let [endpoint (if since
                      (format (str endpoint-get-channel-videos "&publishedAfter=%s") channel-id (str (tm/instant since)))
                      (format endpoint-get-channel-videos channel-id))]
-      (seq (map #(assoc (:snippet %) :id (:video-id (:id %)))              ; Herpa derp Youtube API 🙄
+      (seq (map #(assoc (:snippet %) :id (:video-id (:id %)))              ; Herpa derp YouTube API 🙄
                 (:items (google-api-call youtube-api-token endpoint)))))))
