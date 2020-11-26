@@ -2,10 +2,6 @@ name: build
 
 on: [push, pull_request]
 
-# Workaround until https://github.com/DeLaGuardo/setup-clojure/issues/17 is fixed
-env:
-  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +15,7 @@ jobs:
           java-version: 11
 
       - name: Install Clojure CLI
-        uses: DeLaGuardo/setup-clojure@2.0
+        uses: DeLaGuardo/setup-clojure@3.0
         with:
           tools-deps: latest
 
