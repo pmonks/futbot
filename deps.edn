@@ -53,7 +53,7 @@
                                                               :sha     "beb66c0935273c5b7e5129062027984473eb8e02"}}
                    :main-opts ["-m" "leiningen.git-info-edn"]}
     ; clj -M:outdated
-    :outdated {:extra-deps {antq/antq {:mvn/version "0.8.0"}}
+    :outdated {:extra-deps {antq/antq {:mvn/version "0.9.0"}}
                :main-opts ["-m" "antq.core"]}
     ; clj -M:uberjar
     :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.136"}}
