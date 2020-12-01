@@ -221,7 +221,7 @@
   [discord-message-channel discord-channel-id youtube-channel-info-fn youtube-channel-id video]
   (let [channel-title (:title (youtube-channel-info-fn youtube-channel-id))
         message       (str (:emoji (youtube-channel-info-fn youtube-channel-id))
-                           (if channel-title (str " A new **" channel-title "** Youtube video has been posted: **") " A new Youtube video has been posted: **")
+                           (if channel-title (str " A new **" channel-title "** video has been posted: **") " A new video has been posted: **")
                            (:title video)
                            "**: https://www.youtube.com/watch?v=" (:id video)
                            "\nDiscuss in "
@@ -232,11 +232,11 @@
                          message)))
 
 (defn check-for-new-youtube-videos-and-post-to-channel!
-  "Checks whether any new videos have been posted to the given Youtube channel in the last day, and posts it to the given Discord channel if so."
+  "Checks whether any new videos have been posted to the given YouTube channel in the last day, and posts it to the given Discord channel if so."
   [youtube-api-token discord-message-channel discord-channel-id youtube-channel-id youtube-channel-info-fn]
   (let [channel-title (:title (youtube-channel-info-fn youtube-channel-id))]
     (if-let [new-videos (yt/videos youtube-api-token
                                    (tm/minus (tm/instant) (tm/days 1))
                                    youtube-channel-id)]
       (doall (map (partial post-youtube-video-to-channel! discord-message-channel discord-channel-id youtube-channel-info-fn youtube-channel-id) new-videos))
-      (log/info (str "No new Youtube videos found in channel " (if channel-title channel-title (str "-unknown (" youtube-channel-id ")-")))))))
+      (log/info (str "No new videos found in YouTube channel " (if channel-title channel-title (str "-unknown (" youtube-channel-id ")-")))))))

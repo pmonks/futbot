@@ -79,7 +79,7 @@
   (mc/collate (tokenize titles) 1))    ;1 = extra deranged IST mode, 2 = relatively sane IST mode
 
 (defn load-ist-titles
-  "Loads titles from Youtube, and caches them to disk, reusing that cache if it already exists.  We do this because Google's API call quotas are draconian."
+  "Loads titles from YouTube, and caches them to disk, reusing that cache if it already exists.  We do this because Google's API call quotas are draconian."
   [google-api-key youtube-channel-id]
   (let [titles-filename (str "titles-" (tm/local-date) ".edn")
         titles-file     (io/file titles-filename)]

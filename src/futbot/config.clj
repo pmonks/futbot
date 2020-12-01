@@ -125,7 +125,7 @@
           :start (let [token (:youtube-api-token config)]
                    (if-not (s/blank? token)
                      token
-                     (throw (ex-info "Youtube API token not provided" {})))))
+                     (throw (ex-info "YouTube API token not provided" {})))))
 
 (defstate default-youtube-emoji
           :start (:default-youtube-emoji config))
@@ -142,7 +142,7 @@
                                                                       (try
                                                                         (yt/channel-info youtube-api-token youtube-channel-id)
                                                                         (catch Exception e
-                                                                          (log/warn e (str "Error retrieving Youtube channel info for " youtube-channel-id
+                                                                          (log/warn e (str "Error retrieving YouTube channel info for " youtube-channel-id
                                                                                            ": status code=" (:status (ex-data e))
                                                                                            ", message="     (:message (:error (:body (ex-data e))))))
                                                                           nil)))])
