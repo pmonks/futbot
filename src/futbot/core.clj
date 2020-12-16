@@ -219,10 +219,10 @@
 
 (defn post-youtube-video-to-channel!
   [discord-message-channel discord-channel-id youtube-channel-info-fn youtube-channel-id video]
-  (let [channel-title (:title (youtube-channel-info-fn youtube-channel-id))
+  (let [channel-title (org.jsoup.parser.Parser/unescapeEntities (:title (youtube-channel-info-fn youtube-channel-id)) true)
         message       (str (:emoji (youtube-channel-info-fn youtube-channel-id))
                            (if channel-title (str " A new **" channel-title "** video has been posted: **") " A new video has been posted: **")
-                           (:title video)
+                           (org.jsoup.parser.Parser/unescapeEntities (:title video) true)
                            "**: https://www.youtube.com/watch?v=" (:id video)
                            "\nDiscuss in "
                            (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-id training-and-resources-discord-channel-id)
