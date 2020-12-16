@@ -138,7 +138,7 @@
 
 (defstate youtube-channels-info
           :start (apply assoc nil (mapcat (fn [youtube-channel-id]
-                                            [youtube-channel-id (into {:emoji (get youtube-channels-emoji youtube-channel-id default-youtube-emoji)}
+                                            [youtube-channel-id (into {:emoji (u/getrn youtube-channels-emoji youtube-channel-id default-youtube-emoji)}
                                                                       (try
                                                                         (yt/channel-info youtube-api-token youtube-channel-id)
                                                                         (catch Exception e

@@ -307,7 +307,7 @@
     (let [code (s/upper-case (s/trim country-code))]
       (case (count code)
         2 (alpha-2-to-flag code)
-        3 (get alpha-3-to-flag code nil)
+        3 (get alpha-3-to-flag code)
         nil))))
 
 (defn ^java.net.URL image-url

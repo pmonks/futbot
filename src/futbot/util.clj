@@ -29,6 +29,11 @@
     (catch NumberFormatException nfe
       nil)))
 
+(defn getrn
+  "Like get, but also replace nil values found in the map with the default value."
+  [m k nf]
+  (or (get m k nf) nf))
+
 (defn clojurise-json-key
   "Converts JSON string keys (e.g. \"fullName\") to Clojure keyword keys (e.g. :full-name)."
   [k]

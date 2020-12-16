@@ -68,7 +68,7 @@
                                            cfg/discord-message-channel
                                            cfg/match-reminder-duration
                                            cfg/muted-leagues
-                                           #(get cfg/country-to-channel % cfg/default-reminder-channel-id)
+                                           #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id)
                                            cfg/referee-emoji
                                            todays-scheduled-matches)))
 
