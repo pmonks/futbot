@@ -38,7 +38,7 @@
 (Thread/setDefaultUncaughtExceptionHandler
  (reify Thread$UncaughtExceptionHandler
    (uncaughtException [_ t e]
-     (u/log-exception e "Uncaught exception on" (.getName t)))))
+     (u/log-exception e (str "Uncaught exception on " (.getName t))))))
 
 (def boot-time (tm/instant))
 

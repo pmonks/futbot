@@ -17,46 +17,62 @@
 ;
 
 {:paths ["src" "resources"]
- :deps {org.clojure/clojure                 {:mvn/version "1.10.1"}
-        org.clojars.pmonks/clj-2253         {:mvn/version "0.1.0"}
-        org.clojure/tools.logging           {:mvn/version "1.1.0"}
-        ch.qos.logback/logback-classic      {:mvn/version "1.2.3"}
-        org.slf4j/jcl-over-slf4j            {:mvn/version "1.7.30"}
-        org.slf4j/log4j-over-slf4j          {:mvn/version "1.7.30"}
-        org.slf4j/jul-to-slf4j              {:mvn/version "1.7.30"}
-        clojure.java-time/clojure.java-time {:mvn/version "0.3.2"}
-        org.clojure/tools.cli               {:mvn/version "1.0.194"}
-        aero/aero                           {:mvn/version "1.1.6"}
-        mount/mount                         {:mvn/version "0.1.16"}
-        jarohen/chime                       {:mvn/version "0.3.2"}
-        org.suskalo/discljord               {:mvn/version "1.2.0"}
-        http-kit/http-kit                   {:mvn/version "2.5.0"}
-        cheshire/cheshire                   {:mvn/version "5.10.0"}
-        clj-pdf/clj-pdf                     {:mvn/version "2.5.5"}
-        rm-hull/markov-chains               {:mvn/version "0.1.1"}
-        remus/remus                         {:mvn/version "0.2.1"}
-        org.jsoup/jsoup                     {:mvn/version "1.13.1"}
-       }
+ :deps
+   {org.clojure/clojure                 {:mvn/version "1.10.1"}
+    org.clojars.pmonks/clj-2253         {:mvn/version "0.1.0"}
+    org.clojure/tools.logging           {:mvn/version "1.1.0"}
+    ch.qos.logback/logback-classic      {:mvn/version "1.2.3"}
+    org.slf4j/jcl-over-slf4j            {:mvn/version "1.7.30"}
+    org.slf4j/log4j-over-slf4j          {:mvn/version "1.7.30"}
+    org.slf4j/jul-to-slf4j              {:mvn/version "1.7.30"}
+    clojure.java-time/clojure.java-time {:mvn/version "0.3.2"}
+    org.clojure/tools.cli               {:mvn/version "1.0.194"}
+    aero/aero                           {:mvn/version "1.1.6"}
+    mount/mount                         {:mvn/version "0.1.16"}
+    jarohen/chime                       {:mvn/version "0.3.2"}
+    org.suskalo/discljord               {:mvn/version "1.2.0"}
+    http-kit/http-kit                   {:mvn/version "2.5.0"}
+    cheshire/cheshire                   {:mvn/version "5.10.0"}
+    clj-pdf/clj-pdf                     {:mvn/version "2.5.5"}
+    rm-hull/markov-chains               {:mvn/version "0.1.1"}
+    remus/remus                         {:mvn/version "0.2.1"}
+    org.jsoup/jsoup                     {:mvn/version "1.13.1"}}
  :aliases
    {; clj -M:run -c /path/to/config.edn
-    :run {:main-opts ["-m" "futbot.main"]}
+    :run
+      {:main-opts ["-m" "futbot.main"]}
+
     ; clj -M:gen-ist-markov google-api-key
-    :gen-ist-markov {:main-opts ["-m" "futbot.ist.main"]}
+    :gen-ist-markov
+      {:main-opts ["-m" "futbot.ist.main"]}
+
     ; clj -M:gen-daily-schedule football-data-token
-    :gen-daily-schedule {:main-opts ["-m" "futbot.daily-schedule.main"]}
-    ; clj -M:check
-    :check    {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git"
-                                             :sha     "cd1f25456de5eebda0a69602dd3445905382b3a4"}}
-               :main-opts  ["-m" "clj-check.check"]}
+    :gen-daily-schedule
+      {:main-opts ["-m" "futbot.daily-schedule.main"]}
+
     ; clj -M:git-info-edn
-    :git-info-edn {:extra-deps {noisesmith/lein-git-info-edn {:git/url "https://github.com/noisesmith/lein-git-info-edn.git"
-                                                              :sha     "beb66c0935273c5b7e5129062027984473eb8e02"}}
-                   :main-opts ["-m" "leiningen.git-info-edn"]}
-    ; clj -M:outdated
-    :outdated {:extra-deps {antq/antq {:mvn/version "0.9.3"}}
-               :main-opts ["-m" "antq.core"]}
+    :git-info-edn
+      {:extra-deps {noisesmith/lein-git-info-edn {:git/url "https://github.com/noisesmith/lein-git-info-edn.git"
+                                                  :sha     "beb66c0935273c5b7e5129062027984473eb8e02"}}
+       :main-opts  ["-m" "leiningen.git-info-edn"]}
+
     ; clj -M:uberjar
-    :uberjar  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.136"}}
-               :main-opts ["-m" "hf.depstar.uberjar" "./target/futbot-standalone.jar" "-C" "-m" "futbot.main"]}
-    }
-}
+    :uberjar
+      {:extra-deps {seancorfield/depstar {:mvn/version "1.1.136"}}
+       :main-opts  ["-m" "hf.depstar.uberjar" "./target/futbot-standalone.jar" "-C" "-m" "futbot.main"]}
+
+    ; clj -M:check
+    :check
+      {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git"
+                                     :sha     "cd1f25456de5eebda0a69602dd3445905382b3a4"}}
+       :main-opts  ["-m" "clj-check.check"]}
+
+    ; clj -M:eastwood
+    :eastwood
+      {:extra-deps {jonase/eastwood {:mvn/version "0.3.12"}}
+       :main-opts  ["-m" "eastwood.lint" {:source-paths ["src" "resources"]}]}
+
+    ; clj -M:outdated
+    :outdated
+      {:extra-deps {antq/antq {:mvn/version "0.10.0"}}
+       :main-opts  ["-m" "antq.core"]}}}
