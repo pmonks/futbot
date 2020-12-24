@@ -2,4 +2,4 @@
 clojure -Srepro -P
 clojure -Srepro -M:git-info-edn
 clojure -Srepro -Spom
-clojure -Srepro -M:uberjar
+clojure -Srepro -X:uberjar
