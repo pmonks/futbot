@@ -56,10 +56,14 @@
                                                   :sha     "beb66c0935273c5b7e5129062027984473eb8e02"}}
        :main-opts  ["-m" "leiningen.git-info-edn"]}
 
-    ; clj -M:uberjar
+    ; clj -X:uberjar
     :uberjar
-      {:extra-deps {seancorfield/depstar {:mvn/version "1.1.136"}}
-       :main-opts  ["-m" "hf.depstar.uberjar" "./target/futbot-standalone.jar" "-C" "-m" "futbot.main"]}
+      {:replace-deps {seancorfield/depstar {:mvn/version "2.0.161"}}
+       :exec-fn      hf.depstar/uberjar
+       :exec-args    {:jar        "./target/futbot-standalone.jar"
+                      :jar-type   :uber
+                      :main-class "futbot.main"
+                      :aot        true}}
 
     ; clj -M:check
     :check
