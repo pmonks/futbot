@@ -1,5 +1,6 @@
-[![Build Status](https://github.com/pmonks/futbot/workflows/build/badge.svg)](https://github.com/pmonks/futbot/actions?query=workflow%3Abuild)
-[![Dependencies](https://github.com/pmonks/futbot/workflows/dependencies/badge.svg)](https://github.com/pmonks/futbot/actions?query=workflow%3Adependencies)
+| **main** | [![Build Status](https://github.com/pmonks/futbot/workflows/build/badge.svg?branch=main)](https://github.com/pmonks/futbot/actions?query=workflow%3Abuild) | [![Dependencies](https://github.com/pmonks/futbot/workflows/dependencies/badge.svg?branch=main)](https://github.com/pmonks/futbot/actions?query=workflow%3Adependencies) |
+| **dev**  | [![Build Status](https://github.com/pmonks/futbot/workflows/build/badge.svg?branch=dev)](https://github.com/pmonks/futbot/actions?query=workflow%3Abuild) | [![Dependencies](https://github.com/pmonks/futbot/workflows/dependencies/badge.svg?branch=dev)](https://github.com/pmonks/futbot/actions?query=workflow%3Adependencies) |
+
 [![Open Issues](https://img.shields.io/github/issues/pmonks/futbot.svg)](https://github.com/pmonks/futbot/issues)
 [![License](https://img.shields.io/github/license/pmonks/futbot.svg)](https://github.com/pmonks/futbot/blob/main/LICENSE)
 
