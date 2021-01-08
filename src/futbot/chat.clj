@@ -98,7 +98,7 @@
 (defmethod handle-discord-event :message-create
   [_ event-data]
   ; Only respond to messages sent from a human
-  (when-not (:bot (:author event-data))
+  (when (mu/human-message? event-data)
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
       (try
         (let [content (s/triml (:content event-data))]
