@@ -47,3 +47,8 @@
   [discord-message-channel channel-id message-id reaction]
   (log/debug "Adding reaction" reaction "to message-id" message-id)
   (check-response-and-throw @(dm/create-reaction! discord-message-channel channel-id message-id reaction)))
+
+(defn direct-message?
+  "Was the given event sent via a Direct Message?"
+  [event-data]
+  (not (:guild-id event-data)))  ; Direct messages don't have a :guild-id in their event data

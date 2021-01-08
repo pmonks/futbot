@@ -48,6 +48,10 @@
   :quiz-channel-id  "771086596644274216"  ; Refereeing > quizzes-and-videos
   :video-channel-id "771086596644274216"  ; Refereeing > quizzes-and-videos
 
+  :ist-channel-ids ["683853455038742610"   ; General > Memes and Junk
+                    "701813682430279712"   ; General > bots
+                    "723309028725227532"]  ; Admin > Testing
+
   :youtube-api-token #env YOUTUBE_API_TOKEN
   :youtube-channels {
     "UCxdPyM0KXNhXGUChb1FaJSA" "<:frva:791780784754655233>"      ; Football Victoria Referees
