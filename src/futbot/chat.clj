@@ -30,9 +30,13 @@
 (defn ist-command!
   "Generates a fake IST video title"
   [_ event-data]
-  (mu/create-message! cfg/discord-message-channel
-                      (:channel-id event-data)
-                      (str "<:ist:733173880403001394>: \"" (ist/gen-title) "\"")))
+  (let [channel-id (:channel-id event-data)]
+    (if (or (mu/direct-message? event-data)             ; Only respond if message was sent via DM or
+            (some #{channel-id} cfg/ist-channel-ids))   ; one of the allowed IST channels.
+      (mu/create-message! cfg/discord-message-channel
+                          channel-id
+                          (str "<:ist:733173880403001394>: \"" (ist/gen-title) "\""))
+      (log/info (str "Ignoring " prefix "ist command in channel " channel-id)))))
 
 (defn privacy-command!
   "Provides a link to the futbot privacy policy"
@@ -94,7 +98,7 @@
 (defmethod handle-discord-event :message-create
   [_ event-data]
   ; Only respond to messages sent from a human
-  (when-not (:bot (:author event-data))
+  (when (mu/human-message? event-data)
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
       (try
         (let [content (s/triml (:content event-data))]
@@ -107,7 +111,7 @@
                 (do
                   (log/debug (str "Calling public command fn for '" command "' with args '" args "'."))
                   (public-command-fn args event-data))
-                (when-not (:guild-id event-data)
+                (when (mu/direct-message? event-data)
                   (if-let [private-command-fn (get private-command-dispatch-table command)]
                     (do
                       (log/debug (str "Calling private command fn for '" command "' with args '" args "'."))

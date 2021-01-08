@@ -121,6 +121,9 @@
                      channel-id
                      (throw (ex-info "Video Discord channel id not provided" {})))))
 
+(defstate ist-channel-ids
+          :start (:ist-channel-ids config))
+
 (defstate youtube-api-token
           :start (let [token (:youtube-api-token config)]
                    (if-not (s/blank? token)

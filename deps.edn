@@ -78,5 +78,5 @@
 
     ; clj -M:outdated
     :outdated
-      {:extra-deps {antq/antq {:mvn/version "0.10.1"}}
+      {:extra-deps {antq/antq {:mvn/version "0.10.2"}}
        :main-opts  ["-m" "antq.core"]}}}
