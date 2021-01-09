@@ -71,6 +71,12 @@
                                      :sha     "cd1f25456de5eebda0a69602dd3445905382b3a4"}}
        :main-opts  ["-m" "clj-check.check"]}
 
+
+    ; clj -M:kondo
+    :kondo
+      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "RELEASE"}}
+       :main-opts  ["-m" "clj-kondo.main" "--lint" "src" "resources"]}
+
     ; clj -M:eastwood
     :eastwood
       {:extra-deps {jonase/eastwood {:mvn/version "0.3.12"}}
