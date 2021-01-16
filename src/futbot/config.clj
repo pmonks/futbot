@@ -17,18 +17,19 @@
 ;
 
 (ns futbot.config
-  (:require [clojure.java.io       :as io]
-            [clojure.string        :as s]
-            [clojure.tools.logging :as log]
-            [clojure.edn           :as edn]
-            [clojure.core.async    :as async]
-            [java-time             :as tm]
-            [aero.core             :as a]
-            [mount.core            :as mnt :refer [defstate]]
-            [discljord.connections :as dc]
-            [discljord.messaging   :as dm]
-            [futbot.util           :as u]
-            [futbot.source.youtube :as yt]))
+  (:require [clojure.java.io        :as io]
+            [clojure.string         :as s]
+            [clojure.tools.logging  :as log]
+            [clojure.edn            :as edn]
+            [clojure.core.async     :as async]
+            [java-time              :as tm]
+            [aero.core              :as a]
+            [mount.core             :as mnt :refer [defstate]]
+            [org.httpkit.sni-client :as sni-client]
+            [discljord.connections  :as dc]
+            [discljord.messaging    :as dm]
+            [futbot.util            :as u]
+            [futbot.source.youtube  :as yt]))
 
 ; Because java.util.logging is a hot mess
 (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
@@ -39,6 +40,9 @@
  (reify Thread$UncaughtExceptionHandler
    (uncaughtException [_ t e]
      (u/log-exception e (str "Uncaught exception on " (.getName t))))))
+
+; See https://github.com/http-kit/http-kit#enabling-client-sni-support-disabled-by-default
+(alter-var-root #'org.httpkit.client/*default-client* (fn [_] sni-client/default-client))
 
 (def boot-time (tm/instant))
 

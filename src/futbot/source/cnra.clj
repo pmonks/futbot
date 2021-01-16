@@ -22,7 +22,7 @@
             [org.httpkit.client :as http]
             [futbot.util        :as u]))
 
-(def cnra-quiz-page-url "http://www.cnra.net/monthly-video-quizzes/")
+(def cnra-quiz-page-url "https://www.cnra.net/monthly-video-quizzes/")
 
 (defn- retrieve-and-parse-quiz-page
   "Retrieves the CNRA quiz page and returns a JSoup-parsed represention. Throws an ex-info on failure."

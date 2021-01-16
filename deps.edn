@@ -31,7 +31,7 @@
     mount/mount                         {:mvn/version "0.1.16"}
     jarohen/chime                       {:mvn/version "0.3.2"}
     org.suskalo/discljord               {:mvn/version "1.2.0"}
-    http-kit/http-kit                   {:mvn/version "2.5.0"}
+    http-kit/http-kit                   {:mvn/version "2.5.1"}
     cheshire/cheshire                   {:mvn/version "5.10.0"}
     clj-pdf/clj-pdf                     {:mvn/version "2.5.5"}
     rm-hull/markov-chains               {:mvn/version "0.1.1"}
@@ -70,6 +70,12 @@
       {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git"
                                      :sha     "cd1f25456de5eebda0a69602dd3445905382b3a4"}}
        :main-opts  ["-m" "clj-check.check"]}
+
+
+    ; clj -M:kondo
+    :kondo
+      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "RELEASE"}}
+       :main-opts  ["-m" "clj-kondo.main" "--lint" "src" "resources"]}
 
     ; clj -M:eastwood
     :eastwood
