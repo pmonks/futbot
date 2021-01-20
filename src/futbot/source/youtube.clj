@@ -17,7 +17,8 @@
 ;
 
 (ns futbot.source.youtube
-  (:require [clojure.tools.logging :as log]
+  (:require [clojure.string        :as s]
+            [clojure.tools.logging :as log]
             [org.httpkit.client    :as http]
             [cheshire.core         :as ch]
             [java-time             :as tm]
@@ -43,6 +44,11 @@
   [youtube-api-token channel-id]
   (:snippet (first (:items (google-api-call youtube-api-token (format endpoint-get-channel-info channel-id))))))
 
+(defn- sanitise-video-data-structure
+  "Sanitise (as in 'make sane'...) the herpaderp YouTube API video data structure. 🙄"
+  [items]
+  (seq (keep identity (map #(assoc (:snippet %) :id (:video-id (:id %))) items))))
+
 (defn videos
   "Retrieves up to 50 videos for the given YouTube channel (or nil if there aren't any) newest first, optionally limited to those published since the given date."
   ([youtube-api-token channel-id] (videos youtube-api-token nil channel-id))
@@ -50,5 +56,19 @@
     (let [endpoint (if since
                      (format (str endpoint-get-channel-videos "&publishedAfter=%s") channel-id (str (tm/instant since)))
                      (format endpoint-get-channel-videos channel-id))]
-      (seq (map #(assoc (:snippet %) :id (:video-id (:id %)))              ; Herpa derp YouTube API 🙄
-                (:items (google-api-call youtube-api-token endpoint)))))))
+      (sanitise-video-data-structure (:items (google-api-call youtube-api-token endpoint))))))
+
+(defn all-videos
+  "Retrieves all videos for the given YouTube channel, newest first.  Use with caution: this can be very expensive from a quota unit perspective (100 units / 50 videos)."
+  [youtube-api-token channel-id]
+  (loop [endpoint     (format endpoint-get-channel-videos channel-id)
+         publish-date (tm/instant)
+         result       []]
+    (let [items            (sanitise-video-data-structure (:items (google-api-call youtube-api-token endpoint)))
+          new-publish-date (:published-at (last items))]
+      (if (and (not (s/blank? new-publish-date))
+               (tm/before? (tm/instant new-publish-date) (tm/instant publish-date)))
+        (recur (format (str endpoint-get-channel-videos "&publishedBefore=%s") channel-id new-publish-date)
+               new-publish-date
+               (into result items))
+        (into result items)))))
