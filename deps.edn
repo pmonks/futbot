@@ -30,7 +30,7 @@
     aero/aero                           {:mvn/version "1.1.6"}
     mount/mount                         {:mvn/version "0.1.16"}
     jarohen/chime                       {:mvn/version "0.3.2"}
-    org.suskalo/discljord               {:mvn/version "1.2.0"}
+    org.suskalo/discljord               {:mvn/version "1.2.2"}
     http-kit/http-kit                   {:mvn/version "2.5.1"}
     cheshire/cheshire                   {:mvn/version "5.10.0"}
     clj-pdf/clj-pdf                     {:mvn/version "2.5.5"}
@@ -74,12 +74,12 @@
 
     ; clj -M:kondo
     :kondo
-      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "RELEASE"}}
+      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.01.20"}}
        :main-opts  ["-m" "clj-kondo.main" "--lint" "src" "resources"]}
 
     ; clj -M:eastwood
     :eastwood
-      {:extra-deps {jonase/eastwood {:mvn/version "0.3.12"}}
+      {:extra-deps {jonase/eastwood {:mvn/version "0.3.13"}}
        :main-opts  ["-m" "eastwood.lint" {:source-paths ["src" "resources"]}]}
 
     ; clj -M:outdated
