@@ -155,7 +155,17 @@
                                                                           nil)))])
                                           youtube-channels)))
 
-; Note: do NOT use mount for this, since it's used before mount has started
+(defstate blacklist
+          :start (u/mapfonk re-pattern (:blacklist config)))   ; Pre-compile all regexes as we load them from the config file
+
+(defstate blacklist-res
+          :start (keys blacklist))
+
+(defstate blacklist-notification-discord-channel-id
+          :start (:blacklist-notification-discord-channel-id config))
+
+
+; Note: do NOT use mount for these, since they're used before mount has started
 (def ^:private build-info
   (if-let [deploy-info (io/resource "deploy-info.edn")]
     (edn/read-string (slurp deploy-info))

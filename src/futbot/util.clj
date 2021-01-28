@@ -34,6 +34,22 @@
   [m k nf]
   (or (get m k nf) nf))
 
+(defn mapfonk
+  "Returns a new map where f has been applied to all of the keys of m."
+  [f m]
+  (when m
+    (into {}
+          (for [[k v] m]
+            [(f k) v]))))
+
+(defn mapfonv
+  "Returns a new map where f has been applied to all of the values of m."
+  [f m]
+  (when m
+    (into {}
+          (for [[k v] m]
+            [k (f v)]))))
+
 (defn clojurise-json-key
   "Converts JSON string keys (e.g. \"fullName\") to Clojure keyword keys (e.g. :full-name)."
   [k]
