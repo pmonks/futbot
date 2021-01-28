@@ -41,9 +41,10 @@
         true)
       false)))
 
-(defn process!
+(defn check-blacklist!
+  "Check the given event against the blacklist."
   [event-data]
-  (if-not (mu/direct-message? event-data)    ; Don't ever check DMs
+  (if-not (mu/direct-message? event-data)    ; Don't check DMs
     (loop [f      (first cfg/blacklist-res)
            r      (rest  cfg/blacklist-res)
            result false]
