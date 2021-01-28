@@ -96,13 +96,17 @@
   "Discord event handler"
   (fn [event-type _] event-type))
 
+; Default Discord event handler (noop)
+(defmethod handle-discord-event :default
+  [_ _])
+
 (defmethod handle-discord-event :message-create
   [_ event-data]
   ; Only respond to messages sent from a human
   (when (mu/human-message? event-data)
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
       (try
-        (if-not (blk/process! event-data)  ; First check if the given message violates the blacklist
+        (if-not (blk/check-blacklist! event-data)  ; First check if the given message violates the blacklist
           (let [content (s/triml (:content event-data))]
             (if (s/starts-with? content prefix)
               ; Parse the requested command and call it, if it exists
@@ -129,6 +133,12 @@
         (catch Exception e
           (u/log-exception e))))))
 
-; Default Discord event handler (noop)
-(defmethod handle-discord-event :default
-  [_ _])
+(defmethod handle-discord-event :message-update
+  [_ event-data]
+  ; Only respond to messages sent from a human
+  (when (mu/human-message? event-data)
+    (future    ; Spin off the actual processing, so we don't clog the Discord event queue
+      (try
+        (blk/check-blacklist! event-data)  ; Check if the updated message violates the blacklist
+        (catch Exception e
+          (u/log-exception e))))))
