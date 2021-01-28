@@ -23,7 +23,8 @@
             [futbot.util           :as u]
             [futbot.message-util   :as mu]
             [futbot.config         :as cfg]
-            [futbot.source.ist     :as ist]))
+            [futbot.source.ist     :as ist]
+            [futbot.blacklist      :as blk]))
 
 (def prefix "!")
 
@@ -101,29 +102,30 @@
   (when (mu/human-message? event-data)
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
       (try
-        (let [content (s/triml (:content event-data))]
-          (if (s/starts-with? content prefix)
-            ; Parse the requested command and call it, if it exists
-            (let [command-and-args  (s/split content #"\s+" 2)
-                  command           (s/lower-case (subs (s/trim (first command-and-args)) (count prefix)))
-                  args              (second command-and-args)]
-              (if-let [public-command-fn (get public-command-dispatch-table command)]
-                (do
-                  (log/debug (str "Calling public command fn for '" command "' with args '" args "'."))
-                  (public-command-fn args event-data))
-                (when (mu/direct-message? event-data)
-                  (if-let [private-command-fn (get private-command-dispatch-table command)]
-                    (do
-                      (log/debug (str "Calling private command fn for '" command "' with args '" args "'."))
-                      (private-command-fn args event-data))
-                    (if-let [secret-command-fn (get secret-command-dispatch-table command)]
+        (if-not (blk/process! event-data)  ; First check if the given message violates the blacklist
+          (let [content (s/triml (:content event-data))]
+            (if (s/starts-with? content prefix)
+              ; Parse the requested command and call it, if it exists
+              (let [command-and-args  (s/split content #"\s+" 2)
+                    command           (s/lower-case (subs (s/trim (first command-and-args)) (count prefix)))
+                    args              (second command-and-args)]
+                (if-let [public-command-fn (get public-command-dispatch-table command)]
+                  (do
+                    (log/debug (str "Calling public command fn for '" command "' with args '" args "'."))
+                    (public-command-fn args event-data))
+                  (when (mu/direct-message? event-data)
+                    (if-let [private-command-fn (get private-command-dispatch-table command)]
                       (do
-                        (log/debug (str "Calling secret command fn for '" command "' with args '" args "'."))
-                        (secret-command-fn args event-data))
-                      (help-command! nil event-data))))))   ; If the requested private command doesn't exist, provide help
-            ; If any unrecognised message was sent to a DM channel, provide help
-            (when-not (:guild-id event-data)
-              (help-command! nil event-data))))
+                        (log/debug (str "Calling private command fn for '" command "' with args '" args "'."))
+                        (private-command-fn args event-data))
+                      (if-let [secret-command-fn (get secret-command-dispatch-table command)]
+                        (do
+                          (log/debug (str "Calling secret command fn for '" command "' with args '" args "'."))
+                          (secret-command-fn args event-data))
+                        (help-command! nil event-data))))))   ; If the requested private command doesn't exist, provide help
+              ; If any unrecognised message was sent to a DM channel, provide help
+              (when-not (:guild-id event-data)
+                (help-command! nil event-data)))))
         (catch Exception e
           (u/log-exception e))))))
 
