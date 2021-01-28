@@ -43,11 +43,12 @@
 
 (defn process!
   [event-data]
-  (loop [f      (first cfg/blacklist-res)
-         r      (rest  cfg/blacklist-res)
-         result false]
-    (if (and f (not result))
-      (recur (first r)
-             (rest r)
-             (check-blacklist-entry! event-data f))
-      result)))
+  (if-not (mu/direct-message? event-data)    ; Don't ever check DMs
+    (loop [f      (first cfg/blacklist-res)
+           r      (rest  cfg/blacklist-res)
+           result false]
+      (if (and f (not result))
+        (recur (first r)
+               (rest r)
+               (check-blacklist-entry! event-data f))
+        result))))
