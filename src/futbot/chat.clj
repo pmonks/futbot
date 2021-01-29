@@ -84,10 +84,10 @@
   [_ event-data]
   (mu/create-message! cfg/discord-message-channel
                       (:channel-id event-data)
-                      (str "I understand the following commands in any channel:\n"
+                      (str "I understand the following command in <#683853455038742610> or a DM:\n"
                            (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
                                              (sort-by key public-command-dispatch-table)))
-                           "\nAnd the following commands in a DM channel:\n"
+                           "\nAnd the following commands only in a DM:\n"
                            (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
                                              (sort-by key private-command-dispatch-table))))))
 
