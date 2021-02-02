@@ -106,7 +106,7 @@
   (when (mu/human-message? event-data)
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
       (try
-        (if-not (blk/check-blacklist! event-data)  ; First check if the given message violates the blacklist
+        (when-not (blk/check-blacklist! event-data)  ; First check if the given message violates the blacklist
           (let [content (s/triml (:content event-data))]
             (if (s/starts-with? content prefix)
               ; Parse the requested command and call it, if it exists
