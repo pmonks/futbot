@@ -34,18 +34,22 @@
 
 (defn- para-to-quiz
   [^org.jsoup.nodes.Element p]
-  (let [text              (u/replace-all (.text p)
-                                         [[#"[–‑‒–—]" "-"]])  ; Normalise Unicode "dash" characters
-       [month-year topic] (s/split text #" - ")
-       date               (tm/local-date "dd MMMM yyyy" (str "15 " month-year))
-       link               (.attr (.selectFirst p "a[href*=forms.gle]") "href")]      ; Note: assumes the quiz is always the first link to a Google form
-    (when link
-      {
-        :date      date
-        :quiz-date month-year
-        :topic     (s/lower-case topic)
-        :link      link
-      })))
+  (try
+    (let [text              (u/replace-all (.text p)
+                                           [[#"[–‑‒–—]" "-"]])  ; Normalise Unicode "dash" characters
+         [month-year topic] (s/split text #" - ")
+         fifteenth-of-month (u/to-ascii (str "15 " month-year))
+         date               (tm/local-date "dd MMMM yyyy" fifteenth-of-month)
+         link               (.attr (.selectFirst p "a[href*=forms.gle]") "href")]      ; Note: assumes the quiz is always the first link to a Google form
+      (when link
+        {
+          :date      date
+          :quiz-date month-year
+          :topic     (s/lower-case topic)
+          :link      link
+        }))
+    (catch Exception e
+      (u/log-exception e (str "Error while parsing CNRA quiz paragraph: " p)))))
 
 (defn- html-to-quizzes
   [^org.jsoup.nodes.Document page]
