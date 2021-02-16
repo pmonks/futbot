@@ -74,11 +74,12 @@
       s)))
 
 (defn to-ascii
-  "Pulls out just the ASCII characters in the given string, removing all others."
+  "Converts the given string to ASCII, mapping a small number of Unicode characters to their ASCII equivalents."
   [s]
   (replace-all s
-               [[#"[^\p{ASCII}]+"      ""]
-                [#"\p{javaWhitespace}" " "]]))
+               [[#"\p{javaWhitespace}" " "]     ; Whitespace
+                [#"[–‑‒–—]"            "-"]     ; Hyphens / dashes
+                [#"[^\p{ASCII}]+"      ""]]))   ; Strip everything else
 
 (defmacro in-tz
   "Executes body (assumed to include java-time logic) within the given tzdata timezone (e.g. Americas/Los_Angeles)."
