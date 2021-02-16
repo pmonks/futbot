@@ -25,6 +25,7 @@
             [java-time              :as tm]
             [aero.core              :as a]
             [mount.core             :as mnt :refer [defstate]]
+            [org.httpkit.client     :as http]
             [org.httpkit.sni-client :as sni-client]
             [discljord.connections  :as dc]
             [discljord.messaging    :as dm]
@@ -42,7 +43,7 @@
      (u/log-exception e (str "Uncaught exception on " (.getName t))))))
 
 ; See https://github.com/http-kit/http-kit#enabling-client-sni-support-disabled-by-default
-(alter-var-root #'org.httpkit.client/*default-client* (fn [_] sni-client/default-client))
+(alter-var-root #'http/*default-client* (fn [_] sni-client/default-client))
 
 (def boot-time (tm/instant))
 
