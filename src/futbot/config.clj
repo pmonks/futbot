@@ -156,14 +156,14 @@
                                                                           nil)))])
                                           youtube-channels)))
 
-(defstate blacklist
-          :start (u/mapfonk re-pattern (:blacklist config)))   ; Pre-compile all regexes as we load them from the config file
+(defstate blocklist
+          :start (u/mapfonk re-pattern (:blocklist config)))   ; Pre-compile all regexes as we load them from the config file
 
-(defstate blacklist-res
-          :start (keys blacklist))
+(defstate blocklist-res
+          :start (keys blocklist))
 
-(defstate blacklist-notification-discord-channel-id
-          :start (:blacklist-notification-discord-channel-id config))
+(defstate blocklist-notification-discord-channel-id
+          :start (:blocklist-notification-discord-channel-id config))
 
 
 ; Note: do NOT use mount for these, since they're used before mount has started

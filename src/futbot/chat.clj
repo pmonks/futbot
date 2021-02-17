@@ -24,7 +24,7 @@
             [futbot.message-util   :as mu]
             [futbot.config         :as cfg]
             [futbot.source.ist     :as ist]
-            [futbot.blacklist      :as blk]))
+            [futbot.blocklist      :as blk]))
 
 (def prefix "!")
 
@@ -106,7 +106,7 @@
   (when (mu/human-message? event-data)
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
       (try
-        (when-not (blk/check-blacklist! event-data)  ; First check if the given message violates the blacklist
+        (when-not (blk/check-blocklist! event-data)  ; First check if the given message violates the blocklist
           (let [content (s/triml (:content event-data))]
             (if (s/starts-with? content prefix)
               ; Parse the requested command and call it, if it exists
@@ -139,6 +139,6 @@
   (when (mu/human-message? event-data)
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
       (try
-        (blk/check-blacklist! event-data)  ; Check if the updated message violates the blacklist
+        (blk/check-blocklist! event-data)  ; Check if the updated message violates the blocklist
         (catch Exception e
           (u/log-exception e))))))
