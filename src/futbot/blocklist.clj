@@ -16,12 +16,12 @@
 ; SPDX-License-Identifier: Apache-2.0
 ;
 
-(ns futbot.blacklist
+(ns futbot.blocklist
   (:require [clojure.tools.logging :as log]
             [futbot.config         :as cfg]
             [futbot.message-util   :as mu]))
 
-(defn- check-blacklist-entry!
+(defn- check-blocklist-entry!
   [event-data re]
   (let [content (:content event-data)]
     (if (re-find re content)
@@ -29,27 +29,27 @@
             channel-id  (:channel-id event-data)
             author-id   (:id (:author event-data))
             author-name (mu/nick-or-user-name event-data)
-            msg         (get cfg/blacklist re)]
-        (log/info "Deleting message" message-id "sent by" author-id (str "(" author-name ")") "in channel" channel-id "as it matched blacklist entry" (str re))
+            msg         (get cfg/blocklist re)]
+        (log/info "Deleting message" message-id "sent by" author-id (str "(" author-name ")") "in channel" channel-id "as it matched blocklist entry" (str re))
         (mu/delete-message! cfg/discord-message-channel channel-id message-id)
         (mu/send-dm!        cfg/discord-message-channel author-id msg)
 
         ; Send admin message
         (mu/create-message! cfg/discord-message-channel
-                            cfg/blacklist-notification-discord-channel-id
-                            (str "**[BLACKLIST VIOLATION]** In <#" channel-id ">, <@" author-id "> wrote:\n>>> " content))
+                            cfg/blocklist-notification-discord-channel-id
+                            (str "**[BLOCKLIST VIOLATION]** In <#" channel-id ">, <@" author-id "> wrote:\n>>> " content))
         true)
       false)))
 
-(defn check-blacklist!
-  "Check the given event against the blacklist."
+(defn check-blocklist!
+  "Check the given event against the blocklist."
   [event-data]
   (when-not (mu/direct-message? event-data)    ; Don't check DMs
-    (loop [f      (first cfg/blacklist-res)
-           r      (rest  cfg/blacklist-res)
+    (loop [f      (first cfg/blocklist-res)
+           r      (rest  cfg/blocklist-res)
            result false]
       (if (and f (not result))
         (recur (first r)
                (rest r)
-               (check-blacklist-entry! event-data f))
+               (check-blocklist-entry! event-data f))
         result))))

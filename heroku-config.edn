@@ -67,8 +67,8 @@
   }
   :default-youtube-emoji "<:youtube:771103353454460938>"
 
-  :blacklist {
+  :blocklist {
     "(?i)refereestore\\s*\\.\\s*com" "Hi there! Just a quick head's up that I deleted your message as it contained a link to refereestore DOT com. References to that site are banned on this Discord server, as the owner of that business has a well-documented public history of serious bigotry, and we have a zero tolerance policy for such attitudes here. Please contact the admin team if you have any questions, and have a nice day! 😃"
   }
-  :blacklist-notification-discord-channel-id "686270565828264063"  ; Admin > admin-commands
+  :blocklist-notification-discord-channel-id "686270565828264063"  ; Admin > admin-commands
 }
