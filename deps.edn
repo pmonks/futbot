@@ -31,7 +31,7 @@
     mount/mount                         {:mvn/version "0.1.16"}
     jarohen/chime                       {:mvn/version "0.3.2"}
     org.suskalo/discljord               {:mvn/version "1.2.2"}
-    http-kit/http-kit                   {:mvn/version "2.5.2"}
+    http-kit/http-kit                   {:mvn/version "2.5.3"}
     cheshire/cheshire                   {:mvn/version "5.10.0"}
     clj-pdf/clj-pdf                     {:mvn/version "2.5.5"}
     rm-hull/markov-chains               {:mvn/version "0.1.1"}
@@ -58,7 +58,7 @@
 
     ; clj -X:uberjar
     :uberjar
-      {:replace-deps {seancorfield/depstar {:mvn/version "2.0.171"}}
+      {:replace-deps {seancorfield/depstar {:mvn/version "2.0.187"}}
        :exec-fn      hf.depstar/uberjar
        :exec-args    {:jar        "./target/futbot-standalone.jar"
                       :jar-type   :uber
