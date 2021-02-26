@@ -24,7 +24,7 @@
 (defn- check-blocklist-entry!
   [event-data re]
   (let [content (:content event-data)]
-    (if (re-find re content)
+    (if (and re content (re-find re content))
       (let [message-id  (:id event-data)
             channel-id  (:channel-id event-data)
             author-id   (:id (:author event-data))
