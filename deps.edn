@@ -26,7 +26,7 @@
     org.slf4j/log4j-over-slf4j          {:mvn/version "1.7.30"}
     org.slf4j/jul-to-slf4j              {:mvn/version "1.7.30"}
     clojure.java-time/clojure.java-time {:mvn/version "0.3.2"}
-    org.clojure/tools.cli               {:mvn/version "1.0.194"}
+    org.clojure/tools.cli               {:mvn/version "1.0.206"}
     aero/aero                           {:mvn/version "1.1.6"}
     mount/mount                         {:mvn/version "0.1.16"}
     jarohen/chime                       {:mvn/version "0.3.2"}
@@ -74,7 +74,7 @@
 
     ; clj -M:kondo
     :kondo
-      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.02.13"}}
+      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.02.28"}}
        :main-opts  ["-m" "clj-kondo.main" "--lint" "src" "resources"]}
 
     ; clj -M:eastwood
@@ -84,5 +84,5 @@
 
     ; clj -M:outdated
     :outdated
-      {:extra-deps {antq/antq {:mvn/version "0.11.1"}}
+      {:extra-deps {antq/antq {:mvn/version "0.11.2"}}
        :main-opts  ["-m" "antq.core"]}}}
