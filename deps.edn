@@ -58,7 +58,7 @@
 
     ; clj -X:uberjar
     :uberjar
-      {:replace-deps {seancorfield/depstar {:mvn/version "2.0.193"}}
+      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.193"}}
        :exec-fn      hf.depstar/uberjar
        :exec-args    {:jar        "./target/futbot-standalone.jar"
                       :jar-type   :uber
@@ -84,5 +84,5 @@
 
     ; clj -M:outdated
     :outdated
-      {:extra-deps {antq/antq {:mvn/version "0.12.0"}}
+      {:extra-deps {com.github.liquidz/antq {:mvn/version "0.12.0"}}
        :main-opts  ["-m" "antq.core"]}}}
