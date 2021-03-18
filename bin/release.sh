@@ -2,12 +2,7 @@
 set -e
 set -o pipefail
 
-MAJOR_MINOR="1.0"
-PLACEHOLDER_VERSION="${MAJOR_MINOR}.YYYYMMDD"
-NEW_VERSION="${MAJOR_MINOR}.$(date +%Y%m%d)"
-
-echo "▶️ Releasing futbot version ${NEW_VERSION}..."
-
+# Sanity checking
 if [ ! -x "$(command -v hub)" ]; then
   echo "🛑 Unable to find 'hub' executable - is it installed?"
   exit -1
@@ -28,6 +23,13 @@ if [ -n "$(git status -s --untracked-files=no)" ]; then
   exit -1
 fi
 
+# Script proper starts here
+MAJOR_MINOR="1.0"
+PLACEHOLDER_VERSION="${MAJOR_MINOR}.YYYYMMDD"
+NEW_VERSION="${MAJOR_MINOR}.$(date +%Y%m%d)"
+
+echo "▶️ Releasing futbot version ${NEW_VERSION}..."
+
 echo "ℹ️ Updating local..."
 git fetch origin main:main
 git merge main
@@ -39,11 +41,25 @@ read
 echo "ℹ️ Updating version in pom.xml..."
 xmlstarlet ed --inplace -N pom='http://maven.apache.org/POM/4.0.0' -u '/pom:project/pom:version' -v ${NEW_VERSION} pom.xml
 
-echo "ℹ️ Committing and pushing changes..."
+echo "ℹ️ Committing changes..."
 git commit -m ":gem: Release ${NEW_VERSION}" pom.xml
+
+echo "ℹ️ Tagging release..."
+git tag -f -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
+
+echo "ℹ️ Pushing changes..."
 git push
+git push origin --tags
 
 echo "ℹ️ Creating pull request..."
-git pull-request --browse -f -m "Release ${NEW_VERSION}" -h dev -b main
+PR_DESCRIPTION=$(git shortlog --no-merges --abbrev-commit main..dev | tail -n +2 | sed -e 's/^/* /')
+hub pull-request --browse -f -m "Release ${NEW_VERSION}" -m "Summary of changes:\n\n${PR_DESCRIPTION}"
+
+echo "ℹ️ Updating version in pom.xml ahead of development of next release..."
+xmlstarlet ed --inplace -N pom='http://maven.apache.org/POM/4.0.0' -u '/pom:project/pom:version' -v ${PLACEHOLDER_VERSION} pom.xml
+
+echo "ℹ️ Committing and pushing changes..."
+git commit -m ":gem: Prepare for next version..." pom.xml
+git push
 
 echo "⏹ Done."
