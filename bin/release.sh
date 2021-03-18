@@ -53,7 +53,7 @@ git push origin --tags
 
 echo "ℹ️ Creating pull request..."
 PR_DESCRIPTION=$(git shortlog --no-merges --abbrev-commit main..dev | tail -n +2 | sed -e 's/^/* /')
-hub pull-request --browse -f -m "Release ${NEW_VERSION}" -m "Summary of changes:\n\n${PR_DESCRIPTION}"
+hub pull-request --browse -f -m "Release ${NEW_VERSION}" -m "Summary of changes:\n\n${PR_DESCRIPTION}" -h dev -b main
 
 echo "ℹ️ Updating version in pom.xml ahead of development of next release..."
 xmlstarlet ed --inplace -N pom='http://maven.apache.org/POM/4.0.0' -u '/pom:project/pom:version' -v ${PLACEHOLDER_VERSION} pom.xml
