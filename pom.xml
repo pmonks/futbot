@@ -4,17 +4,14 @@
 
   To obtain a usable POM (i.e. with dependencies included), run `clojure -Srepro -Spom`, and use the file produced by that command instead of this one.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.clojars.pmonks</groupId>
   <artifactId>futbot</artifactId>
-  <version>1.0.20210316</version>
+  <version>1.0.20210318</version>
   <name>futbot</name>
   <description>A Discord bot that delivers football (soccer) information to Discord.</description>
   <url>https://github.com/pmonks/futbot</url>
-
   <licenses>
     <license>
       <name>Apache License 2.0</name>
@@ -22,7 +19,6 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-
   <developers>
     <developer>
       <id>pmonks</id>
@@ -30,22 +26,19 @@
       <email>pmonks+futbot@gmail.com</email>
     </developer>
   </developers>
-
   <scm>
     <url>https://github.com/pmonks/futbot</url>
     <connection>scm:git:git://github.com/pmonks/futbot.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/pmonks/futbot.git</developerConnection>
   </scm>
-
   <issueManagement>
     <system>github</system>
     <url>https://github.com/pmonks/futbot/issues</url>
   </issueManagement>
-
   <resources>
     <resource>
-      <directory>resources</directory>  <!-- Needed because clj -Spom isn't very good yet -->
+      <directory>resources</directory>
+      <!-- Needed because clj -Spom isn't very good yet -->
     </resource>
   </resources>
-
 </project>
