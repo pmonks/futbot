@@ -25,7 +25,7 @@ fi
 
 # Script proper starts here
 MAJOR_MINOR="1.0"
-PLACEHOLDER_VERSION="${MAJOR_MINOR}.YYYYMMDD"
+#PLACEHOLDER_VERSION="${MAJOR_MINOR}.YYYYMMDD"
 NEW_VERSION="${MAJOR_MINOR}.$(date +%Y%m%d)"
 
 echo "▶️ Releasing futbot version ${NEW_VERSION}..."
@@ -52,12 +52,13 @@ git push
 git push origin -f --tags
 
 echo "ℹ️ Creating pull request..."
-PR_DESCRIPTION=$(git shortlog --no-merges --abbrev-commit main..dev | tail -n +2 | sed -e 's/^/* /')
-hub pull-request --browse -f -m "Release ${NEW_VERSION}" -m "Summary of changes:$'\n'$'\n'${PR_DESCRIPTION}" -h dev -b main
+printf -v PR_DESCRIPTION "Summary of changes:\n\n$(git shortlog --no-merges --abbrev-commit main..dev | tail -n +2 | sed 's/^[[:blank:]]*//g' | sed '/^$/d' | sed -e 's/^/* /')"
+hub pull-request --browse -f -m "Release ${NEW_VERSION}" -m "${PR_DESCRIPTION}" -h dev -b main
 
-echo "ℹ️ Updating version in pom.xml ahead of development of next release..."
-xmlstarlet ed --inplace -N pom='http://maven.apache.org/POM/4.0.0' -u '/pom:project/pom:version' -v ${PLACEHOLDER_VERSION} pom.xml
-git commit -m ":gem: Prepare for next version..." pom.xml
+# Not entirely convinced this is a good idea...
+#echo "ℹ️ Updating version in pom.xml ahead of development of next release..."
+#xmlstarlet ed --inplace -N pom='http://maven.apache.org/POM/4.0.0' -u '/pom:project/pom:version' -v "${PLACEHOLDER_VERSION}" pom.xml
+#git commit -m ":gem: Prepare for next version..." pom.xml
 # DON'T PUSH HERE OR IT'LL GET ADDED TO THE PR!!!!
 
 echo "ℹ️ After the PR has been merged, it is highly recommended that you run the following ASAP:"
