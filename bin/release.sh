@@ -53,13 +53,17 @@ git push origin -f --tags
 
 echo "ℹ️ Creating pull request..."
 PR_DESCRIPTION=$(git shortlog --no-merges --abbrev-commit main..dev | tail -n +2 | sed -e 's/^/* /')
-hub pull-request --browse -f -m "Release ${NEW_VERSION}" -m "Summary of changes:\n\n${PR_DESCRIPTION}" -h dev -b main
+hub pull-request --browse -f -m "Release ${NEW_VERSION}" -m "Summary of changes:$'\n'$'\n'${PR_DESCRIPTION}" -h dev -b main
 
 echo "ℹ️ Updating version in pom.xml ahead of development of next release..."
 xmlstarlet ed --inplace -N pom='http://maven.apache.org/POM/4.0.0' -u '/pom:project/pom:version' -v ${PLACEHOLDER_VERSION} pom.xml
-
-echo "ℹ️ Committing and pushing changes..."
 git commit -m ":gem: Prepare for next version..." pom.xml
-git push
+# DON'T PUSH HERE OR IT'LL GET ADDED TO THE PR!!!!
+
+echo "ℹ️ After the PR has been merged, it is highly recommended that you run the following ASAP:"
+echo "  1. git fetch origin main:main"
+echo "  2. git merge main"
+echo "  3. git pull"
+echo "  4. git push"
 
 echo "⏹ Done."
