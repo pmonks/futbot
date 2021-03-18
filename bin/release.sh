@@ -49,7 +49,7 @@ git tag -f -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
 
 echo "ℹ️ Pushing changes..."
 git push
-git push origin --tags
+git push origin -f --tags
 
 echo "ℹ️ Creating pull request..."
 PR_DESCRIPTION=$(git shortlog --no-merges --abbrev-commit main..dev | tail -n +2 | sed -e 's/^/* /')
