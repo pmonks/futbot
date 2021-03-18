@@ -17,15 +17,16 @@
 ;
 
 (ns futbot.source.cnra
-  (:require [clojure.string     :as s]
-            [java-time          :as tm]
-            [org.httpkit.client :as http]
-            [futbot.util        :as u]))
+  (:require [clojure.string        :as s]
+            [clojure.tools.logging :as log]
+            [java-time             :as tm]
+            [org.httpkit.client    :as http]
+            [futbot.util           :as u]))
 
 (def cnra-quiz-page-url "https://www.cnra.net/monthly-video-quizzes/")
 
 (defn- retrieve-and-parse-quiz-page
-  "Retrieves the CNRA quiz page and returns a JSoup-parsed represention. Throws an ex-info on failure."
+  "Retrieves the CNRA quiz page and returns a JSoup-parsed represention. Throws an ex-info on failure. Note: this code assumes that SNI has been enabled - see https://github.com/http-kit/http-kit#enabling-client-sni-support-disabled-by-default"
   []
   (let [{:keys [status headers body error]} @(http/get cnra-quiz-page-url)]
     (if error
@@ -40,7 +41,9 @@
          [month-year topic] (s/split text #" - ")
          fifteenth-of-month (u/to-ascii (str "15 " month-year))
          date               (tm/local-date "dd MMMM yyyy" fifteenth-of-month)
-         link               (.attr (.selectFirst p "a[href*=forms.gle]") "href")]      ; Note: assumes the quiz is always the first link to a Google form
+         link               (if-let [anchor-tag (.selectFirst p "a")]  ; Note: assumes the quiz is always the first link in the paragraph
+                              (.attr anchor-tag "href")
+                              (log/warn "Unable to find quiz link in CNRA quiz paragraph: " p))]
       (when link
         {
           :date      date
