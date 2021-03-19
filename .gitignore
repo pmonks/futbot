@@ -13,7 +13,6 @@ pom.xml.asc
 *.log
 uberjar/
 config.edn
-resources/deploy-info.edn
 .rebel_readline_history
 .eastwood
 titles-*.edn

@@ -37,11 +37,14 @@ git pull
 echo "❔ Press ENTER if update was clean, Ctrl+C if not..."
 read
 
+echo "ℹ️ Updating git info..."
+clj -M:git-info-edn
+git add resources/deploy-info.edn ||:
+
 echo "ℹ️ Updating version in pom.xml..."
 xmlstarlet ed --inplace -N pom='http://maven.apache.org/POM/4.0.0' -u '/pom:project/pom:version' -v ${NEW_VERSION} pom.xml
-
-echo "ℹ️ Committing changes..."
-git commit -m ":gem: Release ${NEW_VERSION}" pom.xml ||:    # Ignore status code, in the case that the pom.xml didn't change (i.e. when more than one release happens in a day)
+git add pom.xml ||:
+git commit -m ":gem: Release ${NEW_VERSION}" ||:    # Ignore status code, in the case that nothing changed (e.g. when more than one release happens in a day)
 
 echo "ℹ️ Tagging release..."
 git tag -f -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"

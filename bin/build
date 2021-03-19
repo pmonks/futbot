@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 clojure -Srepro -P
-clojure -Srepro -M:git-info-edn
 clojure -Srepro -Spom
 clojure -Srepro -X:uberjar
