@@ -50,12 +50,6 @@
     :gen-daily-schedule
       {:main-opts ["-m" "futbot.daily-schedule.main"]}
 
-    ; clj -M:git-info-edn
-    :git-info-edn
-      {:extra-deps {noisesmith/lein-git-info-edn {:git/url "https://github.com/noisesmith/lein-git-info-edn.git"
-                                                  :sha     "beb66c0935273c5b7e5129062027984473eb8e02"}}
-       :main-opts  ["-m" "leiningen.git-info-edn"]}
-
     ; clj -X:uberjar
     :uberjar
       {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.206"}}
