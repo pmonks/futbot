@@ -170,14 +170,14 @@
 (def ^:private build-info
   (if-let [deploy-info (io/resource "deploy-info.edn")]
     (edn/read-string (slurp deploy-info))
-    (throw (RuntimeException. "deploy-info.edn classpath resource not found - did you remember to run the 'git-info-edn' alias first?"))))
+    (throw (RuntimeException. "deploy-info.edn classpath resource not found."))))
 
-(def git-revision
-  (s/trim (:hash build-info)))
+(def git-tag
+  (s/trim (:tag build-info)))
 
 (def git-url
-  (when-not (s/blank? git-revision)
-    (str "https://github.com/pmonks/futbot/tree/" git-revision)))
+  (when-not (s/blank? git-tag)
+    (str "https://github.com/pmonks/futbot/tree/" git-tag)))
 
 (def built-at
   (tm/instant (:date build-info)))

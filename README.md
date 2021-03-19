@@ -30,8 +30,6 @@ Obtain a [Google API key](https://developers.google.com/youtube/registering_an_a
 
 Currently the bot is only distributed in source form, so regardless of how you intend to deploy it, you'll need to clone this repository locally.
 
-Before running the code, you'll need to generate a git info EDN file, by running `clj -M:git-info-edn` (this only needs to be done once).
-
 #### Direct Execution
 
 1. Either set environment variables as described in the default [`config.edn` file](https://github.com/pmonks/futbot/blob/main/resources/config.edn), or copy that file somewhere else and hardcode the values in the file directly.

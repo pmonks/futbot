@@ -45,7 +45,15 @@ echo "ℹ️ Tagging release..."
 git tag -f -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
 
 echo "ℹ️ Updating deploy info..."
-clj -M:git-info-edn
+cat > resources/deploy-info.edn <<EOF
+{
+  :hash "$(git show-ref -s --tags v${NEW_VERSION})"
+  :tag "v${NEW_VERSION}"
+  :date #inst "$(date -u +%FT%TZ)"
+}
+EOF
+
+#clj -M:git-info-edn
 git commit -m ":gem: Release v${NEW_VERSION}" resources/deploy-info.edn  ||:    # Ignore status code, in the case that nothing changed (e.g. when more than one release happens in a day)
 
 echo "ℹ️ Pushing changes..."
