@@ -19,7 +19,5 @@ jobs:
         with:
           tools-deps: latest
 
-      - name: Construct git info
-        run: clojure -Srepro -M:git-info-edn
       - name: Check code
         run: clojure -Srepro -M:check
