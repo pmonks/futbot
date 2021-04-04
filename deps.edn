@@ -52,7 +52,7 @@
 
     ; clj -X:uberjar
     :uberjar
-      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.206"}}
+      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.211"}}
        :exec-fn      hf.depstar/uberjar
        :exec-args    {:jar        "./target/futbot-standalone.jar"
                       :jar-type   :uber
@@ -68,15 +68,15 @@
 
     ; clj -M:kondo
     :kondo
-      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.03.22"}}
+      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.03.31"}}
        :main-opts  ["-m" "clj-kondo.main" "--lint" "src" "resources"]}
 
     ; clj -M:eastwood
     :eastwood
-      {:extra-deps {jonase/eastwood {:mvn/version "0.3.14"}}
+      {:extra-deps {jonase/eastwood {:mvn/version "0.4.0"}}
        :main-opts  ["-m" "eastwood.lint" {:source-paths ["src" "resources"]}]}
 
     ; clj -M:outdated
     :outdated
-      {:extra-deps {com.github.liquidz/antq {:mvn/version "0.12.2"}}
+      {:extra-deps {com.github.liquidz/antq {:mvn/version "0.12.4"}}
        :main-opts  ["-m" "antq.core"]}}}
