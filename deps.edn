@@ -33,7 +33,7 @@
     org.suskalo/discljord               {:mvn/version "1.2.2"}
     http-kit/http-kit                   {:mvn/version "2.5.3"}
     cheshire/cheshire                   {:mvn/version "5.10.0"}
-    clj-pdf/clj-pdf                     {:mvn/version "2.5.5"}
+    clj-pdf/clj-pdf                     {:mvn/version "2.5.6"}
     rm-hull/markov-chains               {:mvn/version "0.1.1"}
     remus/remus                         {:mvn/version "0.2.1"}
     org.jsoup/jsoup                     {:mvn/version "1.13.1"}}
@@ -52,7 +52,7 @@
 
     ; clj -X:uberjar
     :uberjar
-      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.206"}}
+      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.211"}}
        :exec-fn      hf.depstar/uberjar
        :exec-args    {:jar        "./target/futbot-standalone.jar"
                       :jar-type   :uber
@@ -62,21 +62,21 @@
     ; clj -M:check
     :check
       {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git"
-                                     :sha     "cd1f25456de5eebda0a69602dd3445905382b3a4"}}
+                                     :sha     "518d5a1cbfcd7c952f548e6dbfcb9a4a5faf9062"}}
        :main-opts  ["-m" "clj-check.check"]}
 
 
     ; clj -M:kondo
     :kondo
-      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.03.03"}}
+      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.03.31"}}
        :main-opts  ["-m" "clj-kondo.main" "--lint" "src" "resources"]}
 
     ; clj -M:eastwood
     :eastwood
-      {:extra-deps {jonase/eastwood {:mvn/version "0.3.14"}}
+      {:extra-deps {jonase/eastwood {:mvn/version "0.4.0"}}
        :main-opts  ["-m" "eastwood.lint" {:source-paths ["src" "resources"]}]}
 
     ; clj -M:outdated
     :outdated
-      {:extra-deps {com.github.liquidz/antq {:mvn/version "0.12.2"}}
+      {:extra-deps {com.github.liquidz/antq {:mvn/version "0.12.4"}}
        :main-opts  ["-m" "antq.core"]}}}

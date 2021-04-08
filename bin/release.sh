@@ -52,9 +52,7 @@ cat > resources/deploy-info.edn <<EOF
   :date #inst "$(date -u +%FT%TZ)"
 }
 EOF
-
-#clj -M:git-info-edn
-git commit -m ":gem: Release v${NEW_VERSION}" resources/deploy-info.edn  ||:    # Ignore status code, in the case that nothing changed (e.g. when more than one release happens in a day)
+git commit -m ":gem: Release v${NEW_VERSION}" resources/deploy-info.edn
 
 echo "ℹ️ Pushing changes..."
 git push
