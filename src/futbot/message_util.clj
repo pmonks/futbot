@@ -94,3 +94,9 @@
   (if-let [name (:nick (:member event-data))]
     name
     (:username (:author event-data))))
+
+(defn channel-link
+  "Convenience method that creates a link to the given channel-id, for embedding in message bodies"
+  [channel-id]
+  (when channel-id
+    (str "<#" channel-id ">")))
