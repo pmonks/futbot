@@ -73,32 +73,34 @@
   [football-data-api-token
    discord-message-channel
    match-reminder-duration
+   match-reminder-channel-id
    country-to-channel-fn
    referee-emoji
    match-id & _]
   (try
     (log/info (str "Sending reminder for match " match-id "..."))
     (if-let [{match :match} (fd/match football-data-api-token match-id)]
-      (let [league        (s/trim (get-in match [:competition :name]))
-            country       (s/trim (get-in match [:competition :area :code]))
-            channel-id    (country-to-channel-fn country)
-            starts-in-min (try
-                            (.toMinutes (tm/duration (tm/zoned-date-time)
-                                                     (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time (:utc-date match)))))
-                            (catch Exception e
-                              (.toMinutes ^java.time.Duration match-reminder-duration)))
-            flag          (if-let [flag (fl/emoji (get-in match [:competition :area :code]))]
-                            flag
-                            "🏴‍☠️")
+      (let [league             (s/trim (get-in match [:competition :name]))
+            country            (s/trim (get-in match [:competition :area :code]))
+            country-channel-id (country-to-channel-fn country)
+            starts-in-min      (try
+                                 (.toMinutes (tm/duration (tm/zoned-date-time)
+                                                          (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time (:utc-date match)))))
+                                 (catch Exception e
+                                   (.toMinutes ^java.time.Duration match-reminder-duration)))
+             flag              (if-let [flag (fl/emoji (get-in match [:competition :area :code]))]
+                                 flag
+                                 "🏴‍☠️")
             match-prefix  (str flag " " league ": **" (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown") "**")
-            message       (case (:status match)
-                            "SCHEDULED" (str match-prefix " starts in " starts-in-min " minutes.\nReferees: " (referee-names referee-emoji (:referees match)))
-                            "POSTPONED" (str match-prefix ", which was due to start in " starts-in-min " minutes, has been postponed.")
-                            "CANCELED"  (str match-prefix ", which was due to start in " starts-in-min " minutes, has been canceled.")
-                            nil)]
+            message       (str
+                            match-prefix
+                            (case (:status match)
+                              "SCHEDULED" (str " starts in " starts-in-min " minutes.\nReferees: " (referee-names referee-emoji (:referees match)) "\n")
+                              (str ", which was due to start in " starts-in-min " minutes, has been " (s/lower-case (:status match)) ".\n"))
+                            "Discuss in " (mu/channel-link country-channel-id))]
         (if message
           (mu/create-message! discord-message-channel
-                              channel-id
+                              match-reminder-channel-id
                               message)
           (log/warn (str "Match " match-id " had an unexpected status: " (:status match) ". No reminder message sent."))))
       (log/warn (str "Match " match-id " was not found by football-data.org. No reminder message sent.")))
@@ -111,6 +113,7 @@
   [football-data-api-token
    discord-message-channel
    match-reminder-duration
+   match-reminder-channel-id
    muted-leagues
    country-to-channel-fn
    referee-emoji
@@ -128,6 +131,7 @@
                                    football-data-api-token
                                    discord-message-channel
                                    match-reminder-duration
+                                   match-reminder-channel-id
                                    country-to-channel-fn
                                    referee-emoji
                                    (:id match))))
@@ -140,6 +144,7 @@
     discord-message-channel
     match-reminder-duration
     muted-leagues
+    match-reminder-channel-id
     country-to-channel-fn
     referee-emoji]
     (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
@@ -148,6 +153,7 @@
                                   discord-message-channel
                                   match-reminder-duration
                                   muted-leagues
+                                  match-reminder-channel-id
                                   country-to-channel-fn
                                   referee-emoji
                                   todays-scheduled-matches)))
@@ -155,6 +161,7 @@
     discord-message-channel
     match-reminder-duration
     muted-leagues
+    match-reminder-channel-id
     country-to-channel-fn
     referee-emoji
     todays-scheduled-matches]
@@ -163,12 +170,13 @@
                                                     discord-message-channel
                                                     match-reminder-duration
                                                     muted-leagues
+                                                    match-reminder-channel-id
                                                     country-to-channel-fn
                                                     referee-emoji)
                   (distinct todays-scheduled-matches)))
       (log/info "No matches remaining today - not scheduling any reminders."))))
 
-(def training-and-resources-discord-channel-id "<#686439362291826694>")
+(def training-and-resources-discord-channel-id (mu/channel-link "686439362291826694"))
 
 (defn check-for-new-dutch-referee-blog-quiz-and-post-to-channel!
   "Checks whether a new Dutch referee blog quiz has been posted in the last time-period-hours hours (defaults to 24), and posts it to the given channel if so."
@@ -215,7 +223,7 @@
     (log/info "No new CNRA quizzes found")))
 
 (def ist-youtube-channel-id            "UCmzFaEBQlLmMTWS0IQ90tgA")
-(def memes-and-junk-discord-channel-id "<#683853455038742610>")
+(def memes-and-junk-discord-channel-id (mu/channel-link "683853455038742610"))
 
 (defn post-youtube-video-to-channel!
   [discord-message-channel discord-channel-id youtube-channel-info-fn youtube-channel-id video]
