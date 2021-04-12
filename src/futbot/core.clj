@@ -79,6 +79,15 @@
    match-id & _]
   (try
     (log/info (str "Sending reminder for match " match-id "..."))
+;####TEST!!!!
+(if-not football-data-api-token (throw (RuntimeException. "football-data-api-token not provided")))
+(if-not discord-message-channel (throw (RuntimeException. "discord-message-channel not provided")))
+(if-not match-reminder-duration (throw (RuntimeException. "match-reminder-duration not provided")))
+(if-not match-reminder-channel-id (throw (RuntimeException. "dmatch-reminder-channel-id not provided")))
+(if-not country-to-channel-fn (throw (RuntimeException. "country-to-channel-fn not provided")))
+(if-not referee-emoji (throw (RuntimeException. "referee-emoji not provided")))
+(if-not match-id (throw (RuntimeException. "match-id not provided")))
+;####TEST END!!!!
     (if-let [{match :match} (fd/match football-data-api-token match-id)]
       (let [league             (s/trim (get-in match [:competition :name]))
             country            (s/trim (get-in match [:competition :area :code]))
@@ -91,13 +100,14 @@
              flag              (if-let [flag (fl/emoji (get-in match [:competition :area :code]))]
                                  flag
                                  "🏴‍☠️")
-            match-prefix  (str flag " " league ": **" (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown") "**")
-            message       (str
-                            match-prefix
-                            (case (:status match)
-                              "SCHEDULED" (str " starts in " starts-in-min " minutes.\nReferees: " (referee-names referee-emoji (:referees match)) "\n")
-                              (str ", which was due to start in " starts-in-min " minutes, has been " (s/lower-case (:status match)) ".\n"))
-                            "Discuss in " (mu/channel-link country-channel-id))]
+            match-prefix       (str flag " " league ": **" (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown") "**")
+            message            (str
+                                 match-prefix
+                                 (case (:status match)
+                                   "SCHEDULED" (str " starts in " starts-in-min " minutes.\nReferees: " (referee-names referee-emoji (:referees match)) "\n")
+                                   "FINISHED"  " has finished.\n"
+                                   (str ", which was due to start in " starts-in-min " minutes, has been " (s/lower-case (:status match)) ".\n"))
+                                 "Discuss in " (mu/channel-link country-channel-id))]
         (if message
           (mu/create-message! discord-message-channel
                               match-reminder-channel-id
