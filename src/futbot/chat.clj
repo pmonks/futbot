@@ -64,6 +64,38 @@
                       (:channel-id event-data)
                       "Garbage collection requested."))
 
+(defn set-logging-command!
+  "Sets the log level, optionally for the given logger (defaults to 'futbot')."
+  [args event-data]
+  (let [[level logger] (s/split args #"\s+")]
+    (if level
+      (do
+        (cfg/set-log-level! level (if logger logger "futbot"))
+        (mu/create-message! cfg/discord-message-channel
+                            (:channel-id event-data)
+                            (str "Logging level " (s/upper-case level) " set" (if logger (str " for logger '" logger "'") "for logger 'futbot'") ".")))
+      (mu/create-message! cfg/discord-message-channel
+                            (:channel-id event-data)
+                            "Logging level not provided; must be one of: ERROR, WARN, INFO, DEBUG, TRACE"))))
+
+(defn debug-logging-command!
+  "Enables debug logging, which turns on TRACE for 'discljord' and DEBUG for 'futbot'."
+  [_ event-data]
+  (cfg/set-log-level! "TRACE" "discljord")
+  (cfg/set-log-level! "DEBUG" "futbot")
+  (mu/create-message! cfg/discord-message-channel
+                      (:channel-id event-data)
+                      "Debug logging enabled (TRACE for 'discljord' and DEBUG for 'futbot'."))
+
+(defn reset-logging-command!
+  "Resets all log levels to their configured defaults."
+  [_ event-data]
+  (cfg/reset-logging!)
+  (mu/create-message! cfg/discord-message-channel
+                      (:channel-id event-data)
+                      "Logging configuration reset."))
+
+
 ; Table of "public" commands; those that can be used in any channel, group or DM
 (def public-command-dispatch-table
   {"ist" #'ist-command!})
@@ -76,8 +108,11 @@
    "privacy" #'privacy-command!})
 
 (def secret-command-dispatch-table
-  {"status"  #'status-command!
-   "gc"      #'gc-command!})
+  {"status"       #'status-command!
+   "gc"           #'gc-command!
+   "setlogging"   #'set-logging-command!
+   "debuglogging" #'debug-logging-command!
+   "resetlogging" #'reset-logging-command!})
 
 (defn help-command!
   "Displays this help message"

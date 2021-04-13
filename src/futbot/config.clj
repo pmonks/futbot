@@ -181,3 +181,20 @@
 
 (def built-at
   (tm/instant (:date build-info)))
+
+(defn set-log-level!
+  "Sets the log level (which can be a string or a keyword) of the bot, for the given logger aka 'package' (a String, use 'ROOT' for the root logger)."
+  [level ^String logger-name]
+  (when (and level logger-name)
+    (let [logger    ^ch.qos.logback.classic.Logger (org.slf4j.LoggerFactory/getLogger logger-name)                       ; This will always return a Logger object, even if it isn't used
+          level-obj                                (ch.qos.logback.classic.Level/toLevel (s/upper-case (name level)))]   ; Note: this code defaults to DEBUG if the given level string isn't valid
+      (.setLevel logger level-obj))))
+
+(defn reset-logging!
+  "Resets all log levels to their configured defaults."
+  []
+  (let [lc  ^ch.qos.logback.classic.LoggerContext (org.slf4j.LoggerFactory/getILoggerFactory)
+        ci  (ch.qos.logback.classic.util.ContextInitializer. lc)
+        url (.findURLOfDefaultConfigurationFile ci true)]
+    (.reset lc)
+    (.configureByResource ci url)))
