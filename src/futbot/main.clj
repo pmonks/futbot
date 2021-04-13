@@ -68,8 +68,8 @@
       (core/schedule-todays-reminders! cfg/football-data-api-token
                                        cfg/discord-message-channel
                                        cfg/match-reminder-duration
-                                       cfg/muted-leagues
                                        cfg/daily-schedule-discord-channel-id
+                                       cfg/muted-leagues
                                        #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id)
                                        cfg/referee-emoji)
       (log/info "futbot started")
