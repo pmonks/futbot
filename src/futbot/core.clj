@@ -79,15 +79,6 @@
    match-id & _]
   (try
     (log/info (str "Sending reminder for match " match-id "..."))
-;####TEST!!!!
-(if-not football-data-api-token (throw (RuntimeException. "football-data-api-token not provided")))
-(if-not discord-message-channel (throw (RuntimeException. "discord-message-channel not provided")))
-(if-not match-reminder-duration (throw (RuntimeException. "match-reminder-duration not provided")))
-(if-not match-reminder-channel-id (throw (RuntimeException. "dmatch-reminder-channel-id not provided")))
-(if-not country-to-channel-fn (throw (RuntimeException. "country-to-channel-fn not provided")))
-(if-not referee-emoji (throw (RuntimeException. "referee-emoji not provided")))
-(if-not match-id (throw (RuntimeException. "match-id not provided")))
-;####TEST END!!!!
     (if-let [{match :match} (fd/match football-data-api-token match-id)]
       (let [league             (s/trim (get-in match [:competition :name]))
             country            (s/trim (get-in match [:competition :area :code]))
@@ -153,8 +144,8 @@
   ([football-data-api-token
     discord-message-channel
     match-reminder-duration
-    muted-leagues
     match-reminder-channel-id
+    muted-leagues
     country-to-channel-fn
     referee-emoji]
     (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
@@ -162,16 +153,16 @@
       (schedule-todays-reminders! football-data-api-token
                                   discord-message-channel
                                   match-reminder-duration
-                                  muted-leagues
                                   match-reminder-channel-id
+                                  muted-leagues
                                   country-to-channel-fn
                                   referee-emoji
                                   todays-scheduled-matches)))
   ([football-data-api-token
     discord-message-channel
     match-reminder-duration
-    muted-leagues
     match-reminder-channel-id
+    muted-leagues
     country-to-channel-fn
     referee-emoji
     todays-scheduled-matches]
@@ -179,8 +170,8 @@
       (doall (map (partial schedule-match-reminder! football-data-api-token
                                                     discord-message-channel
                                                     match-reminder-duration
-                                                    muted-leagues
                                                     match-reminder-channel-id
+                                                    muted-leagues
                                                     country-to-channel-fn
                                                     referee-emoji)
                   (distinct todays-scheduled-matches)))
