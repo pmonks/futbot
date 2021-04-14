@@ -98,7 +98,7 @@
                                    "SCHEDULED" (str " starts in " starts-in-min " minutes.\nReferees: " (referee-names referee-emoji (:referees match)) "\n")
                                    "FINISHED"  " has finished.\n"
                                    (str ", which was due to start in " starts-in-min " minutes, has been " (s/lower-case (:status match)) ".\n"))
-                                 "Discuss in " (mu/channel-link country-channel-id))]
+                                 "Discuss in " (mu/channel-link country-channel-id) ".")]
         (if message
           (mu/create-message! discord-message-channel
                               match-reminder-channel-id
