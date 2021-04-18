@@ -52,7 +52,7 @@
 
     ; clj -X:uberjar
     :uberjar
-      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.211"}}
+      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
        :exec-fn      hf.depstar/uberjar
        :exec-args    {:jar        "./target/futbot-standalone.jar"
                       :jar-type   :uber
