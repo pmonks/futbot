@@ -4,7 +4,7 @@
   :discord-api-token          #env DISCORD_API_TOKEN
   :discord-event-channel-size 100
 
-  :daily-schedule-discord-channel-id "686396574104158228"   ; League Discussions > #game-listings
+  :match-reminder-discord-channel-id "686396574104158228"   ; League Discussions > #live-updates
 
   :match-reminder-duration-mins 15
 
@@ -57,6 +57,7 @@
     "UCxdPyM0KXNhXGUChb1FaJSA" "<:frva:791780784754655233>"      ; Football Victoria Referees
     "UCosXVB8eY3iF26k6iTHW9gw" "<:concacaf:791778812736045097>"  ; CONCACAF Center of Refereeing Excellence
     "UCDWmPEiV6UehDyq-0yoigmQ" "<:pro:778688391608926278>"       ; PROreferees
+    "UCkWdcTQDOPPHXQ6asE9R1Sg" "<:csa:814941184232914975>"       ; CSA Referee
     "UCRvL3eeBF3MFGFn6vnqR0nw" nil                               ; WASRC Webinars
     "UCcMv5IAlVBy-7oHt7pdiLxQ" nil                               ; RWISOA Referees
     "UCH4fZCsZ3_4rPIzEeLbcLGA" nil                               ; Ahmed Habib's Referee Channel

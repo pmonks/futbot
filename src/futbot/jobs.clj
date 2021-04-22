@@ -17,14 +17,13 @@
 ;
 
 (ns futbot.jobs
-  (:require [clojure.tools.logging       :as log]
-            [mount.core                  :as mnt :refer [defstate]]
-            [java-time                   :as tm]
-            [chime.core                  :as chime]
-            [futbot.util                 :as u]
-            [futbot.config               :as cfg]
-            [futbot.source.football-data :as fd]
-            [futbot.core                 :as core]))
+  (:require [clojure.tools.logging :as log]
+            [mount.core            :as mnt :refer [defstate]]
+            [java-time             :as tm]
+            [chime.core            :as chime]
+            [futbot.util           :as u]
+            [futbot.config         :as cfg]
+            [futbot.core           :as core]))
 
 (defn close-job
   "Closes a timed job defined by the defjob macro."
@@ -53,25 +52,17 @@
         (tm/hours 1)
         (System/gc))
 
-; Prepare the daily schedule at midnight UTC every day
-(defjob daily-schedule-job
+; Schedule match reminders for the day
+(defjob schedule-match-reminders-job
         (tm/plus (tm/truncate-to (tm/instant) :days) (tm/days 1))
         (tm/days 1)
-        (let [today                    (u/in-tz "UTC" (tm/zoned-date-time))   ; Note: can't use a tm/instant here as football-data code doesn't support it (TODO)
-              todays-scheduled-matches (fd/scheduled-matches-on-day cfg/football-data-api-token today)]
-          (core/post-daily-schedule-to-channel! cfg/discord-message-channel
-                                                cfg/daily-schedule-discord-channel-id
-                                                (partial fd/match cfg/football-data-api-token)
-                                                today
-                                                todays-scheduled-matches)
-          (core/schedule-todays-reminders! cfg/football-data-api-token
-                                           cfg/discord-message-channel
-                                           cfg/match-reminder-duration
-                                           cfg/daily-schedule-discord-channel-id
-                                           cfg/muted-leagues
-                                           #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id)
-                                           cfg/referee-emoji
-                                           todays-scheduled-matches)))
+        (core/schedule-todays-match-reminders! cfg/football-data-api-token
+                                               cfg/discord-message-channel
+                                               cfg/match-reminder-duration
+                                               cfg/match-reminder-discord-channel-id
+                                               cfg/muted-leagues
+                                               #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id)
+                                               cfg/referee-emoji))
 
 ; Check for new Dutch Referee Blog Quizzes at 9am Amsterdam each day. This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
 (defjob dutch-referee-blog-quiz-job

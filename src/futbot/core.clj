@@ -18,7 +18,6 @@
 
 (ns futbot.core
   (:require [clojure.string                   :as s]
-            [clojure.java.io                  :as io]
             [clojure.tools.logging            :as log]
             [java-time                        :as tm]
             [chime.core                       :as chime]
@@ -28,29 +27,7 @@
             [futbot.source.dutch-referee-blog :as drb]
             [futbot.source.cnra               :as cnra]
             [futbot.source.youtube            :as yt]
-            [futbot.pdf                       :as pdf]
             [futbot.flags                     :as fl]))
-
-(defn post-daily-schedule-to-channel!
-  "Generates and posts the daily-schedule (as an attachment) to the Discord channel identified by channel-id."
-  [discord-message-channel
-   channel-id
-   match-details-fn
-   today
-   todays-matches]
-  (System/gc)   ; Dear Mx JVM, now would be a *great* time to garbage collect...
-  (let [today-str (tm/format "yyyy-MM-dd" today)]
-    (if (seq todays-matches)
-      (let [pdf-file    (pdf/generate-daily-schedule match-details-fn today todays-matches)
-            pdf-file-is (io/input-stream pdf-file)]
-        (mu/create-message! discord-message-channel
-                            channel-id
-                            (str "Here are the scheduled matches for " today-str ":")
-                            pdf-file-is
-                            (str "daily-schedule-" today-str ".pdf")))
-      (mu/create-message! discord-message-channel
-                          channel-id
-                          (str "There are no matches scheduled for today (" today-str ").")))))
 
 (defn- referee-name
   [referee-emoji
@@ -139,43 +116,27 @@
         (log/info (str "Reminder time " reminder-time " for match " (:id match) " has already passed - not scheduling a reminder.")))
       (log/info (str "Match " (:id match) " is in a muted league - not scheduling a reminder.")))))
 
-(defn schedule-todays-reminders!
+(defn schedule-todays-match-reminders!
   "Schedules reminders for the remainder of today's matches."
-  ([football-data-api-token
-    discord-message-channel
-    match-reminder-duration
-    match-reminder-channel-id
-    muted-leagues
-    country-to-channel-fn
-    referee-emoji]
-    (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
-          todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
-      (schedule-todays-reminders! football-data-api-token
-                                  discord-message-channel
-                                  match-reminder-duration
-                                  match-reminder-channel-id
-                                  muted-leagues
-                                  country-to-channel-fn
-                                  referee-emoji
-                                  todays-scheduled-matches)))
-  ([football-data-api-token
-    discord-message-channel
-    match-reminder-duration
-    match-reminder-channel-id
-    muted-leagues
-    country-to-channel-fn
-    referee-emoji
-    todays-scheduled-matches]
-    (if (seq todays-scheduled-matches)
-      (doall (map (partial schedule-match-reminder! football-data-api-token
-                                                    discord-message-channel
-                                                    match-reminder-duration
-                                                    match-reminder-channel-id
-                                                    muted-leagues
-                                                    country-to-channel-fn
-                                                    referee-emoji)
-                  (distinct todays-scheduled-matches)))
-      (log/info "No matches remaining today - not scheduling any reminders."))))
+  [football-data-api-token
+   discord-message-channel
+   match-reminder-duration
+   match-reminder-channel-id
+   muted-leagues
+   country-to-channel-fn
+   referee-emoji]
+   (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+         todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
+     (if (seq todays-scheduled-matches)
+       (doall (map (partial schedule-match-reminder! football-data-api-token
+                                                     discord-message-channel
+                                                     match-reminder-duration
+                                                     match-reminder-channel-id
+                                                     muted-leagues
+                                                     country-to-channel-fn
+                                                     referee-emoji)
+                   (distinct todays-scheduled-matches)))
+       (log/info "No matches remaining today - not scheduling any reminders."))))
 
 (def training-and-resources-discord-channel-id (mu/channel-link "686439362291826694"))
 

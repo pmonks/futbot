@@ -17,8 +17,7 @@
 ;
 
 (ns futbot.flags
-  (:require [clojure.string  :as s]
-            [clojure.java.io :as io]))
+  (:require [clojure.string  :as s]))
 
 (defn alpha-2-to-flag
   "Returns the emoji flag (e.g. '🇦🇺', '🇺🇸') for a valid ISO-3166-1 alpha-2 country code (e.g. 'AU', 'US', etc.), or another Unicode character for invalid country codes."
@@ -309,8 +308,3 @@
         2 (alpha-2-to-flag code)
         3 (get alpha-3-to-flag code)
         nil))))
-
-(defn ^java.net.URL image-url
-  "Returns the java.net.URL representing a flag image file (PNG format) for the given country-code (an ISO-3166-1 alpha-3 code.  Returns nil if the code is invalid or no file is available for that code."
-  [iso-3166-1-alpha-3]
-  (io/resource (str "flags/" (s/upper-case (s/trim iso-3166-1-alpha-3)) ".png")))

@@ -5,7 +5,7 @@
   :discord-api-token          #env DISCORD_API_TOKEN
   :discord-event-channel-size #or [#env DISCORD_EVENT_CHANNEL_SIZE 100]   ; Default = 100 queue slots
 
-  :daily-schedule-discord-channel-id #env DAILY_SCHEDULE_DISCORD_CHANNEL_ID
+  :match-reminder-discord-channel-id #env MATCH_REMINDER_DISCORD_CHANNEL_ID
 
   ; Match reminder duration, in minutes
   :match-reminder-duration-mins #or [#env MATCH_REMINDER_DURATION 15]
