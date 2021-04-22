@@ -88,11 +88,11 @@
                    (throw (ex-info "Failed to connect to Discord message channel" {})))
           :stop  (dm/stop-connection! discord-message-channel))
 
-(defstate daily-schedule-discord-channel-id
-          :start (let [channel-id (:daily-schedule-discord-channel-id config)]
+(defstate match-reminder-discord-channel-id
+          :start (let [channel-id (:match-reminder-discord-channel-id config)]
                    (if-not (s/blank? channel-id)
                      channel-id
-                     (throw (ex-info "Daily schedule Discord channel id not provided" {})))))
+                     (throw (ex-info "Match reminder Discord channel id not provided" {})))))
 
 (defstate match-reminder-duration
           :start (tm/minutes (if-let [duration (:match-reminder-duration-mins config)]

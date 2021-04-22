@@ -65,13 +65,13 @@
       ; Start the bot
       (mnt/with-args options)
       (mnt/start)
-      (core/schedule-todays-reminders! cfg/football-data-api-token
-                                       cfg/discord-message-channel
-                                       cfg/match-reminder-duration
-                                       cfg/daily-schedule-discord-channel-id
-                                       cfg/muted-leagues
-                                       #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id)
-                                       cfg/referee-emoji)
+      (core/schedule-todays-match-reminders! cfg/football-data-api-token
+                                             cfg/discord-message-channel
+                                             cfg/match-reminder-duration
+                                             cfg/match-reminder-discord-channel-id
+                                             cfg/muted-leagues
+                                             #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id)
+                                             cfg/referee-emoji)
       (log/info "futbot started")
       (de/message-pump! cfg/discord-event-channel chat/handle-discord-event))   ; This must go last, as it blocks
     (catch Exception e

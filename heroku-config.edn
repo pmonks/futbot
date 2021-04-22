@@ -4,7 +4,7 @@
   :discord-api-token          #env DISCORD_API_TOKEN
   :discord-event-channel-size 100
 
-  :daily-schedule-discord-channel-id "686396574104158228"   ; League Discussions > #game-listings
+  :match-reminder-discord-channel-id "686396574104158228"   ; League Discussions > #live-updates
 
   :match-reminder-duration-mins 15
 
