@@ -28,19 +28,14 @@
                     response))
     response))
 
+(def embed-colour      9215480)
+(def embed-futbot-logo "https://raw.githubusercontent.com/pmonks/futbot/main/futbot.png")
+
 (defn create-message!
-  "A version of discljord.message/create-message! that hides some of the parameter complexity, and (more importantly) throws errors."
-  ([discord-message-channel channel-id message] (create-message! discord-message-channel channel-id message nil nil))
-  ([discord-message-channel channel-id message file-is filename]
-   (log/debug "Sending message to Discord channel" (str channel-id ":") message)
-   (check-response-and-throw (if file-is
-                               @(dm/create-message! discord-message-channel
-                                                    channel-id
-                                                    :content message
-                                                    :stream {:content file-is :filename filename})
-                               @(dm/create-message! discord-message-channel
-                                                    channel-id
-                                                    :content message)))))
+  "A version of discljord.message/create-message! that throws errors."
+  [discord-message-channel channel-id & args]
+  (log/debug "Sending message to Discord channel" (str channel-id " with args:") args)
+  (check-response-and-throw @(apply dm/create-message! discord-message-channel channel-id args)))
 
 (defn create-reaction!
   "A version of discljord.message/create-reaction! that throws errors."
@@ -71,7 +66,7 @@
   [discord-message-channel user-id message]
   (let [dm-channel (create-dm! discord-message-channel user-id)
         channel-id (:id dm-channel)]
-    (create-message! discord-message-channel channel-id message)))
+    (create-message! discord-message-channel channel-id :content message)))
 
 (defn direct-message?
   "Was the given event sent via a Direct Message?"
