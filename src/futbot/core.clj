@@ -91,14 +91,14 @@
                                                   "Discuss in " (mu/channel-link country-channel-id) ".")
                                  (str match-prefix ", which was due to start in " starts-in-min " minutes, has been " (s/lower-case (:status match)) ".\n"\n)
                                       "Discuss in " (mu/channel-link country-channel-id) ".")
-            embed              {:color mu/embed-colour
-                                :thumbnail {:url thumbnail-url}
-                                :description description
-                                :fields [
-                                  {:name "Referees" :value (referee-names referee-emoji (:referees match))}
-                                ]
-                                :footer {:text (str (s/upper-case (s/trim (get-in match [:competition :area :name]))) ": " league)}   ; This format matches what ToonBot uses
-                               }]
+            embed              (assoc (mu/embed-template)
+                                      :thumbnail {:url thumbnail-url}
+                                      :description description
+                                      :fields [
+                                        {:name "Referees" :value (referee-names referee-emoji (:referees match))}
+                                      ]
+                                      :footer {:text (str (s/upper-case (s/trim (get-in match [:competition :area :name]))) ": " league)}   ; This format matches what ToonBot uses
+                                     )]
         (mu/create-message! discord-message-channel
                             match-reminder-channel-id
                             :embed embed))
@@ -159,7 +159,7 @@
                    (distinct todays-scheduled-matches)))
        (log/info "No matches remaining today - not scheduling any reminders."))))
 
-(def training-and-resources-discord-channel-id (mu/channel-link "686439362291826694"))
+(def training-and-resources-discord-channel-link (mu/channel-link "686439362291826694"))
 
 (defn check-for-new-dutch-referee-blog-quiz-and-post-to-channel!
   "Checks whether a new Dutch referee blog quiz has been posted in the last time-period-hours hours (defaults to 24), and posts it to the given channel if so."
@@ -171,7 +171,7 @@
      (let [_          (log/info (str (count new-quizzes) " new Dutch referee blog quizz(es) found"))
            message    (str "<:dfb:753779768306040863> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
                            (:link (first new-quizzes))
-                           "\nPuzzled by an answer? Click the react and we'll discuss in " training-and-resources-discord-channel-id "!")
+                           "\nPuzzled by an answer? Click the react and we'll discuss in " training-and-resources-discord-channel-link "!")
            message-id (:id (mu/create-message! discord-message-channel
                                                channel-id
                                                :content message))]
@@ -198,15 +198,15 @@
                            (:topic quiz)
                            "**: "
                            (:link quiz)
-                           "\nPuzzled by an answer? React and we'll discuss in " training-and-resources-discord-channel-id "!")]
+                           "\nPuzzled by an answer? React and we'll discuss in " training-and-resources-discord-channel-link ".")]
           (mu/create-message! discord-message-channel
                               channel-id
                               :content message)))
          new-quizzes))
     (log/info "No new CNRA quizzes found")))
 
-(def ist-youtube-channel-id            "UCmzFaEBQlLmMTWS0IQ90tgA")
-(def memes-and-junk-discord-channel-id (mu/channel-link "683853455038742610"))
+(def ist-youtube-channel-id              "UCmzFaEBQlLmMTWS0IQ90tgA")
+(def memes-and-junk-discord-channel-link (mu/channel-link "683853455038742610"))
 
 (defn post-youtube-video-to-channel!
   [discord-message-channel discord-channel-id youtube-channel-info-fn youtube-channel-id video]
@@ -216,8 +216,8 @@
                            (org.jsoup.parser.Parser/unescapeEntities (:title video) true)
                            "**: https://www.youtube.com/watch?v=" (:id video)
                            "\nDiscuss in "
-                           (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-id training-and-resources-discord-channel-id)
-                           "!")]
+                           (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-link training-and-resources-discord-channel-link)
+                           ".")]
      (mu/create-message! discord-message-channel
                          discord-channel-id
                          :content message)))

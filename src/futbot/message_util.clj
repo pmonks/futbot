@@ -18,6 +18,7 @@
 
 (ns futbot.message-util
   (:require [clojure.tools.logging :as log]
+            [java-time             :as tm]
             [discljord.messaging   :as dm]))
 
 (defn- check-response-and-throw
@@ -28,8 +29,13 @@
                     response))
     response))
 
-(def embed-colour      9215480)
-(def embed-futbot-logo "https://raw.githubusercontent.com/pmonks/futbot/main/futbot.png")
+(defn embed-template
+  "Generates a default template for embeds."
+ []
+ {:color     9215480
+  :thumbnail {:url "https://raw.githubusercontent.com/pmonks/futbot/main/futbot.png"}
+  :timestamp (str (tm/instant))})
+
 
 (defn create-message!
   "A version of discljord.message/create-message! that throws errors."

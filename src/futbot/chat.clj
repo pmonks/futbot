@@ -44,9 +44,8 @@
   [_ event-data]
   (mu/create-message! cfg/discord-message-channel
                       (:channel-id event-data)
-                      :embed {:color mu/embed-colour
-                              :thumbnail {:url mu/embed-futbot-logo}
-                              :description "[futbot's privacy policy is available here](https://github.com/pmonks/futbot/blob/main/PRIVACY.md)."}))
+                      :embed (assoc (mu/embed-template)
+                                    :description "[futbot's privacy policy is available here](https://github.com/pmonks/futbot/blob/main/PRIVACY.md).")))
 
 (defn status-command!
   "Provides technical status of futbot"
@@ -121,15 +120,13 @@
   [_ event-data]
   (mu/create-message! cfg/discord-message-channel
                       (:channel-id event-data)
-                      :embed {:color mu/embed-colour
-                              :thumbnail {:url mu/embed-futbot-logo}
-                              :title "futbot help"
-                              :description (str "I understand the following command in " (mu/channel-link "683853455038742610") " or a DM:\n"
-                                                (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
-                                                                  (sort-by key public-command-dispatch-table)))
-                                                "\n\nAnd the following commands only in a DM:\n"
-                                                (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
-                                                                  (sort-by key private-command-dispatch-table))))}))
+                      :embed (assoc (mu/embed-template)
+                                    :description (str "I understand the following command in " (mu/channel-link "683853455038742610") " or a DM:\n"
+                                                      (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
+                                                                        (sort-by key public-command-dispatch-table)))
+                                                      "\n\nAnd the following commands only in a DM:\n"
+                                                      (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
+                                                                        (sort-by key private-command-dispatch-table)))))))
 
 ; Responsive fns
 (defmulti handle-discord-event
