@@ -97,7 +97,7 @@
                                 :fields [
                                   {:name "Referees" :value (referee-names referee-emoji (:referees match))}
                                 ]
-                                :footer {:text (str (s/trim (get-in match [:competition :area :name])) ": " league)}
+                                :footer {:text (str (s/upper-case (s/trim (get-in match [:competition :area :name]))) ": " league)}   ; This format matches what ToonBot uses
                                }]
         (mu/create-message! discord-message-channel
                             match-reminder-channel-id
