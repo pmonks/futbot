@@ -22,13 +22,13 @@
 (def ^:private league-logo-urls {
   ; Domestic Leagues
   "premier league"        "https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Premier_League_Logo.svg/320px-Premier_League_Logo.svg.png"
-  "championship"          "https://www.efl.com/static/css/teams/badges/png/EFL-logo.png"
+  "championship"          "https://upload.wikimedia.org/wikipedia/en/3/37/EFL_Championship.png"
   "fa cup"                "https://upload.wikimedia.org/wikipedia/en/5/55/FA_Cup_2020.png"
   "bundesliga"            "https://upload.wikimedia.org/wikipedia/en/thumb/d/df/Bundesliga_logo_%282017%29.svg/480px-Bundesliga_logo_%282017%29.svg.png"
-  "primera division"      "https://assets.laliga.com/assets/logos/laliga-v/laliga-v-300x300.png"
-  "serie a"               "https://www.legaseriea.it/assets/legaseriea/images/Logo_Lega_Serie_A.png" ; Italy
-  "ligue 1"               "https://www.ligue1.com/-/media/Project/LFP/shared/Images/Competition/Logo/L1.png"
-  "eredivisie"            "https://sassets.knvb.nl/sites/knvb.com/files/styles/ls-1366x768/public/logo-eredivisie_0.jpg"
+  "primera division"      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/LaLiga_Santander_%282%29.svg/561px-LaLiga_Santander_%282%29.svg.png"
+  "serie a"               "https://upload.wikimedia.org/wikipedia/en/thumb/e/e1/Serie_A_logo_%282019%29.svg/272px-Serie_A_logo_%282019%29.svg.png" ; Italy
+  "ligue 1"               "https://upload.wikimedia.org/wikipedia/en/thumb/b/ba/Ligue_1_Uber_Eats.svg/327px-Ligue_1_Uber_Eats.svg.png"
+  "eredivisie"            "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eredivisie_nieuw_logo_2017-.svg/640px-Eredivisie_nieuw_logo_2017-.svg.png"
   "primeira liga"         "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Liga_NOS_logo.png/358px-Liga_NOS_logo.png"
   "série a"               "https://upload.wikimedia.org/wikipedia/en/4/42/Campeonato_Brasileiro_S%C3%A9rie_A_logo.png" ; Brazil
   "mls"                   "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/MLS_crest_logo_RGB_gradient.svg/454px-MLS_crest_logo_RGB_gradient.svg.png"
