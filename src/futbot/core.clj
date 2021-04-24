@@ -27,6 +27,7 @@
             [futbot.source.dutch-referee-blog :as drb]
             [futbot.source.cnra               :as cnra]
             [futbot.source.youtube            :as yt]
+            [futbot.leagues                   :as lg]
             [futbot.flags                     :as fl]))
 
 (defn- referee-name
@@ -45,6 +46,18 @@
   (if (seq (remove s/blank? (map :name referees)))   ; Make sure we have at least one named referee
     (s/join ", " (map (partial referee-name referee-emoji) referees))  ; And if so, include "unnamed" referees in the result, since position matters (CR, AR1, AR2, 4TH, VAR, etc.)
     "¯\\_(ツ)_/¯"))
+
+(def ^:private match-status-to-emoji {
+  "SCHEDULED" "⏰"
+  "POSTPONED" "🔜"
+  "CANCELED"  "❌"
+  "SUSPENDED" "⚡️"
+  "IN_PLAY"   "⚽️"
+  "PAUSED"    "⏸"
+  "FINISHED"  "🏁"
+  "AWARDED"   "🏆"
+  })
+
 
 (defn post-match-reminder-to-channel!
   [football-data-api-token
@@ -65,22 +78,30 @@
                                                           (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time (:utc-date match)))))
                                  (catch Exception e
                                    (.toMinutes ^java.time.Duration match-reminder-duration)))
-             flag              (if-let [flag (fl/emoji (get-in match [:competition :area :code]))]
-                                 flag
-                                 "🏴‍☠️")
-            match-prefix       (str flag " " league ": **" (get-in match [:home-team :name] "Unknown") " vs " (get-in match [:away-team :name] "Unknown") "**")
-            message            (str
-                                 match-prefix
-                                 (case (:status match)
-                                   "SCHEDULED" (str " starts in " starts-in-min " minutes.\nReferees: " (referee-names referee-emoji (:referees match)) "\n")
-                                   "FINISHED"  " has finished.\n"
-                                   (str ", which was due to start in " starts-in-min " minutes, has been " (s/lower-case (:status match)) ".\n"))
-                                 "Discuss in " (mu/channel-link country-channel-id) ".")]
-        (if message
-          (mu/create-message! discord-message-channel
-                              match-reminder-channel-id
-                              message)
-          (log/warn (str "Match " match-id " had an unexpected status: " (:status match) ". No reminder message sent."))))
+            thumbnail-url      (if-let [league-logo-url (lg/league-to-logo-url league)]
+                                 league-logo-url
+                                 (fl/flag-url country))
+            match-prefix       (str (get match-status-to-emoji (:status match) "❔") "  **" (get-in match [:home-team :name] "Unknown") "** vs **" (get-in match [:away-team :name] "Unknown") "**")
+            description        (case (:status match)
+                                 "SCHEDULED" (str match-prefix " starts in " starts-in-min " mins.\n\n"
+                                                  "[Find out how to watch here](https://www.livesoccertv.com/), and discuss in " (mu/channel-link country-channel-id) ".")
+                                 "IN_PLAY"   (str match-prefix ", which was originally due to start in " starts-in-min " mins, started early and is in progress.\n\n"
+                                                  "[Find out how to watch here](https://www.livesoccertv.com/), and discuss in " (mu/channel-link country-channel-id) ".")
+                                 "FINISHED"  (str match-prefix " has finished.\n\n"
+                                                  "Discuss in " (mu/channel-link country-channel-id) ".")
+                                 (str match-prefix ", which was due to start in " starts-in-min " minutes, has been " (s/lower-case (:status match)) ".\n"\n)
+                                      "Discuss in " (mu/channel-link country-channel-id) ".")
+            embed              (assoc (mu/embed-template)
+                                      :thumbnail {:url thumbnail-url}
+                                      :description description
+                                      :fields [
+                                        {:name "Referees" :value (referee-names referee-emoji (:referees match))}
+                                      ]
+                                      :footer {:text (str (s/upper-case (s/trim (get-in match [:competition :area :name]))) ": " league)}   ; This format matches what ToonBot uses
+                                     )]
+        (mu/create-message! discord-message-channel
+                            match-reminder-channel-id
+                            :embed embed))
       (log/warn (str "Match " match-id " was not found by football-data.org. No reminder message sent.")))
     (log/info (str "Finished sending reminder for match " match-id))
     (catch Exception e
@@ -138,7 +159,7 @@
                    (distinct todays-scheduled-matches)))
        (log/info "No matches remaining today - not scheduling any reminders."))))
 
-(def training-and-resources-discord-channel-id (mu/channel-link "686439362291826694"))
+(def training-and-resources-discord-channel-link (mu/channel-link "686439362291826694"))
 
 (defn check-for-new-dutch-referee-blog-quiz-and-post-to-channel!
   "Checks whether a new Dutch referee blog quiz has been posted in the last time-period-hours hours (defaults to 24), and posts it to the given channel if so."
@@ -150,10 +171,10 @@
      (let [_          (log/info (str (count new-quizzes) " new Dutch referee blog quizz(es) found"))
            message    (str "<:dfb:753779768306040863> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
                            (:link (first new-quizzes))
-                           "\nPuzzled by an answer? Click the react and we'll discuss in " training-and-resources-discord-channel-id "!")
+                           "\nPuzzled by an answer? Click the react and we'll discuss in " training-and-resources-discord-channel-link "!")
            message-id (:id (mu/create-message! discord-message-channel
                                                channel-id
-                                               message))]
+                                               :content message))]
        (if message-id
          (do
            (mu/create-reaction! discord-message-channel channel-id message-id "1️⃣")
@@ -177,15 +198,15 @@
                            (:topic quiz)
                            "**: "
                            (:link quiz)
-                           "\nPuzzled by an answer? React and we'll discuss in " training-and-resources-discord-channel-id "!")]
+                           "\nPuzzled by an answer? React and we'll discuss in " training-and-resources-discord-channel-link ".")]
           (mu/create-message! discord-message-channel
                               channel-id
-                              message)))
+                              :content message)))
          new-quizzes))
     (log/info "No new CNRA quizzes found")))
 
-(def ist-youtube-channel-id            "UCmzFaEBQlLmMTWS0IQ90tgA")
-(def memes-and-junk-discord-channel-id (mu/channel-link "683853455038742610"))
+(def ist-youtube-channel-id              "UCmzFaEBQlLmMTWS0IQ90tgA")
+(def memes-and-junk-discord-channel-link (mu/channel-link "683853455038742610"))
 
 (defn post-youtube-video-to-channel!
   [discord-message-channel discord-channel-id youtube-channel-info-fn youtube-channel-id video]
@@ -195,11 +216,11 @@
                            (org.jsoup.parser.Parser/unescapeEntities (:title video) true)
                            "**: https://www.youtube.com/watch?v=" (:id video)
                            "\nDiscuss in "
-                           (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-id training-and-resources-discord-channel-id)
-                           "!")]
+                           (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-link training-and-resources-discord-channel-link)
+                           ".")]
      (mu/create-message! discord-message-channel
                          discord-channel-id
-                         message)))
+                         :content message)))
 
 (defn check-for-new-youtube-videos-and-post-to-channel!
   "Checks whether any new videos have been posted to the given YouTube channel in the last day, and posts it to the given Discord channel if so."

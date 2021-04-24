@@ -37,7 +37,7 @@
         ; Send admin message
         (mu/create-message! cfg/discord-message-channel
                             cfg/blocklist-notification-discord-channel-id
-                            (str "**[BLOCKLIST VIOLATION]** In <#" channel-id ">, <@" author-id "> wrote:\n>>> " content))
+                            :content (str "**[BLOCKLIST VIOLATION]** In <#" channel-id ">, <@" author-id "> wrote:\n>>> " content))
         true)
       false)))
 

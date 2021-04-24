@@ -36,7 +36,12 @@
             (some #{channel-id} cfg/ist-channel-ids))   ; one of the allowed IST channels.
       (mu/create-message! cfg/discord-message-channel
                           channel-id
-                          (str "<:ist:733173880403001394>: \"" (ist/gen-title) "\""))
+                          :embed (dissoc
+                                   (assoc (mu/embed-template)
+                                          :description (str "**" (ist/gen-title) "**")
+                                          :footer      {:text     "Disclaimer: this is a generated fake"
+                                                        :icon_url "https://yt3.ggpht.com/ytc/AAUvwnjhzwc9yNfyfX8C1N820yMhaS27baWlSz2wqaRE=s176-c-k-c0x00ffffff-no-rj"})
+                                   :thumbnail))
       (log/info (str "Ignoring " prefix "ist command in channel " channel-id)))))
 
 (defn privacy-command!
@@ -44,7 +49,8 @@
   [_ event-data]
   (mu/create-message! cfg/discord-message-channel
                       (:channel-id event-data)
-                      "Privacy policy: <https://github.com/pmonks/futbot/blob/main/PRIVACY.md>"))
+                      :embed (assoc (mu/embed-template)
+                                    :description "[futbot's privacy policy is available here](https://github.com/pmonks/futbot/blob/main/PRIVACY.md).")))
 
 (defn status-command!
   "Provides technical status of futbot"
@@ -52,9 +58,9 @@
   (let [now (tm/instant)]
     (mu/create-message! cfg/discord-message-channel
                         (:channel-id event-data)
-                        (str "futbot running on Clojure " (clojure-version) " / " (System/getProperty "java.vm.vendor") " JVM " (System/getProperty "java.vm.version") " (" (System/getProperty "os.name") "/" (System/getProperty "os.arch") ")"
-                             "\nBuilt at " (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str " from <" cfg/git-url ">") "")
-                             "\nRunning for " (u/human-readable-date-diff cfg/boot-time now)))))
+                        :content (str "futbot running on Clojure " (clojure-version) " / " (System/getProperty "java.vm.vendor") " JVM " (System/getProperty "java.vm.version") " (" (System/getProperty "os.name") "/" (System/getProperty "os.arch") ")"
+                                      "\nBuilt at " (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str " from <" cfg/git-url ">") "")
+                                      "\nRunning for " (u/human-readable-date-diff cfg/boot-time now)))))
 
 (defn gc-command!
   "Requests that the JVM perform a GC cycle."
@@ -62,7 +68,7 @@
   (System/gc)
   (mu/create-message! cfg/discord-message-channel
                       (:channel-id event-data)
-                      "Garbage collection requested."))
+                      :content "Garbage collection requested."))
 
 (defn set-logging-command!
   "Sets the log level, optionally for the given logger (defaults to 'futbot')."
@@ -73,10 +79,10 @@
         (cfg/set-log-level! level (if logger logger "futbot"))
         (mu/create-message! cfg/discord-message-channel
                             (:channel-id event-data)
-                            (str "Logging level " (s/upper-case level) " set" (if logger (str " for logger '" logger "'") "for logger 'futbot'") ".")))
+                            :content (str "Logging level " (s/upper-case level) " set" (if logger (str " for logger '" logger "'") "for logger 'futbot'") ".")))
       (mu/create-message! cfg/discord-message-channel
                             (:channel-id event-data)
-                            "Logging level not provided; must be one of: ERROR, WARN, INFO, DEBUG, TRACE"))))
+                            :content "Logging level not provided; must be one of: ERROR, WARN, INFO, DEBUG, TRACE"))))
 
 (defn debug-logging-command!
   "Enables debug logging, which turns on TRACE for 'discljord' and DEBUG for 'futbot'."
@@ -85,7 +91,7 @@
   (cfg/set-log-level! "DEBUG" "futbot")
   (mu/create-message! cfg/discord-message-channel
                       (:channel-id event-data)
-                      "Debug logging enabled (TRACE for 'discljord' and DEBUG for 'futbot'."))
+                      :content "Debug logging enabled (TRACE for 'discljord' and DEBUG for 'futbot'."))
 
 (defn reset-logging-command!
   "Resets all log levels to their configured defaults."
@@ -93,7 +99,7 @@
   (cfg/reset-logging!)
   (mu/create-message! cfg/discord-message-channel
                       (:channel-id event-data)
-                      "Logging configuration reset."))
+                      :content "Logging configuration reset."))
 
 
 ; Table of "public" commands; those that can be used in any channel, group or DM
@@ -119,12 +125,13 @@
   [_ event-data]
   (mu/create-message! cfg/discord-message-channel
                       (:channel-id event-data)
-                      (str "I understand the following command in " (mu/channel-link "683853455038742610") " or a DM:\n"
-                           (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
-                                             (sort-by key public-command-dispatch-table)))
-                           "\nAnd the following commands only in a DM:\n"
-                           (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
-                                             (sort-by key private-command-dispatch-table))))))
+                      :embed (assoc (mu/embed-template)
+                                    :description (str "I understand the following command in " (mu/channel-link "683853455038742610") " or a DM:\n"
+                                                      (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
+                                                                        (sort-by key public-command-dispatch-table)))
+                                                      "\n\nAnd the following commands only in a DM:\n"
+                                                      (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
+                                                                        (sort-by key private-command-dispatch-table)))))))
 
 ; Responsive fns
 (defmulti handle-discord-event
