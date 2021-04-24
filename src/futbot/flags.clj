@@ -17,7 +17,8 @@
 ;
 
 (ns futbot.flags
-  (:require [clojure.string  :as s]))
+  (:require [clojure.string  :as s]
+            [futbot.iso-3166 :as iso-3166]))
 
 (defn alpha-2-to-flag
   "Returns the emoji flag (e.g. '🇦🇺', '🇺🇸') for a valid ISO-3166-1 alpha-2 country code (e.g. 'AU', 'US', etc.), or another Unicode character for invalid country codes."
@@ -283,20 +284,20 @@
 
   ; 'bonus' 3 letter codes, including some returned by football-data.org
   "EUR" (alpha-2-to-flag "EU")          ; Europe
-  "INT" "🗺️"                       ; World - could also use (alpha-2-to-flag "UN")
-  "AFR" "🌍"                       ; Africa
-  "RSA" (alpha-2-to-flag "ZA")     ; South Africa (alternative code)
-  "ENG" "🏴󠁧󠁢󠁥󠁮󠁧󠁿"                       ; England
-  "SCO" "🏴󠁧󠁢󠁳󠁣󠁴󠁿"                       ; Scotland
-  "WAL" "🏴󠁧󠁢󠁷󠁬󠁳󠁿"                       ; Wales
-  "BLK" "🏴"                       ; Plain black flag
-  "WHT" "🏳"                       ; Plain white flag
-  "GAY" "🏳️‍🌈"                       ; Pride flag
-  "TRN" "🏳️‍⚧️"                       ; Transgender flag
-  "CHK" "🏁"                       ; Checkered flag
-  "TRI" "🚩"                       ; Triangular flag
-  "CRX" "🎌"                       ; Crossed flags
-  "PIR" "🏴‍☠️"                       ; Pirate flag
+  "INT" "🗺️"                            ; World - could also use (alpha-2-to-flag "UN")
+  "AFR" "🌍"                            ; Africa
+  "RSA" (alpha-2-to-flag "ZA")          ; South Africa (alternative code)
+  "ENG" "🏴󠁧󠁢󠁥󠁮󠁧󠁿"                            ; England
+  "SCO" "🏴󠁧󠁢󠁳󠁣󠁴󠁿"                            ; Scotland
+  "WAL" "🏴󠁧󠁢󠁷󠁬󠁳󠁿"                            ; Wales
+  "BLK" "🏴"                            ; Plain black flag
+  "WHT" "🏳"                            ; Plain white flag
+  "GAY" "🏳️‍🌈"                            ; Pride flag
+  "TRN" "🏳️‍⚧️"                            ; Transgender flag
+  "CHK" "🏁"                            ; Checkered flag
+  "TRI" "🚩"                            ; Triangular flag
+  "CRX" "🎌"                            ; Crossed flags
+  "PIR" "🏴‍☠️"                            ; Pirate flag
   })
 
 (defn emoji
@@ -307,4 +308,14 @@
       (case (count code)
         2 (alpha-2-to-flag code)
         3 (get alpha-3-to-flag code)
+        nil))))
+
+(defn flag-url
+  "Returns a URL (as a string) for a flag image file for the given country-code (an ISO-3166-1 alpha-2 or alpha-3 code). Note: doesn't guarantee that the returned URL can be resolved."
+  [country-code]
+  (when country-code
+    (let [code (s/upper-case (s/trim country-code))]
+      (case (count code)
+        2 (str "https://cdn.jsdelivr.net/gh/stefangabos/world_countries/flags/128x128/" (s/lower-case code) ".png")
+        3 (flag-url (iso-3166/alpha-3-to-alpha-2 code))
         nil))))
