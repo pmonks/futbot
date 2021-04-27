@@ -97,7 +97,7 @@
                                  (mod (.until i1 i2 (java.time.temporal.ChronoUnit/MILLIS))  1000)))
 
 (def ^:private units ["B" "KB" "MB" "GB" "TB" "PB" "EB" "ZB" "YB"])
-(def ^:private df (java.text.DecimalFormat. "#.##"))
+(def ^:private ^java.text.DecimalFormat df (java.text.DecimalFormat. "#.##"))
 
 (defn human-readable-size
   [size]
