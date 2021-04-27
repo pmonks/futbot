@@ -37,7 +37,14 @@
         ; Send admin message
         (mu/create-message! cfg/discord-message-channel
                             cfg/blocklist-notification-discord-channel-id
-                            :content (str "**[BLOCKLIST VIOLATION]** In <#" channel-id ">, <@" author-id "> wrote:\n>>> " content))
+                            :embed (dissoc
+                                     (assoc (mu/embed-template)
+                                            :color       15158332    ; RED
+                                            :title       "⚠️ Blocklist Violation!"
+                                            :description (str "In " (mu/channel-link channel-id) ", " (mu/user-link author-id) " wrote:\n\n>>> " content)
+                                            :footer      {:text "Blocklist"
+                                                          :icon_url mu/embed-template-logo-url})
+                                     :thumbnail))
         true)
       false)))
 
