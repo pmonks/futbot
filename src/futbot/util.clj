@@ -96,6 +96,18 @@
                                  (mod (.until i1 i2 (java.time.temporal.ChronoUnit/SECONDS))   60)
                                  (mod (.until i1 i2 (java.time.temporal.ChronoUnit/MILLIS))  1000)))
 
+(def ^:private units ["B" "KB" "MB" "GB" "TB" "PB" "EB" "ZB" "YB"])
+(def ^:private ^java.text.DecimalFormat df (java.text.DecimalFormat. "#.##"))
+
+(defn human-readable-size
+  [size]
+  (let [index (loop [size size
+                     index 0]
+                (if (< size 1024)
+                  index
+                  (recur (/ size 1024) (inc index))))]
+    (str (.format df (/ size (Math/pow 1024 index))) (nth units index))))
+
 (defn log-exception
   "Logs the given exception and (optional) message at ERROR level."
   ([^java.lang.Throwable e] (log-exception e nil))

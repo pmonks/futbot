@@ -29,11 +29,14 @@
                     response))
     response))
 
+(def embed-template-colour   9215480)
+(def embed-template-logo-url "https://cdn.jsdelivr.net/gh/pmonks/futbot/futbot.png")
+
 (defn embed-template
   "Generates a default template for embeds."
  []
- {:color     9215480
-  :thumbnail {:url "https://raw.githubusercontent.com/pmonks/futbot/main/futbot.png"}
+ {:color     embed-template-colour
+  :thumbnail {:url embed-template-logo-url}
   :timestamp (str (tm/instant))})
 
 
@@ -101,3 +104,10 @@
   [channel-id]
   (when channel-id
     (str "<#" channel-id ">")))
+
+(defn user-link
+  "Convenience method that creates a link to the given user-id, for embedding in message bodies"
+  [user-id]
+  (when user-id
+    (str "<@" user-id ">")))
+

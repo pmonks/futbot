@@ -58,9 +58,20 @@
   (let [now (tm/instant)]
     (mu/create-message! cfg/discord-message-channel
                         (:channel-id event-data)
-                        :content (str "futbot running on Clojure " (clojure-version) " / " (System/getProperty "java.vm.vendor") " JVM " (System/getProperty "java.vm.version") " (" (System/getProperty "os.name") "/" (System/getProperty "os.arch") ")"
-                                      "\nBuilt at " (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str " from <" cfg/git-url ">") "")
-                                      "\nRunning for " (u/human-readable-date-diff cfg/boot-time now)))))
+                        :embed (assoc (mu/embed-template)
+                                      :title "futbot Status"
+                                      :fields [
+                                        {:name "Running for"            :value (str (u/human-readable-date-diff cfg/boot-time now))}
+                                        {:name "Built at"               :value (str (tm/format :iso-instant cfg/built-at) (if cfg/git-url (str " from [" cfg/git-tag "](" cfg/git-url ")") ""))}
+
+                                        ; Table of fields here
+                                        {:name "Clojure"                :value (str "v" (clojure-version)) :inline true}
+                                        {:name "JVM"                    :value (str (System/getProperty "java.vm.vendor") " v" (System/getProperty "java.vm.version") " (" (System/getProperty "os.name") "/" (System/getProperty "os.arch") ")") :inline true}
+                                        ; Force a newline (Discord is hardcoded to show 3 fields per line), by using Unicode zero width spaces (empty/blank strings won't work!)
+                                        {:name "​"                       :value "​" :inline true}
+                                        {:name "Heap memory in use"     :value (u/human-readable-size (.getUsed (.getHeapMemoryUsage (java.lang.management.ManagementFactory/getMemoryMXBean)))) :inline true}
+                                        {:name "Non-heap memory in use" :value (u/human-readable-size (.getUsed (.getNonHeapMemoryUsage (java.lang.management.ManagementFactory/getMemoryMXBean)))) :inline true}
+                                      ]))))
 
 (defn gc-command!
   "Requests that the JVM perform a GC cycle."

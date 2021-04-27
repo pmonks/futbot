@@ -25,7 +25,7 @@
   "championship"          "https://upload.wikimedia.org/wikipedia/en/3/37/EFL_Championship.png"
   "fa cup"                "https://upload.wikimedia.org/wikipedia/en/5/55/FA_Cup_2020.png"
   "bundesliga"            "https://upload.wikimedia.org/wikipedia/en/thumb/d/df/Bundesliga_logo_%282017%29.svg/480px-Bundesliga_logo_%282017%29.svg.png"
-  "primera division"      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/LaLiga_Santander_%282%29.svg/561px-LaLiga_Santander_%282%29.svg.png"
+  "primera division"      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/LaLiga_Santander_%282%29.svg/280px-LaLiga_Santander_%282%29.svg.png"
   "serie a"               "https://upload.wikimedia.org/wikipedia/en/thumb/e/e1/Serie_A_logo_%282019%29.svg/272px-Serie_A_logo_%282019%29.svg.png" ; Italy
   "ligue 1"               "https://upload.wikimedia.org/wikipedia/en/thumb/b/ba/Ligue_1_Uber_Eats.svg/327px-Ligue_1_Uber_Eats.svg.png"
   "eredivisie"            "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Eredivisie_nieuw_logo_2017-.svg/640px-Eredivisie_nieuw_logo_2017-.svg.png"
