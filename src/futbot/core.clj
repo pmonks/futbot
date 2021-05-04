@@ -45,7 +45,8 @@
    referees]
   (if (seq (remove s/blank? (map :name referees)))   ; Make sure we have at least one named referee
     (s/join ", " (map (partial referee-name referee-emoji) referees))  ; And if so, include "unnamed" referees in the result, since position matters (CR, AR1, AR2, 4TH, VAR, etc.)
-    "¯\\_(ツ)_/¯"))
+;    "¯\\_(ツ)_/¯"))
+    "<:shrug:802047895304929310>"))
 
 (def ^:private match-status-to-emoji {
   "SCHEDULED" "⏰"
