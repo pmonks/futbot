@@ -310,6 +310,11 @@
         3 (get alpha-3-to-flag code)
         nil))))
 
+(defn emoji-from-name
+  "Returns the emoji flag (a string) for the given name, or nil if the name is unknown."
+  [name]
+  (emoji (iso-3166/name-to-alpha-3 name)))
+
 (defn flag-url
   "Returns a URL (as a string) for a flag image file for the given country-code (an ISO-3166-1 alpha-2 or alpha-3 code). Note: doesn't guarantee that the returned URL can be resolved."
   [country-code]
@@ -319,3 +324,8 @@
         2 (str "https://cdn.jsdelivr.net/gh/stefangabos/world_countries/flags/128x128/" (s/lower-case code) ".png")
         3 (flag-url (iso-3166/alpha-3-to-alpha-2 code))
         nil))))
+
+(defn flag-url-from-name
+  "Returns a URL (as a string) for a flag image file for the given name, or nil if the name is unknown."
+  [name]
+  (flag-url (iso-3166/name-to-alpha-3 name)))

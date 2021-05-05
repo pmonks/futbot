@@ -30,23 +30,46 @@
             [futbot.leagues                   :as lg]
             [futbot.flags                     :as fl]))
 
+; This map is keyed by the football-data.org role literals, with values being a tuple of [display-order display-abbreviation].
+(def ^:private role-map {
+  "REFEREE"                    [1 "CR"]
+  "ASSISTANT_REFEREE_N1"       [2 "AR1"]
+  "ASSISTANT_REFEREE_N2"       [3 "AR2"]
+  "FOURTH_OFFICIAL"            [4 "4O"]
+  "VIDEO_ASSISANT_REFEREE_N1"  [5 "VAR1"]    ; Typo in football-data.org (as of 2021-04-05)
+  "VIDEO_ASSISTANT_REFEREE_N1" [5 "VAR1"]    ; Placeholder in case Daniel fixes it without telling us
+  "VIDEO_ASSISANT_REFEREE_N2"  [6 "VAR2"]    ; Typo in football-data.org (as of 2021-04-05)
+  "VIDEO_ASSISTANT_REFEREE_N2" [6 "VAR2"]})  ; Placeholder in case Daniel fixes it without telling us
+
+;(def ^:private unknown-referee "¯\\_(ツ)_/¯")
+(def ^:private unknown-referee "<:shrug:802047895304929310>")
+
 (defn- referee-name
   [referee-emoji
    referee]
-  (let [name (:name referee)]
-    (if (s/blank? name)
-      "[unnamed referee]"
-      (if-let [emoji (get referee-emoji name)]
-        (str name " " emoji)
-        name))))
+  (let [name         (if-let [name (:name referee)]
+                       name
+                       unknown-referee)
+        emoji        (get referee-emoji name)
+        country-flag (fl/emoji-from-name (:nationality referee))
+        role         (second (get role-map (:role referee)))]
+    (str (if role         (str "**" role ":** "))
+         name
+;         (if emoji        (str " " emoji))    ; Remove emoji for now, in favour of flag of nationality
+         (if country-flag (str " " country-flag)))))
+
+(defn- referee-sort-by
+  [referee]
+  (let [role-order (first (get role-map (:role referee)))
+        name       (:name referee)]
+    (str role-order name)))
 
 (defn- referee-names
   [referee-emoji
    referees]
   (if (seq (remove s/blank? (map :name referees)))   ; Make sure we have at least one named referee
-    (s/join ", " (map (partial referee-name referee-emoji) referees))  ; And if so, include "unnamed" referees in the result, since position matters (CR, AR1, AR2, 4TH, VAR, etc.)
-;    "¯\\_(ツ)_/¯"))
-    "<:shrug:802047895304929310>"))
+    (s/join "\n" (map (partial referee-name referee-emoji) (sort-by referee-sort-by referees)))  ; And if so, include "unnamed" referees in the result, since role matters (CR, AR1, AR2, 4TH, VAR, etc.)
+    unknown-referee))
 
 (def ^:private match-status-to-emoji {
   "SCHEDULED" "⏰"
@@ -83,15 +106,16 @@
                                  league-logo-url
                                  (fl/flag-url country))
             match-prefix       (str (get match-status-to-emoji (:status match) "❔") "  **" (get-in match [:home-team :name] "Unknown") "** vs **" (get-in match [:away-team :name] "Unknown") "**")
+            match-channel      (mu/channel-link country-channel-id)
             description        (case (:status match)
                                  "SCHEDULED" (str match-prefix " starts in " starts-in-min " mins.\n\n"
-                                                  "[Find out how to watch here](https://www.livesoccertv.com/), and discuss in " (mu/channel-link country-channel-id) ".")
+                                                  "[Find out how to watch here](https://www.livesoccertv.com/), and discuss in " match-channel ".")
                                  "IN_PLAY"   (str match-prefix ", which was originally due to start in " starts-in-min " mins, started early and is in progress.\n\n"
-                                                  "[Find out how to watch here](https://www.livesoccertv.com/), and discuss in " (mu/channel-link country-channel-id) ".")
+                                                  "[Find out how to watch here](https://www.livesoccertv.com/), and discuss in " match-channel ".")
                                  "FINISHED"  (str match-prefix " has finished.\n\n"
-                                                  "Discuss in " (mu/channel-link country-channel-id) ".")
+                                                  "Discuss in " match-channel ".")
                                  (str match-prefix ", which was due to start in " starts-in-min " minutes, has been " (s/lower-case (:status match)) ".\n"\n)
-                                      "Discuss in " (mu/channel-link country-channel-id) ".")
+                                      "Discuss in " match-channel ".")
             embed              (assoc (mu/embed-template)
                                       :thumbnail {:url thumbnail-url}
                                       :description description
