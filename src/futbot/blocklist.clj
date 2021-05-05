@@ -41,7 +41,7 @@
                                      (assoc (mu/embed-template)
                                             :color       15158332    ; RED
                                             :title       "⚠️ Blocklist Violation!"
-                                            :description (str "In " (mu/channel-link channel-id) ", " (mu/user-link author-id) " wrote:\n\n>>> " content)
+                                            :description (str "In " (mu/channel-link channel-id) ", " (mu/user-link author-id) " wrote:\n>>> " content)
                                             :footer      {:text "Blocklist"
                                                           :icon_url mu/embed-template-logo-url})
                                      :thumbnail))
