@@ -32,12 +32,14 @@
 
 ; This map is keyed by the football-data.org role literals, with values being a tuple of [display-order display-abbreviation].
 (def ^:private role-map {
-  "REFEREE"                   [1 "CR"]
-  "ASSISTANT_REFEREE_N1"      [2 "AR1"]
-  "ASSISTANT_REFEREE_N2"      [3 "AR2"]
-  "FOURTH_OFFICIAL"           [4 "4O"]
-  "VIDEO_ASSISANT_REFEREE_N1" [5 "VAR1"]
-  "VIDEO_ASSISANT_REFEREE_N2" [6 "VAR2"]})
+  "REFEREE"                    [1 "CR"]
+  "ASSISTANT_REFEREE_N1"       [2 "AR1"]
+  "ASSISTANT_REFEREE_N2"       [3 "AR2"]
+  "FOURTH_OFFICIAL"            [4 "4O"]
+  "VIDEO_ASSISANT_REFEREE_N1"  [5 "VAR1"]    ; Typo in football-data.org (as of 2021-04-05)
+  "VIDEO_ASSISTANT_REFEREE_N1" [5 "VAR1"]    ; Placeholder in case Daniel fixes it without telling us
+  "VIDEO_ASSISANT_REFEREE_N2"  [6 "VAR2"]    ; Typo in football-data.org (as of 2021-04-05)
+  "VIDEO_ASSISTANT_REFEREE_N2" [6 "VAR2"]})  ; Placeholder in case Daniel fixes it without telling us
 
 ;(def ^:private unknown-referee "¯\\_(ツ)_/¯")
 (def ^:private unknown-referee "<:shrug:802047895304929310>")
