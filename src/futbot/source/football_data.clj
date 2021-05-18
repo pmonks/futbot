@@ -27,6 +27,7 @@
 (def api-host "https://api.football-data.org")
 
 (def endpoint-matches-on-date "/v2/matches/?dateFrom=%s&dateTo=%s")
+(def endpoint-matches-in-play "/v2/matches/?status=IN_PLAY")
 (def endpoint-match-details   "/v2/matches/%d")
 
 (def maximum-retries 3)
@@ -43,14 +44,18 @@
           (if (> attempt maximum-retries)    ; Bail out after too many retry attempts
             (throw (ex-info (format "Too many retries (%d) to football-data API %s" attempt api-url) {:status status} error))
             (let [counter-reset-ms (* 1000 (u/parse-int (s/trim (get headers "X-RequestCounter-Reset" "60"))))  ; Find out how long football-data wants us to wait, defaulting to 1 minute
-                  retry-in-ms      (+ counter-reset-ms (rand-int (* 1000 attempt)) 500)]            ; Add some randomness to try to avoid stampeding herds
+                  retry-in-ms      (+ counter-reset-ms (rand-int (* 1000 attempt)) 500)]                        ; Add some randomness to try to avoid stampeding herds
               (log/warn (format "football-data API call attempt %d throttled, waiting %dms before retrying." attempt retry-in-ms))
               (Thread/sleep retry-in-ms)
               (recur (inc attempt))))
           (if error
             (throw (ex-info (format "football-data API call (%s) failed" api-url) {:status status} error))
-            (ch/parse-string body
-                             u/clojurise-json-key)))))))
+            (ch/parse-string body u/clojurise-json-key)))))))
+
+(defn- match-sorter
+  [match]
+  (when match
+    (str (:utc-date match) "-" (get-in match [:competition :name]))))
 
 (defn matches-on-day
   "Returns a list of all matches visible to the given token, on the given day (defaults to today UTC if not otherwise specified), sorted by scheduled time and then by competition."
@@ -58,13 +63,17 @@
   ([token day]
     (let [day-as-string (tm/format "yyyy-MM-dd" day)
           api-call      (format endpoint-matches-on-date day-as-string day-as-string)]
-      (sort-by #(str (:utc-date %) "-" (:name (:competition %)))
-               (:matches (football-data-api-call token api-call))))))
+      (seq (sort-by match-sorter (:matches (football-data-api-call token api-call)))))))
 
 (defn scheduled-matches-on-day
   "Returns a list of all scheduled matches visible to the given token, on the given day (defaults to today UTC if not otherwise specified), sorted by scheduled time and then by competition."
-  ([token]     (filter #(= (:status %) "SCHEDULED") (matches-on-day token)))
-  ([token day] (filter #(= (:status %) "SCHEDULED") (matches-on-day token day))))
+  ([token]     (seq (filter #(= (:status %) "SCHEDULED") (matches-on-day token))))
+  ([token day] (seq (filter #(= (:status %) "SCHEDULED") (matches-on-day token day)))))
+
+(defn matches-in-play
+  "Returns a list of all in-progress matches visible to the given token, sorted by scheduled time and then by competition."
+  [token]
+  (seq (sort-by match-sorter (:matches (football-data-api-call token endpoint-matches-in-play)))))
 
 (defn match
   "Returns match details for a single match."

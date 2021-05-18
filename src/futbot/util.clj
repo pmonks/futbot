@@ -22,12 +22,17 @@
             [java-time             :as tm]))
 
 (defn parse-int
-  "Parses a string into an int, returning nil if parsing failed."
-  [s]
-  (try
-    (Integer/parseInt s)
-    (catch NumberFormatException nfe
-      nil)))
+  "Parses a value (a string or numeric) into an int, returning nil if parsing failed."
+  [x]
+  (cond (int?   x)    x
+        (string? x)   (try
+                        (Integer/parseInt x)
+                        (catch NumberFormatException nfe
+                          nil))
+        (float? x)    (int (Math/round ^Float x))
+        (double? x)   (int (Math/round ^Double x))
+        (rational? x) (parse-int (double x))
+        :else         nil))
 
 (defn getrn
   "Like get, but also replace nil values found in the map with the default value."
