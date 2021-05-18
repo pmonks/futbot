@@ -111,9 +111,6 @@
 (defstate muted-leagues
           :start (:muted-leagues config))
 
-(defstate referee-emoji
-          :start (:referee-emoji config))
-
 (defstate quiz-channel-id
           :start (let [channel-id (:quiz-channel-id config)]
                    (if-not (s/blank? channel-id)

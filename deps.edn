@@ -72,10 +72,10 @@
 
     ; clj -M:eastwood
     :eastwood
-      {:extra-deps {jonase/eastwood {:mvn/version "0.4.1"}}
+      {:extra-deps {jonase/eastwood {:mvn/version "0.4.2"}}
        :main-opts  ["-m" "eastwood.lint" {:source-paths ["src" "resources"]}]}
 
     ; clj -M:outdated
     :outdated
-      {:extra-deps {com.github.liquidz/antq {:mvn/version "0.13.0"}}
+      {:extra-deps {com.github.liquidz/antq {:mvn/version "0.14.0"}}
        :main-opts  ["-m" "antq.core"]}}}

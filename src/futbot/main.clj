@@ -70,8 +70,7 @@
                                              cfg/match-reminder-duration
                                              cfg/match-reminder-discord-channel-id
                                              cfg/muted-leagues
-                                             #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id)
-                                             cfg/referee-emoji)
+                                             #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id))
       (log/info "futbot started")
       (de/message-pump! cfg/discord-event-channel chat/handle-discord-event))   ; This must go last, as it blocks
     (catch Exception e
