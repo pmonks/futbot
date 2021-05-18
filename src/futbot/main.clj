@@ -71,6 +71,11 @@
                                              cfg/match-reminder-discord-channel-id
                                              cfg/muted-leagues
                                              #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id))
+      (core/schedule-in-progress-match-summaries! cfg/football-data-api-token
+                                                  cfg/discord-message-channel
+                                                  cfg/match-reminder-discord-channel-id
+                                                  cfg/muted-leagues
+                                                  #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id))
       (log/info "futbot started")
       (de/message-pump! cfg/discord-event-channel chat/handle-discord-event))   ; This must go last, as it blocks
     (catch Exception e
