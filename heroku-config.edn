@@ -27,23 +27,7 @@
     "Primeira Liga"  ; Portugal
   ]
 
-  :referee-emoji {  ; To determine these values, go into a chat and type "\:emojishortcut:" - Discord will automatically convert it into the "extended" form shown below, which is required for a bot to send custom emoji
-    "Mike Dean"         "<:mikedean:724348558601486390>"
-    "Michael Oliver"    "<:michaeloliver:725406887603863562>"
-    "Pierluigi Collina" "<:collina:725056633457082459>"
-    "Anthony Taylor"    "<:anthonytaylor:730103009735999559>"
-    "Stuart Attwell"    "<:stuartattwell:731931016360362004>"
-    "Corey Rockwell"    "<:coreyrockwell:730613554369265684>"
-    "Craig Pawson"      "<:craigpawson:731931653416681543>"
-    "Graham Scott"      "<:grahamscott:731589640565293107>"
-    "Brian Poeschel"    "<:brianpoeschel:730614703541190756>"
-    "Andy Madley"       "<:andymadley:731547809890697278>"
-    "Andrew Madley"     "<:andymadley:731547809890697278>"
-    "Andre Marriner"    "<:andremarriner:731547751057195050>"
-    "Martin Atkinson"   "<:martinatkinson:733766335355682846>"
-    "Tim Ford"          "<:timford:732030914607186010>"
-    "Timothy Ford"      "<:timford:732030914607186010>"
-  }
+  ; To determine custom emoji tags, go into a chat and type "\:emojishortcut:" - Discord will automatically convert it into the "extended" form shown below, which is required for a bot to send custom emoji
 
   :quiz-channel-id  "771086596644274216"  ; Refereeing > quizzes-and-videos
   :video-channel-id "771086596644274216"  ; Refereeing > quizzes-and-videos

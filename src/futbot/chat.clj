@@ -36,12 +36,10 @@
             (some #{channel-id} cfg/ist-channel-ids))   ; one of the allowed IST channels.
       (mu/create-message! cfg/discord-message-channel
                           channel-id
-                          :embed (dissoc
-                                   (assoc (mu/embed-template)
+                          :embed (assoc (mu/embed-template)
                                           :description (str "**" (ist/gen-title) "**")
                                           :footer      {:text     "Disclaimer: this is a generated fake"
-                                                        :icon_url "https://yt3.ggpht.com/ytc/AAUvwnjhzwc9yNfyfX8C1N820yMhaS27baWlSz2wqaRE=s176-c-k-c0x00ffffff-no-rj"})
-                                   :thumbnail))
+                                                        :icon_url "https://yt3.ggpht.com/ytc/AAUvwnjhzwc9yNfyfX8C1N820yMhaS27baWlSz2wqaRE=s176-c-k-c0x00ffffff-no-rj"}))
       (log/info (str "Ignoring " prefix "ist command in channel " channel-id)))))
 
 (defn privacy-command!

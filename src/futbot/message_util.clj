@@ -36,7 +36,7 @@
   "Generates a default template for embeds."
  []
  {:color     embed-template-colour
-  :thumbnail {:url embed-template-logo-url}
+  :footer    {:icon_url embed-template-logo-url}
   :timestamp (str (tm/instant))})
 
 
