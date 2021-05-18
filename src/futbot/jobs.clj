@@ -61,8 +61,7 @@
                                                cfg/match-reminder-duration
                                                cfg/match-reminder-discord-channel-id
                                                cfg/muted-leagues
-                                               #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id)
-                                               cfg/referee-emoji))
+                                               #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id)))
 
 ; Check for new Dutch Referee Blog Quizzes at 9am Amsterdam each day. This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
 (defjob dutch-referee-blog-quiz-job
