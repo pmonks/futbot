@@ -201,9 +201,9 @@
         (mu/create-message! discord-message-channel
                             match-reminder-channel-id
                             :embed embed)
-        (let [post-match-summary-start-time (tm/plus (tm/instant) (tm/minutes (+ match-reminder-duration 45 10 45)))]
-          (log/info (str "Scheduling post-match-summary-to-channel! job; first run will be at " post-match-summary-start-time))
-          (chime/chime-at [post-match-summary-start-time]
+        (let [post-match-summary-estimated-time (tm/plus (tm/instant) (tm/minutes (+ match-reminder-duration 45 15 45)))]
+          (log/info (str "Scheduling post-match-summary-to-channel! job; first run will be at " post-match-summary-estimated-time))
+          (chime/chime-at [post-match-summary-estimated-time]
                           (partial post-match-summary-to-channel!
                                    football-data-api-token
                                    discord-message-channel
