@@ -36,9 +36,9 @@
   "Generates a default template for embeds."
  []
  {:color     embed-template-colour
-  :footer    {:icon_url embed-template-logo-url}
+  :footer    {:text "futbot"
+              :icon_url embed-template-logo-url}
   :timestamp (str (tm/instant))})
-
 
 (defn create-message!
   "A version of discljord.message/create-message! that throws errors."
