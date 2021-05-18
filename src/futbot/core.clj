@@ -205,7 +205,7 @@
    country-to-channel-fn]
   (if-let [in-progress-matches (fd/matches-in-play football-data-api-token)]
     (doall (map (partial schedule-in-progress-match-summary! football-data-api-token discord-message-channel match-summary-channel-id muted-leagues country-to-channel-fn) in-progress-matches))
-    (log/info "No matches currently in progress; not scheduling any post-match-summary! jobs.")))
+    (log/info "No matches currently in progress; not scheduling any match summary jobs.")))
 
 (defn post-match-reminder-to-channel!
   [football-data-api-token
