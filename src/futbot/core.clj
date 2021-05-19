@@ -98,14 +98,15 @@
                     :icon_url league-logo-url})))
 
 (def ^:private card-type-to-emoji {    ; Sadly we can't use our nice custom emoji here, as they end up in a code block and Discord doesn't support custom emoji in code blocks...
-  "YELLOW_CARD" "🟨"
-  "RED_CARD"    "🟥"
+  "YELLOW_CARD"     "🟨"
+  "YELLOW_RED_CARD" "🟨🟥"
+  "RED_CARD"        "🟥"
   })
 
 (defn- match-event-row
   [match-event]
   (when match-event
-    (format "%-4.4s %-2.2s %-20.20s %-20.20s"  ; This makes the absolute most of the available embed real estate
+    (format "%-4.4s %-4.4s %-19.19s %-19.19s"  ; This makes the absolute most of the available embed real estate
             (str (:minute match-event) "'")
             (if (:card match-event) (get card-type-to-emoji (:card match-event) "❔") "⚽️")
             (if (:card match-event) (get-in match-event [:player :name]) (get-in match-event [:scorer :name]))
@@ -116,8 +117,8 @@
   (when match
     (let [events (sort-by :minute (concat (get-in match [:goals]) (get-in match [:bookings])))]
       (str "```"
-           "When Wt Who                  Team\n"
-           "---- -- -------------------- --------------------\n"
+           "When What Who                Team\n"
+           "---- ---- ------------------ ------------------\n"
            (s/join "\n" (keep identity (map match-event-row events)))
            "\n```"))))
 
@@ -205,7 +206,7 @@
    country-to-channel-fn]
   (if-let [in-progress-matches (fd/matches-in-play football-data-api-token)]
     (doall (map (partial schedule-in-progress-match-summary! football-data-api-token discord-message-channel match-summary-channel-id muted-leagues country-to-channel-fn) in-progress-matches))
-    (log/info "No matches currently in progress; not scheduling any post-match-summary! jobs.")))
+    (log/info "No matches currently in progress; not scheduling any match summary jobs.")))
 
 (defn post-match-reminder-to-channel!
   [football-data-api-token
