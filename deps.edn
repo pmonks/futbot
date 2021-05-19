@@ -29,7 +29,7 @@
     org.clojure/tools.cli               {:mvn/version "1.0.206"}
     aero/aero                           {:mvn/version "1.1.6"}
     mount/mount                         {:mvn/version "0.1.16"}
-    jarohen/chime                       {:mvn/version "0.3.2"}
+    jarohen/chime                       {:mvn/version "0.3.3"}
     org.suskalo/discljord               {:mvn/version "1.2.2"}
     http-kit/http-kit                   {:mvn/version "2.5.3"}
     cheshire/cheshire                   {:mvn/version "5.10.0"}
