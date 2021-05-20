@@ -86,6 +86,13 @@
                 [#"[–‑‒–—]"            "-"]     ; Hyphens / dashes
                 [#"[^\p{ASCII}]+"      ""]]))   ; Strip everything else
 
+(defn truncate
+  "If s is longer than len, truncates it to len-1 and adds the ellipsis (…) character to the end."
+  [s len]
+  (if (> (count s) len)
+    (str (subs s 0 (dec len)) "…")
+    s))
+
 (defmacro in-tz
   "Executes body (assumed to include java-time logic) within the given tzdata timezone (e.g. Americas/Los_Angeles)."
   [tz & body]
