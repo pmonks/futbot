@@ -106,19 +106,19 @@
 (defn- match-event-row
   [match-event]
   (when match-event
-    (format "%-4.4s %-4.4s %-19.19s %-19.19s"  ; This makes the absolute most of the available embed real estate
+    (format "%-4.4s %-4.4s %-19.19s %-19.19s"  ; This makes the absolute most of the available embed real estate. Note that truncation lengths below must match.
             (str (:minute match-event) "'")
             (if (:card match-event) (get card-type-to-emoji (:card match-event) "❔") "⚽️")
-            (if (:card match-event) (get-in match-event [:player :name]) (get-in match-event [:scorer :name]))
-            (get-in match-event [:team :name]))))
+            (u/truncate (if (:card match-event) (get-in match-event [:player :name]) (get-in match-event [:scorer :name])) 19)
+            (u/truncate (get-in match-event [:team :name]) 19))))
 
 (defn- match-events-table
   [match]
   (when match
     (let [events (sort-by :minute (concat (get-in match [:goals]) (get-in match [:bookings])))]
       (str "```"
-           "When What Who                Team\n"
-           "---- ---- ------------------ ------------------\n"
+           "When What Who                 Team\n"
+           "---- ---- ------------------- -------------------\n"
            (s/join "\n" (keep identity (map match-event-row events)))
            "\n```"))))
 
@@ -220,7 +220,7 @@
     (if-let [{match :match} (fd/match football-data-api-token match-id)]
       (let [starts-in-min      (try
                                  (.toMinutes (tm/duration (tm/zoned-date-time)
-                                                          (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time (:utc-date match)))))
+                                                          (u/in-tz "UTC" (tm/zoned-date-time (:utc-date match)))))
                                  (catch Exception e
                                    (.toMinutes ^java.time.Duration match-reminder-duration)))
             match-summary      (str (get match-status-to-emoji (:status match) "❔")
@@ -267,7 +267,7 @@
    muted-leagues
    country-to-channel-fn
    match]
-  (let [now           (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+  (let [now           (u/in-tz "UTC" (tm/zoned-date-time))
         match-time    (tm/zoned-date-time (:utc-date match))
         match-league  (get-in match [:competition :name])
         reminder-time (tm/minus match-time (tm/plus match-reminder-duration (tm/seconds 10)))]
@@ -294,7 +294,7 @@
    match-reminder-channel-id
    muted-leagues
    country-to-channel-fn]
-   (let [today                    (tm/with-clock (tm/system-clock "UTC") (tm/zoned-date-time))
+   (let [today                    (u/in-tz "UTC" (tm/zoned-date-time))
          todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
      (if (seq todays-scheduled-matches)
        (doall (map (partial schedule-match-reminder! football-data-api-token
