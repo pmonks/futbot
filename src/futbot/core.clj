@@ -133,7 +133,9 @@
    discord-message-channel
    match-summary-channel-id
    country-to-channel-fn
-   match-id & _]
+   match-id
+   retry-number
+    & _]
   (try
     (log/info (str "Determining whether to send summary for match " match-id "..."))
     (if-let [{match :match} (fd/match football-data-api-token match-id)]
@@ -144,15 +146,16 @@
               (= status "IN_PLAY")
               (= status "PAUSED"))  (let [retry-after (if-let [minutes-left (estimated-minutes-left-in-match match)]
                                                         minutes-left
-                                                        1)]
-                                      (log/info (str "Match " match-id " has not yet finished; retrying in " (str retry-after) " minute(s)."))
+                                                        (min 60 (max 1 (u/nth-fibonacci retry-number))))]   ; Wait between 1 minute and 1 hour, with Fibonacci backoff in between
+                                      (log/info (str "Match " match-id " has not yet finished (attempt " (inc retry-number) "); retrying in " (str retry-after) " minute(s)."))
                                       (chime/chime-at [(tm/plus (tm/instant) (tm/minutes retry-after))]
                                                       (partial post-match-summary-to-channel!
                                                                football-data-api-token
                                                                discord-message-channel
                                                                match-summary-channel-id
                                                                country-to-channel-fn
-                                                               match-id)))
+                                                               match-id
+                                                               (inc retry-number))))
           ; Match is over; send summary message
           (or (= status "FINISHED")
               (= status "AWARDED")) (do
@@ -194,7 +197,8 @@
                                  discord-message-channel
                                  match-summary-channel-id
                                  country-to-channel-fn
-                                 match-id)))
+                                 match-id
+                                 0)))
       (log/info (str "In-progress match " match-id " is in a muted league - not scheduling a summary.")))))
 
 (defn schedule-in-progress-match-summaries!
