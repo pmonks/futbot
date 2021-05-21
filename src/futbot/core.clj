@@ -135,7 +135,7 @@
    country-to-channel-fn
    match-id
    retry-number
-    & _]
+   & _]
   (try
     (log/info (str "Determining whether to send summary for match " match-id "..."))
     (if-let [{match :match} (fd/match football-data-api-token match-id)]
@@ -256,7 +256,8 @@
                                    discord-message-channel
                                    match-reminder-channel-id
                                    country-to-channel-fn
-                                   match-id))))
+                                   match-id
+                                   0))))
       (log/warn (str "Match " match-id " was not found by football-data.org. No reminder message sent.")))
     (log/info (str "Finished sending reminder for match " match-id))
     (catch Exception e
