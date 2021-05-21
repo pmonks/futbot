@@ -123,9 +123,10 @@
            "\n```"))))
 
 (defn ^:private estimated-minutes-left-in-match
+  "Estimates how many minutes are left in the match, or nil if no such estimate can be made (e.g. when the match is not currently being played)."
   [match]
   (case (:status match)
-    "IN_PLAY" (max 1 (- 90 (u/parse-int (get match :minute 90))))
+    "IN_PLAY" (when-let [match-minute (:minute match)] (max 0 (- 90 (u/parse-int match-minute))))
     nil))
 
 (defn post-match-summary-to-channel!
@@ -137,16 +138,16 @@
    retry-number
    & _]
   (try
-    (log/info (str "Determining whether to send summary for match " match-id "..."))
     (if-let [{match :match} (fd/match football-data-api-token match-id)]
       (let [status (:status match)]
         (cond
-          ; Match is not yet over, check again in one minute
+          ; Match is not yet over, check again later
           (or (= status "SCHEDULED")
               (= status "IN_PLAY")
-              (= status "PAUSED"))  (let [retry-after (if-let [minutes-left (estimated-minutes-left-in-match match)]
-                                                        minutes-left
-                                                        (min 60 (max 1 (u/nth-fibonacci retry-number))))]   ; Wait between 1 minute and 1 hour, with Fibonacci backoff in between
+              (= status "PAUSED"))  (let [minutes-left (estimated-minutes-left-in-match match)
+                                          retry-after  (if ((fnil >= 0) minutes-left 1)                       ; If the estimated minutes left >= 1...
+                                                         minutes-left                                         ; ...retry then
+                                                         (min 60 (max 1 (u/nth-fibonacci retry-number))))]    ; ...else, retry in between 1 minute and 1 hour, with Fibonacci backoff in between
                                       (log/info (str "Match " match-id " has not yet finished (attempt " (inc retry-number) "); retrying in " (str retry-after) " minute(s)."))
                                       (chime/chime-at [(tm/plus (tm/instant) (tm/minutes retry-after))]
                                                       (partial post-match-summary-to-channel!
@@ -158,22 +159,21 @@
                                                                (inc retry-number))))
           ; Match is over; send summary message
           (or (= status "FINISHED")
-              (= status "AWARDED")) (do
+              (= status "AWARDED")) (let [match-summary (str (get match-status-to-emoji (:status match) "❔")
+                                                             "  **" (get-in match [:home-team :name] "Unknown") "** vs **" (get-in match [:away-team :name] "Unknown") "**, "
+                                                             "final score: **" (get-in match [:score :full-time :home-team]) "-" (get-in match [:score :full-time :away-team]) "**")
+                                          description   (str match-summary "\n"
+                                                             (match-events-table match) "\n"
+                                                             "Discuss in " (match-channel-link country-to-channel-fn match) ".")
+                                          embed         (assoc (match-embed-template match)
+                                                               :description description)]
                                       (log/info (str "Sending summary for match " match-id "..."))
-                                      (let [match-summary (str (get match-status-to-emoji (:status match) "❔")
-                                                               "  **" (get-in match [:home-team :name] "Unknown") "** vs **" (get-in match [:away-team :name] "Unknown") "**, "
-                                                               "final score: **" (get-in match [:score :full-time :home-team]) "-" (get-in match [:score :full-time :away-team]) "**")
-                                            description   (str match-summary "\n"
-                                                               (match-events-table match) "\n"
-                                                               "Discuss in " (match-channel-link country-to-channel-fn match) ".")
-                                            embed         (assoc (match-embed-template match)
-                                                                 :description description)]
-                                        (mu/create-message! discord-message-channel
-                                                            match-summary-channel-id
-                                                            :embed embed)))
+                                      (mu/create-message! discord-message-channel
+                                                          match-summary-channel-id
+                                                          :embed embed)
+                                      (log/info (str "Finished sending summary for match " match-id)))
           :else (log/warn (str "Unexpected status (" status ") for match " match-id "."))))
       (log/warn (str "Match " match-id " was not found by football-data.org. No summary message sent.")))
-    (log/info (str "Finished sending summary for match " match-id))
     (catch Exception e
       (u/log-exception e (str "Unexpected exception while sending summary for match " match-id)))))
 
