@@ -35,7 +35,7 @@
   [x]
   (cond (int?   x)    x
         (string? x)   (try
-                        (Integer/parseInt x)
+                        (Integer/parseInt (s/trim x))
                         (catch NumberFormatException nfe
                           nil))
         (float? x)    (int (Math/round ^Float x))
