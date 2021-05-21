@@ -21,6 +21,15 @@
             [clojure.tools.logging :as log]
             [java-time             :as tm]))
 
+(defn nth-fibonacci
+  "Returns the nth fibonacci."
+  [n]
+  (loop [series [0 1]]
+    (if (> (count series) n)
+      (nth series n)
+      (let [[n-1 n-2] (rseq series)]  ; We use rseq here as it is constant time on vectors (vs reverse, which is linear time)
+        (recur (conj series (+' n-1 n-2)))))))
+
 (defn parse-int
   "Parses a value (a string or numeric) into an int, returning nil if parsing failed."
   [x]
