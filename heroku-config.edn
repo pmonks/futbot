@@ -11,6 +11,7 @@
   :country-to-channel-map {
     "EUR" "683856917122121734"                       ; League Discussions > #international
     "INT" "683856917122121734"                       ; League Discussions > #international
+    "SAM" "683856917122121734"                       ; League Discussions > #international  (South America)
     "ENG" "683856416351846441"                       ; League Discussions > #england
     "DEU" "687660279189995554"                       ; League Discussions > #germany
     "ITA" "687660332981944321"                       ; League Discussions > #italy
