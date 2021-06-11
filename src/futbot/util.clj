@@ -31,15 +31,15 @@
         (recur (conj series (+' n-1 n-2)))))))
 
 (defn parse-int
-  "Parses a value (a string or numeric) into an int, returning nil if parsing failed."
+  "Parses a value (a string or numeric) into a Clojure integer (Java Long or BigInteger), returning nil if parsing failed."
   [x]
-  (cond (int?   x)    x
-        (string? x)   (try
-                        (Integer/parseInt x)
+  (cond (integer?  x) x
+        (string?   x) (try
+                        (Long/parseLong (s/trim x))
                         (catch NumberFormatException nfe
                           nil))
-        (float? x)    (int (Math/round ^Float x))
-        (double? x)   (int (Math/round ^Double x))
+        (float?    x) (int (Math/round ^Float x))
+        (double?   x) (int (Math/round ^Double x))
         (rational? x) (parse-int (double x))
         :else         nil))
 
