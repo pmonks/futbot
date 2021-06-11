@@ -43,14 +43,14 @@
   "VIDEO_ASSISANT_REFEREE_N2"  [6 "VAR2"]    ; Typo in football-data.org (as of 2021-04-05)
   "VIDEO_ASSISTANT_REFEREE_N2" [6 "VAR2"]})  ; Placeholder in case Daniel fixes it without telling us
 
-;(def ^:private unknown-referee "¯\\_(ツ)_/¯")
-(def ^:private unknown-referee "<:shrug:802047895304929310>")
+;(def ^:private shrug "¯\\_(ツ)_/¯")
+(def ^:private shrug "<:shrug:802047895304929310>")
 
 (defn- referee-name
   [referee]
   (let [name         (if-let [name (:name referee)]
                        name
-                       unknown-referee)
+                       shrug)
         country-flag (fl/emoji-from-name (:nationality referee))
         role         (second (get role-map (:role referee)))]
     (str (when role         (str "**" role ":** "))
@@ -67,7 +67,7 @@
   [referees]
   (if (seq (remove s/blank? (map :name referees)))   ; Make sure we have at least one named referee
     (s/join "\n" (map referee-name (sort-by referee-sort-by referees)))  ; And if so, include "unnamed" referees in the result, since role matters (CR, AR1, AR2, 4TH, VAR, etc.)
-    unknown-referee))
+    shrug))
 
 (def ^:private match-status-to-emoji {
   "SCHEDULED" "⏰"
@@ -115,12 +115,13 @@
 (defn- match-events-table
   [match]
   (when match
-    (let [events (sort-by :minute (concat (get-in match [:goals]) (get-in match [:bookings])))]
+    (if-let [events (seq (sort-by :minute (concat (get-in match [:goals]) (get-in match [:bookings]))))]
       (str "```"
            "When What Who                 Team\n"
            "---- ---- ------------------- -------------------\n"
            (s/join "\n" (keep identity (map match-event-row events)))
-           "\n```"))))
+           "\n```")
+      "```No events in this match. 🥱```")))
 
 (defn ^:private estimated-minutes-left-in-match
   "Estimates how many minutes are left in the match, or nil if no such estimate can be made (e.g. when the match is not currently being played)."
@@ -161,7 +162,7 @@
           (or (= status "FINISHED")
               (= status "AWARDED")) (let [match-summary (str (get match-status-to-emoji (:status match) "❔")
                                                              "  **" (get-in match [:home-team :name] "Unknown") "** vs **" (get-in match [:away-team :name] "Unknown") "**, "
-                                                             "final score: **" (get-in match [:score :full-time :home-team]) "-" (get-in match [:score :full-time :away-team]) "**")
+                                                             "final score: **" (get-in match [:score :full-time :home-team] (str shrug " ")) "-" (get-in match [:score :full-time :away-team] (str " " shrug)) "**")
                                           description   (str match-summary "\n"
                                                              (match-events-table match) "\n"
                                                              "Discuss in " (match-channel-link country-to-channel-fn match) ".")
