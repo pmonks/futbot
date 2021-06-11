@@ -47,12 +47,14 @@
      :stop (close-job ~name)))
 
 ; Run the GC 2 minutes after startup, then every hour after that
+(declare gc-job)
 (defjob gc-job
         (tm/plus (tm/instant) (tm/minutes 2))
         (tm/hours 1)
         (System/gc))
 
 ; Schedule match reminders for the day
+(declare schedule-match-reminders-job)
 (defjob schedule-match-reminders-job
         (tm/plus (tm/truncate-to (tm/instant) :days) (tm/days 1))
         (tm/days 1)
@@ -64,6 +66,7 @@
                                                #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id)))
 
 ; Check for new Dutch Referee Blog Quizzes at 9am Amsterdam each day. This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
+(declare dutch-referee-blog-quiz-job)
 (defjob dutch-referee-blog-quiz-job
         (let [now              (u/in-tz "Europe/Amsterdam" (tm/zoned-date-time))
               today-at-nine-am (u/in-tz "Europe/Amsterdam" (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
@@ -74,6 +77,7 @@
         (core/check-for-new-dutch-referee-blog-quiz-and-post-to-channel! cfg/discord-message-channel cfg/quiz-channel-id))
 
 ; Check for new CNRA Quizzes at midnight Los Angeles on the 16th of the month. This job runs in America/Los_Angeles timezone, since that's where CNRA is located
+(declare cnra-quiz-job)
 (defjob cnra-quiz-job
         (let [now                                (u/in-tz "America/Los_Angeles" (tm/zoned-date-time))
               sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
@@ -103,6 +107,7 @@
                           (u/log-exception e (str "Unexpected exception in YouTube channel " youtube-channel-name " job"))))))))
 
 ; Each YouTube job is run once per day, and they're equally spaced throughout the day to spread out the load
+(declare youtube-jobs)
 (defstate youtube-jobs
           :start (let [interval (int (/ (* 24 60) (count cfg/youtube-channels)))
                        now      (tm/instant)
