@@ -282,10 +282,12 @@
   "ZMB" (alpha-2-to-flag "ZM")          ; Zambia
   "ZWE" (alpha-2-to-flag "ZW")          ; Zimbabwe
 
-  ; 'bonus' 3 letter codes, including some returned by football-data.org
+  ; 'bonus' 3 letter codes, including some custom ones returned by football-data.org
   "EUR" (alpha-2-to-flag "EU")          ; Europe
-  "INT" "🗺️"                            ; World - could also use (alpha-2-to-flag "UN")
+  "INT" (alpha-2-to-flag "UN")          ; World
   "AFR" "🌍"                            ; Africa
+  "SAM" "🌎"                            ; South America
+;  "NAM" "🌎"                            ; North America   ; NAM = Namibia
   "RSA" (alpha-2-to-flag "ZA")          ; South Africa (alternative code)
   "ENG" "🏴󠁧󠁢󠁥󠁮󠁧󠁿"                            ; England
   "SCO" "🏴󠁧󠁢󠁳󠁣󠁴󠁿"                            ; Scotland
@@ -315,15 +317,26 @@
   [name]
   (emoji (iso-3166/name-to-alpha-3 name)))
 
+(def ^:private custom-flag-urls {
+    "EUR" "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png"
+    "INT" "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Flag_of_the_United_Nations.png/320px-Flag_of_the_United_Nations.png"
+    "AFR" "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Flag_of_the_African_Union.svg/320px-Flag_of_the_African_Union.svg.png"
+    "SAM" "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_South_America_%28proposal%29.svg/320px-Flag_of_South_America_%28proposal%29.svg.png"
+;    "NAM" "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Outline_North_America_%28PSF%29.png/255px-Outline_North_America_%28PSF%29.png"   ; NAM = Namibia
+    "ENG" "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/English_flag.svg/320px-English_flag.svg.png"
+    "SCO" "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Flag_of_Scotland.svg/320px-Flag_of_Scotland.svg.png"
+    "WAL" "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Flag_of_Wales_%281959%E2%80%93present%29.svg/320px-Flag_of_Wales_%281959%E2%80%93present%29.svg.png"
+  })
+
 (defn flag-url
   "Returns a URL (as a string) for a flag image file for the given country-code (an ISO-3166-1 alpha-2 or alpha-3 code). Note: doesn't guarantee that the returned URL can be resolved."
   [country-code]
   (when country-code
     (let [code (s/upper-case (s/trim country-code))]
-      (case (count code)
-        2 (str "https://cdn.jsdelivr.net/gh/stefangabos/world_countries/flags/128x128/" (s/lower-case code) ".png")
-        3 (flag-url (iso-3166/alpha-3-to-alpha-2 code))
-        nil))))
+      (get custom-flag-urls code (case (count code)
+                                   2 (str "https://cdn.jsdelivr.net/gh/stefangabos/world_countries/flags/128x128/" (s/lower-case code) ".png")
+                                   3 (flag-url (iso-3166/alpha-3-to-alpha-2 code))
+                                   nil)))))
 
 (defn flag-url-from-name
   "Returns a URL (as a string) for a flag image file for the given name, or nil if the name is unknown."
