@@ -37,7 +37,7 @@
   ; International leagues
   "fifa world cup"        "https://upload.wikimedia.org/wikipedia/en/thumb/e/e3/2022_FIFA_World_Cup.svg/402px-2022_FIFA_World_Cup.svg.png"
   "uefa champions league" "https://upload.wikimedia.org/wikipedia/en/thumb/b/bf/UEFA_Champions_League_logo_2.svg/497px-UEFA_Champions_League_logo_2.svg.png"
-;  "european championship" ""  ; Next one is in 2024
+  "european championship" "https://upload.wikimedia.org/wikipedia/en/thumb/9/96/UEFA_Euro_2020_Logo.svg/211px-UEFA_Euro_2020_Logo.svg.png"
   "uefa europa league"    "https://upload.wikimedia.org/wikipedia/en/thumb/0/03/Europa_League.svg/334px-Europa_League.svg.png"
   "copa libertadores"     "https://upload.wikimedia.org/wikipedia/en/thumb/a/a1/Copa_Libertadores_logo.svg/306px-Copa_Libertadores_logo.svg.png"
 })
