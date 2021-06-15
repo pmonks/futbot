@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
-clojure -Srepro -P
-clojure -Srepro -Spom
-clojure -Srepro -X:uberjar
+
+set -e
+set -o pipefail
+
+echo "ℹ️ Downloading dependencies..."
+clojure -Srepro --report stderr -P
+
+echo "ℹ️ Updating pom.xml..."
+clojure -Srepro --report stderr -Spom
+
+echo "ℹ️ Building uberjar..."
+clojure -Srepro --report stderr -X:uberjar
