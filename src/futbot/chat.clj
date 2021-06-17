@@ -20,6 +20,7 @@
   (:require [clojure.string        :as s]
             [clojure.tools.logging :as log]
             [java-time             :as tm]
+            [discljord.formatting  :as df]
             [futbot.util           :as u]
             [futbot.message-util   :as mu]
             [futbot.config         :as cfg]
@@ -41,6 +42,36 @@
                                           :footer      {:text     "Disclaimer: this is a generated fake"
                                                         :icon_url "https://yt3.ggpht.com/ytc/AAUvwnjhzwc9yNfyfX8C1N820yMhaS27baWlSz2wqaRE=s176-c-k-c0x00ffffff-no-rj"}))
       (log/info (str "Ignoring " prefix "ist command in channel " channel-id)))))
+
+(defn move-command!
+  "Moves a conversation to the specified channel"
+  [args event-data]
+  (when (not (mu/direct-message? event-data))   ; Only respond if the message was sent to a real channel in a server (i.e. not in a DM)
+    (let [guild-id   (:guild-id event-data)
+          channel-id (:channel-id event-data)
+          message-id (:id event-data)]
+      (mu/delete-message! cfg/discord-message-channel channel-id message-id)
+      (if (not (s/blank? args))
+        (if-let [target-channel-id (second (re-find df/channel-mention args))]
+          (if (not= channel-id target-channel-id)
+            (let [target-message-id  (:id (mu/create-message! cfg/discord-message-channel
+                                                              target-channel-id
+                                                              :embed (assoc (mu/embed-template)
+                                                                            :description (str "Continuing the conversation from " (mu/channel-link channel-id) "..."))))
+                  target-message-url (mu/message-url guild-id target-channel-id target-message-id)
+                  source-message-id  (:id (mu/create-message! cfg/discord-message-channel
+                                                              channel-id
+                                                              :embed (assoc (mu/embed-template)
+                                                                            :description (str "Let's continue this conversation in " (mu/channel-link target-channel-id) " ([link](" target-message-url "))."))))
+                  source-message-url (mu/message-url guild-id channel-id source-message-id)]
+              (mu/edit-message! cfg/discord-message-channel
+                                target-channel-id
+                                target-message-id
+                                :embed (assoc (mu/embed-template)
+                                              :description (str "Continuing the conversation from " (mu/channel-link channel-id)  " ([link](" source-message-url "))..."))))
+            (log/info "Cannot move a conversation to the same channel."))
+          (log/warn "Could not find target channel in move command."))
+        (log/warn "move-command! arguments missing a target channel.")))))
 
 (defn privacy-command!
   "Provides a link to the futbot privacy policy"
@@ -66,7 +97,7 @@
                                         {:name "Clojure"                :value (str "v" (clojure-version)) :inline true}
                                         {:name "JVM"                    :value (str (System/getProperty "java.vm.vendor") " v" (System/getProperty "java.vm.version") " (" (System/getProperty "os.name") "/" (System/getProperty "os.arch") ")") :inline true}
                                         ; Force a newline (Discord is hardcoded to show 3 fields per line), by using Unicode zero width spaces (empty/blank strings won't work!)
-                                        {:name "​"                       :value "​" :inline true}
+                                        {:name "​"               :value "​" :inline true}
                                         {:name "Heap memory in use"     :value (u/human-readable-size (.getUsed (.getHeapMemoryUsage (java.lang.management.ManagementFactory/getMemoryMXBean)))) :inline true}
                                         {:name "Non-heap memory in use" :value (u/human-readable-size (.getUsed (.getNonHeapMemoryUsage (java.lang.management.ManagementFactory/getMemoryMXBean)))) :inline true}
                                       ]))))
@@ -113,7 +144,8 @@
 
 ; Table of "public" commands; those that can be used in any channel, group or DM
 (def public-command-dispatch-table
-  {"ist" #'ist-command!})
+  {"ist"  #'ist-command!
+   "move" #'move-command!})
 
 (declare help-command!)
 
