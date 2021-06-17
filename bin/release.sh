@@ -29,14 +29,14 @@ NEW_VERSION="${MAJOR_MINOR}.$(date +%Y%m%d)"
 
 echo "▶️ Releasing futbot v${NEW_VERSION}..."
 
-source ./bin/check.sh
+source ./bin/check.sh ||:
 
 echo "ℹ️ Updating local..."
 git fetch origin main:main
 git merge main
 git pull
 
-echo "❔ Press ENTER if update was clean, Ctrl+C if not..."
+echo "❔ Press ENTER if check and update was clean, Ctrl+C if not..."
 read
 
 echo "ℹ️ Updating version in pom.xml..."
