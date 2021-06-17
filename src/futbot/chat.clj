@@ -62,7 +62,7 @@
                   source-message-id  (:id (mu/create-message! cfg/discord-message-channel
                                                               channel-id
                                                               :embed (assoc (mu/embed-template)
-                                                                            :description (str "This conversation has been moved to " (mu/channel-link target-channel-id) " ([link](" target-message-url "))."))))
+                                                                            :description (str "Let's continue this conversation in " (mu/channel-link target-channel-id) " ([link](" target-message-url "))."))))
                   source-message-url (mu/message-url guild-id channel-id source-message-id)]
               (mu/edit-message! cfg/discord-message-channel
                                 target-channel-id
