@@ -29,7 +29,8 @@ NEW_VERSION="${MAJOR_MINOR}.$(date +%Y%m%d)"
 
 echo "▶️ Releasing futbot v${NEW_VERSION}..."
 
-source ./bin/check.sh || true
+clj -M:check
+clj -M:outdated
 
 echo "ℹ️ Updating local..."
 git fetch origin main:main
