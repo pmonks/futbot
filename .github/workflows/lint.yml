@@ -20,5 +20,5 @@ jobs:
         with:
           tools-deps: latest
 
-      - name: Build code
-        run: bin/build
+      - name: Compile and lint code
+        run: bin/check.sh
