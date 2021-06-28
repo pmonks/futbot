@@ -125,7 +125,7 @@
            "---- ---- ------------------- -------------------\n"
            (s/join "\n" (keep identity (map match-event-row events)))
            (when (= "PENALTY_SHOOTOUT" (get-in match [:score :duration]))
-             (str "\nKFTM: "
+             (str "\n\nKFTM: "
                   (get-in match [:home-team :name] shrug-text) " " (get-in match [:score :penalties :home-team] "❔") ", "
                   (get-in match [:away-team :name] shrug-text) " " (get-in match [:score :penalties :away-team] "❔")))
            "\n```")
