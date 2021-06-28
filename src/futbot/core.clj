@@ -43,14 +43,18 @@
   "VIDEO_ASSISANT_REFEREE_N2"  [6 "VAR2"]    ; Typo in football-data.org (as of 2021-04-05)
   "VIDEO_ASSISTANT_REFEREE_N2" [6 "VAR2"]})  ; Placeholder in case Daniel fixes it without telling us
 
-;(def ^:private shrug "¯\\_(ツ)_/¯")
-(def ^:private shrug "<:shrug:802047895304929310>")
+(def ^:private shrug-text   "¯\\_(ツ)_/¯")
+(def ^:private shrug-reacts ["<:shrug_east:802047895304929310>"
+                             "<:shrug_cakir:859116470343434300>"
+                             "<:shrug_dean:859125521018519613>"
+                             "<:shrug_shemesh:859135806014488626>"
+                             "<:shrug_penso:859140464749182997>"])
 
 (defn- referee-name
   [referee]
   (let [name         (if-let [name (:name referee)]
                        name
-                       shrug)
+                       (rand-nth shrug-reacts))
         country-flag (fl/emoji-from-name (:nationality referee))
         role         (second (get role-map (:role referee)))]
     (str (when role         (str "**" role ":** "))
@@ -67,7 +71,7 @@
   [referees]
   (if (seq (remove s/blank? (map :name referees)))   ; Make sure we have at least one named referee
     (s/join "\n" (map referee-name (sort-by referee-sort-by referees)))  ; And if so, include "unnamed" referees in the result, since role matters (CR, AR1, AR2, 4TH, VAR, etc.)
-    shrug))
+    (rand-nth shrug-reacts)))
 
 (def ^:private match-status-to-emoji {
   "SCHEDULED" "⏰"
@@ -109,8 +113,8 @@
     (format "%-4.4s %-4.4s %-19.19s %-19.19s"  ; This makes the absolute most of the available embed real estate. Note that truncation lengths below must match.
             (str (:minute match-event) "'")
             (if (:card match-event) (get card-type-to-emoji (:card match-event) "❔") "⚽️")
-            (u/truncate (if (:card match-event) (get-in match-event [:player :name]) (get-in match-event [:scorer :name])) 19)
-            (u/truncate (get-in match-event [:team :name]) 19))))
+            (u/truncate (if (:card match-event) (get-in match-event [:player :name] shrug-text) (get-in match-event [:scorer :name] shrug-text)) 19)
+            (u/truncate (get-in match-event [:team :name] shrug-text) 19))))
 
 (defn- match-events-table
   [match]
@@ -162,7 +166,7 @@
           (or (= status "FINISHED")
               (= status "AWARDED")) (let [match-summary (str (get match-status-to-emoji (:status match) "❔")
                                                              "  **" (get-in match [:home-team :name] "Unknown") "** vs **" (get-in match [:away-team :name] "Unknown") "**, "
-                                                             "final score: **" (get-in match [:score :full-time :home-team] (str shrug " ")) "-" (get-in match [:score :full-time :away-team] (str " " shrug)) "**")
+                                                             "final score: **" (get-in match [:score :full-time :home-team] (str (rand-nth shrug-reacts) " ")) "-" (get-in match [:score :full-time :away-team] (str " " (rand-nth shrug-reacts))) "**")
                                           description   (str match-summary "\n"
                                                              (match-events-table match) "\n"
                                                              "Discuss in " (match-channel-link country-to-channel-fn match) ".")
