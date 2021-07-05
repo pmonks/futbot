@@ -48,7 +48,8 @@
                              "<:shrug_cakir:859116470343434300>"
                              "<:shrug_dean:859125521018519613>"
                              "<:shrug_shemesh:859135806014488626>"
-                             "<:shrug_penso:859140464749182997>"])
+                             "<:shrug_penso:859140464749182997>"
+                             "<:shrug_kuipers:861638186480041984>"])
 
 (defn- referee-name
   [referee]
