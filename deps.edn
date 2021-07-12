@@ -35,7 +35,7 @@
     cheshire/cheshire                   {:mvn/version "5.10.0"}
     rm-hull/markov-chains               {:mvn/version "0.1.1"}
     remus/remus                         {:mvn/version "0.2.1"}
-    org.jsoup/jsoup                     {:mvn/version "1.13.1"}}
+    org.jsoup/jsoup                     {:mvn/version "1.14.1"}}
  :aliases
    {; clj -M:run -c /path/to/config.edn
     :run
@@ -51,7 +51,7 @@
 
     ; clj -X:uberjar
     :uberjar
-      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.245"}}
+      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.253"}}
        :exec-fn      hf.depstar/uberjar
        :exec-args    {:jar        "./target/futbot-standalone.jar"
                       :jar-type   :uber
