@@ -56,7 +56,7 @@
 
 (defn- html-to-quizzes
   [^org.jsoup.nodes.Document page]
-  (let [quiz-para  (.nextElementSibling ^org.jsoup.nodes.Element (first (.select page "hr[class=wp-block-separator]")))  ; Find the (single) paragraph containing the quizes
+  (let [quiz-para  (.nextElementSibling ^org.jsoup.nodes.Element (first (.select page "hr[class=wp-block-separator]")))  ; Find the (single) paragraph containing the quizzes
         quiz-paras (.select (org.jsoup.Jsoup/parse (s/replace (str quiz-para) "<br>" "</p><p>")) "p")]                   ; Convert it into one paragraph per quiz
     (keep identity (map para-to-quiz quiz-paras))))
 
