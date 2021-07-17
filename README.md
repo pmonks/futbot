@@ -1,5 +1,5 @@
-| Branch | Build | Lint | Dependencies |
-|-|-|-|-|
+| | | | |
+|---:|:---:|:---:|:---:|
 | [**main**](https://github.com/pmonks/futbot/tree/main) | [![Build](https://github.com/pmonks/futbot/workflows/build/badge.svg?branch=main)](https://github.com/pmonks/futbot/actions?query=workflow%3Abuild) | [![Lint](https://github.com/pmonks/futbot/workflows/lint/badge.svg?branch=main)](https://github.com/pmonks/futbot/actions?query=workflow%3Alint) | [![Dependencies](https://github.com/pmonks/futbot/workflows/dependencies/badge.svg?branch=main)](https://github.com/pmonks/futbot/actions?query=workflow%3Adependencies) |
 | [**dev**](https://github.com/pmonks/futbot/tree/dev)  | [![Build](https://github.com/pmonks/futbot/workflows/build/badge.svg?branch=dev)](https://github.com/pmonks/futbot/actions?query=workflow%3Abuild) | [![Lint](https://github.com/pmonks/futbot/workflows/lint/badge.svg?branch=dev)](https://github.com/pmonks/futbot/actions?query=workflow%3Alint) | [![Dependencies](https://github.com/pmonks/futbot/workflows/dependencies/badge.svg?branch=dev)](https://github.com/pmonks/futbot/actions?query=workflow%3Adependencies) |
 

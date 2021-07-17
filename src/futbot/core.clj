@@ -26,6 +26,7 @@
             [futbot.source.football-data      :as fd]
             [futbot.source.dutch-referee-blog :as drb]
             [futbot.source.cnra               :as cnra]
+            [futbot.source.pro                :as pro]
             [futbot.source.youtube            :as yt]
             [futbot.leagues                   :as lg]
             [futbot.flags                     :as fl]))
@@ -366,6 +367,23 @@
                               :content message)))
          new-quizzes))
     (log/info "No new CNRA quizzes found")))
+
+(defn check-for-new-pro-insights-and-post-to-channel!
+  "Checks whether amy new PRO Insights have been posted in the last time-period-hours hours (defaults to 24), and posts them to the given channel if so."
+  ([discord-message-channel channel-id] (check-for-new-pro-insights-and-post-to-channel! discord-message-channel channel-id 24))
+  ([discord-message-channel
+    channel-id
+    time-period-hours]
+   (let [new-insights (pro/insights (tm/minus (tm/instant) (tm/hours time-period-hours)))]
+     (log/info (str (count new-insights) " new PRO Insight(s) found"))
+     (doall (map #(mu/create-message! discord-message-channel
+                                      channel-id
+                                      :content (str "<:pro:778688391608926278> A new **PRO Insight** has been posted, on the topic of **"
+                                                    (s/replace (:title %) "PRO Insight: " "")
+                                                    "**: "
+                                                    (:link %)
+                                                    "\nDiscuss in " training-and-resources-discord-channel-link "!"))
+                 new-insights)))))
 
 (def ist-youtube-channel-id              "UCmzFaEBQlLmMTWS0IQ90tgA")
 (def memes-and-junk-discord-channel-link (mu/channel-link "683853455038742610"))
