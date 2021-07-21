@@ -132,7 +132,7 @@
   (cfg/set-log-level! "DEBUG" "futbot")
   (mu/create-message! (:discord-message-channel cfg/config)
                       (:channel-id event-data)
-                      :content "Debug logging enabled (TRACE for 'discljord' and DEBUG for 'futbot'."))
+                      :content "Debug logging enabled (TRACE for 'discljord' and DEBUG for 'futbot')."))
 
 (defn reset-logging-command!
   "Resets all log levels to their configured defaults."
