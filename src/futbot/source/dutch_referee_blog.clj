@@ -21,8 +21,8 @@
             [java-time      :as tm]
             [remus          :as rss]))
 
-(def dutch-referee-blog-rss-feed-url "http://www.dutchreferee.com/feed/atom")   ; I prefer atom...
-(def quiz-title-substring            "Laws of the Game Quiz")
+(def dutch-referee-blog-feed-url "http://www.dutchreferee.com/feed/atom")   ; I prefer atom...
+(def quiz-title-substring        "Laws of the Game Quiz")
 
 (defn quizzes
   "Returns a sequence of maps representing all of the quizzes in the Dutch Referee Blog's RSS feed, optionally since the given date, or nil if there aren't any."
@@ -30,7 +30,7 @@
   ([since]
     (seq
       (when-let [all-quizzes (filter #(s/index-of (:title %) quiz-title-substring)
-                                     (:entries (:feed (rss/parse-url dutch-referee-blog-rss-feed-url))))]
+                                     (:entries (:feed (rss/parse-url dutch-referee-blog-feed-url))))]
         (if since
           (filter #(tm/after? (tm/instant (:published-date %)) (tm/instant since)) all-quizzes)
           all-quizzes)))))
