@@ -137,7 +137,7 @@
     nil))
 
 (defn post-match-summary-to-channel!
-  [{:keys [football-data-api-token discord-message-channel match-summary-channel-id] :as config} 
+  [{:keys [football-data-api-token discord-message-channel match-summary-channel-id] :as config}
    match-id
    retry-number
    & _]
@@ -153,16 +153,15 @@
                                                          minutes-left                                         ; ...retry then
                                                          (min 60 (max 1 (u/nth-fibonacci retry-number))))]    ; ...else, retry in between 1 minute and 1 hour, with Fibonacci backoff in between
                                       (log/info (str "Match " match-id " has not yet finished (attempt " (inc retry-number) "); retrying in " (str retry-after) " minute(s)."))
-                                      (chime/chime-at [(tm/plus (tm/instant) (tm/minutes retry-after))]
-                                                      (partial post-match-summary-to-channel!
-                                                               config
-                                                               match-id
-                                                               (inc retry-number))))
+                                      (chime/chime-at [(tm/plus (tm/instant) (tm/minutes retry-after))] (partial post-match-summary-to-channel! config match-id (inc retry-number))))
           ; Match is over; send summary message
           (or (= status "FINISHED")
               (= status "AWARDED")) (let [match-summary (str (get match-status-to-emoji (:status match) "❔")
                                                              "  **" (get-in match [:home-team :name] "Unknown") "** vs **" (get-in match [:away-team :name] "Unknown") "**, "
-                                                             "final score: **" (get-in match [:score :full-time :home-team] (str (rand-nth shrug-reacts) " ")) "-" (get-in match [:score :full-time :away-team] (str " " (rand-nth shrug-reacts))) "**")
+                                                             "final score: **" (get-in match [:score :full-time :home-team] (str (rand-nth shrug-reacts) " "))
+                                                                               "-"
+                                                                               (get-in match [:score :full-time :away-team] (str " " (rand-nth shrug-reacts)))
+                                                                               "**")
                                           description   (str match-summary "\n"
                                                              (match-events-table match) "\n"
                                                              "Discuss in " (match-channel-link config match) ".")
@@ -179,7 +178,7 @@
       (u/log-exception e (str "Unexpected exception while sending summary for match " match-id)))))
 
 (defn schedule-in-progress-match-summary!
-  [{:keys [football-data-api-token discord-message-channel match-summary-channel-id muted-leagues country-to-channel-fn]}
+  [{:keys [muted-leagues] :as config}
    match]
   (let [match-id     (:id match)
         match-league (get-in match [:competition :name])]
@@ -188,25 +187,18 @@
                                                                                   minutes-left
                                                                                   1)))]
         (log/info (str "Scheduling summary for in-progress match " match-id "; first run will be at " post-match-summary-estimated-time))
-        (chime/chime-at [post-match-summary-estimated-time]
-                        (partial post-match-summary-to-channel!
-                                 football-data-api-token
-                                 discord-message-channel
-                                 match-summary-channel-id
-                                 country-to-channel-fn
-                                 match-id
-                                 0)))
+        (chime/chime-at [post-match-summary-estimated-time] (partial post-match-summary-to-channel! config match-id 0)))
       (log/info (str "In-progress match " match-id " is in a muted league - not scheduling a summary.")))))
 
 (defn schedule-in-progress-match-summaries!
   "Schedules match summary jobs for all matches that are in progress at the time it's called."
-  [{:keys [football-data-api-token discord-message-channel match-summary-channel-id muted-leagues country-to-channel-fn]}]
+  [{:keys [football-data-api-token] :as config}]
   (if-let [in-progress-matches (fd/matches-in-play football-data-api-token)]
-    (doall (map (partial schedule-in-progress-match-summary! football-data-api-token discord-message-channel match-summary-channel-id muted-leagues country-to-channel-fn) in-progress-matches))
+    (doall (map (partial schedule-in-progress-match-summary! config) in-progress-matches))
     (log/info "No matches currently in progress; not scheduling any match summary jobs.")))
 
 (defn post-match-reminder-to-channel!
-  [{:keys [football-data-api-token discord-message-channel match-reminder-duration match-reminder-channel-id country-to-channel-fn] :as config}
+  [{:keys [football-data-api-token discord-message-channel match-reminder-duration match-reminder-channel-id] :as config}
    match-id & _]
   (try
     (log/info (str "Sending reminder for match " match-id "..."))
@@ -239,14 +231,7 @@
                             :embed embed)
         (let [post-match-summary-estimated-time (tm/plus (tm/instant) match-reminder-duration (tm/minutes default-match-duration))]
           (log/info (str "Scheduling summary for in-progress match " match-id "; first run will be at " post-match-summary-estimated-time))
-          (chime/chime-at [post-match-summary-estimated-time]
-                          (partial post-match-summary-to-channel!
-                                   football-data-api-token
-                                   discord-message-channel
-                                   match-reminder-channel-id
-                                   country-to-channel-fn
-                                   match-id
-                                   0))))
+          (chime/chime-at [post-match-summary-estimated-time] (partial post-match-summary-to-channel! config match-id 0))))
       (log/warn (str "Match " match-id " was not found by football-data.org. No reminder message sent.")))
     (log/info (str "Finished sending reminder for match " match-id))
     (catch Exception e
@@ -254,7 +239,7 @@
 
 (defn schedule-match-reminder!
   "Schedules a reminder for the given match."
-  [{:keys [football-data-api-token discord-message-channel match-reminder-duration match-reminder-channel-id muted-leagues country-to-channel-fn]}
+  [{:keys [match-reminder-duration muted-leagues] :as config}
    match]
   (let [now           (u/in-tz "UTC" (tm/zoned-date-time))
         match-time    (tm/zoned-date-time (:utc-date match))
@@ -264,14 +249,7 @@
       (if (tm/before? now reminder-time)
         (do
           (log/info (str "Scheduling reminder for match " (:id match) " at " reminder-time))
-          (chime/chime-at [reminder-time]
-                          (partial post-match-reminder-to-channel!
-                                   football-data-api-token
-                                   discord-message-channel
-                                   match-reminder-duration
-                                   match-reminder-channel-id
-                                   country-to-channel-fn
-                                   (:id match))))
+          (chime/chime-at [reminder-time] (partial config (:id match))))
         (log/info (str "Reminder time " reminder-time " for match " (:id match) " has already passed - not scheduling a reminder.")))
       (log/info (str "Match " (:id match) " is in a muted league - not scheduling a reminder.")))))
 
