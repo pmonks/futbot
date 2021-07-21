@@ -120,7 +120,7 @@
         (cfg/set-log-level! level (if logger logger "futbot"))
         (mu/create-message! (:discord-message-channel cfg/config)
                             (:channel-id event-data)
-                            :content (str "Logging level " (s/upper-case level) " set" (if logger (str " for logger '" logger "'") "for logger 'futbot'") ".")))
+                            :content (str "Logging level " (s/upper-case level) " set" (if logger (str " for logger '" logger "'") " for logger 'futbot'") ".")))
       (mu/create-message! (:discord-message-channel cfg/config)
                           (:channel-id event-data)
                           :content "Logging level not provided; must be one of: ERROR, WARN, INFO, DEBUG, TRACE"))))
