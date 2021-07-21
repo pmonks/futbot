@@ -49,13 +49,13 @@
   (when (not (mu/direct-message? event-data))   ; Only respond if the message was sent to a real channel in a server (i.e. not in a DM)
     (let [guild-id                (:guild-id event-data)
           channel-id              (:channel-id event-data)
-          message-id              (:id event-data)
           discord-message-channel (:discord-message-channel cfg/config)]
-      (mu/delete-message! discord-message-channel channel-id message-id)
       (if (not (s/blank? args))
         (if-let [target-channel-id (second (re-find df/channel-mention args))]
           (if (not= channel-id target-channel-id)
-            (let [target-message-id  (:id (mu/create-message! discord-message-channel
+            (let [move-message-id    (:id event-data)
+                  _                  (mu/delete-message! discord-message-channel channel-id move-message-id)   ; Don't delete the original message unless we've validated everything
+                  target-message-id  (:id (mu/create-message! discord-message-channel
                                                               target-channel-id
                                                               :embed (assoc (mu/embed-template)
                                                                             :description (str "Continuing the conversation from " (mu/channel-link channel-id) "..."))))
@@ -120,7 +120,7 @@
         (cfg/set-log-level! level (if logger logger "futbot"))
         (mu/create-message! (:discord-message-channel cfg/config)
                             (:channel-id event-data)
-                            :content (str "Logging level " (s/upper-case level) " set" (if logger (str " for logger '" logger "'") "for logger 'futbot'") ".")))
+                            :content (str "Logging level " (s/upper-case level) " set" (if logger (str " for logger '" logger "'") " for logger 'futbot'") ".")))
       (mu/create-message! (:discord-message-channel cfg/config)
                           (:channel-id event-data)
                           :content "Logging level not provided; must be one of: ERROR, WARN, INFO, DEBUG, TRACE"))))
