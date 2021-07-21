@@ -16,20 +16,16 @@
 ; SPDX-License-Identifier: Apache-2.0
 ;
 
-(ns futbot.core
-  (:require [clojure.string                   :as s]
-            [clojure.tools.logging            :as log]
-            [java-time                        :as tm]
-            [chime.core                       :as chime]
-            [futbot.util                      :as u]
-            [futbot.message-util              :as mu]
-            [futbot.source.football-data      :as fd]
-            [futbot.source.dutch-referee-blog :as drb]
-            [futbot.source.cnra               :as cnra]
-            [futbot.source.pro                :as pro]
-            [futbot.source.youtube            :as yt]
-            [futbot.leagues                   :as lg]
-            [futbot.flags                     :as fl]))
+(ns futbot.matches
+  (:require [clojure.string              :as s]
+            [clojure.tools.logging       :as log]
+            [java-time                   :as tm]
+            [chime.core                  :as chime]
+            [futbot.util                 :as u]
+            [futbot.message-util         :as mu]
+            [futbot.source.football-data :as fd]
+            [futbot.leagues              :as lg]
+            [futbot.flags                :as fl]))
 
 (def ^:private default-match-duration (+ 45 15 45))
 
@@ -87,9 +83,9 @@
   })
 
 (defn- match-channel-link
-  [country-to-channel-fn match]
+  [{:keys [country-to-channel default-reminder-channel-id]} match]
   (let [country            (s/trim (get-in match [:competition :area :code]))
-        country-channel-id (country-to-channel-fn country)]
+        country-channel-id (u/getrn country-to-channel country default-reminder-channel-id)]
     (mu/channel-link country-channel-id)))
 
 (defn- match-embed-template
@@ -141,10 +137,7 @@
     nil))
 
 (defn post-match-summary-to-channel!
-  [football-data-api-token
-   discord-message-channel
-   match-summary-channel-id
-   country-to-channel-fn
+  [{:keys [football-data-api-token discord-message-channel match-summary-channel-id] :as config} 
    match-id
    retry-number
    & _]
@@ -162,10 +155,7 @@
                                       (log/info (str "Match " match-id " has not yet finished (attempt " (inc retry-number) "); retrying in " (str retry-after) " minute(s)."))
                                       (chime/chime-at [(tm/plus (tm/instant) (tm/minutes retry-after))]
                                                       (partial post-match-summary-to-channel!
-                                                               football-data-api-token
-                                                               discord-message-channel
-                                                               match-summary-channel-id
-                                                               country-to-channel-fn
+                                                               config
                                                                match-id
                                                                (inc retry-number))))
           ; Match is over; send summary message
@@ -175,7 +165,7 @@
                                                              "final score: **" (get-in match [:score :full-time :home-team] (str (rand-nth shrug-reacts) " ")) "-" (get-in match [:score :full-time :away-team] (str " " (rand-nth shrug-reacts))) "**")
                                           description   (str match-summary "\n"
                                                              (match-events-table match) "\n"
-                                                             "Discuss in " (match-channel-link country-to-channel-fn match) ".")
+                                                             "Discuss in " (match-channel-link config match) ".")
                                           embed         (assoc (match-embed-template match)
                                                                :description description)]
                                       (log/info (str "Sending summary for match " match-id "..."))
@@ -189,11 +179,7 @@
       (u/log-exception e (str "Unexpected exception while sending summary for match " match-id)))))
 
 (defn schedule-in-progress-match-summary!
-  [football-data-api-token
-   discord-message-channel
-   match-summary-channel-id
-   muted-leagues
-   country-to-channel-fn
+  [{:keys [football-data-api-token discord-message-channel match-summary-channel-id muted-leagues country-to-channel-fn]}
    match]
   (let [match-id     (:id match)
         match-league (get-in match [:competition :name])]
@@ -214,21 +200,13 @@
 
 (defn schedule-in-progress-match-summaries!
   "Schedules match summary jobs for all matches that are in progress at the time it's called."
-  [football-data-api-token
-   discord-message-channel
-   match-summary-channel-id
-   muted-leagues
-   country-to-channel-fn]
+  [{:keys [football-data-api-token discord-message-channel match-summary-channel-id muted-leagues country-to-channel-fn]}]
   (if-let [in-progress-matches (fd/matches-in-play football-data-api-token)]
     (doall (map (partial schedule-in-progress-match-summary! football-data-api-token discord-message-channel match-summary-channel-id muted-leagues country-to-channel-fn) in-progress-matches))
     (log/info "No matches currently in progress; not scheduling any match summary jobs.")))
 
 (defn post-match-reminder-to-channel!
-  [football-data-api-token
-   discord-message-channel
-   match-reminder-duration
-   match-reminder-channel-id
-   country-to-channel-fn
+  [{:keys [football-data-api-token discord-message-channel match-reminder-duration match-reminder-channel-id country-to-channel-fn] :as config}
    match-id & _]
   (try
     (log/info (str "Sending reminder for match " match-id "..."))
@@ -240,7 +218,7 @@
                                    (.toMinutes ^java.time.Duration match-reminder-duration)))
             match-summary      (str (get match-status-to-emoji (:status match) "❔")
                                     "  **" (get-in match [:home-team :name] "Unknown") "** vs **" (get-in match [:away-team :name] "Unknown") "**")
-            match-channel-link (match-channel-link country-to-channel-fn match)
+            match-channel-link (match-channel-link config match)
             description        (case (:status match)
                                  "SCHEDULED" (str match-summary " starts in " starts-in-min " mins.\n\n"
                                                   "[Find out how to watch here](https://www.livesoccertv.com/), and discuss in " match-channel-link ".")
@@ -276,12 +254,7 @@
 
 (defn schedule-match-reminder!
   "Schedules a reminder for the given match."
-  [football-data-api-token
-   discord-message-channel
-   match-reminder-duration
-   match-reminder-channel-id
-   muted-leagues
-   country-to-channel-fn
+  [{:keys [football-data-api-token discord-message-channel match-reminder-duration match-reminder-channel-id muted-leagues country-to-channel-fn]}
    match]
   (let [now           (u/in-tz "UTC" (tm/zoned-date-time))
         match-time    (tm/zoned-date-time (:utc-date match))
@@ -304,110 +277,10 @@
 
 (defn schedule-todays-match-reminders!
   "Schedules reminders for the remainder of today's matches."
-  [football-data-api-token
-   discord-message-channel
-   match-reminder-duration
-   match-reminder-channel-id
-   muted-leagues
-   country-to-channel-fn]
+  [{:keys [football-data-api-token] :as config}]
    (let [today                    (u/in-tz "UTC" (tm/zoned-date-time))
          todays-scheduled-matches (fd/scheduled-matches-on-day football-data-api-token today)]
      (if (seq todays-scheduled-matches)
-       (doall (map (partial schedule-match-reminder! football-data-api-token
-                                                     discord-message-channel
-                                                     match-reminder-duration
-                                                     match-reminder-channel-id
-                                                     muted-leagues
-                                                     country-to-channel-fn)
+       (doall (map (partial schedule-match-reminder! config)
                    (distinct todays-scheduled-matches)))
        (log/info "No matches remaining today - not scheduling any reminders."))))
-
-(def training-and-resources-discord-channel-link (mu/channel-link "686439362291826694"))
-
-(defn check-for-new-dutch-referee-blog-quiz-and-post-to-channel!
-  "Checks whether a new Dutch referee blog quiz has been posted in the last time-period-hours hours (defaults to 24), and posts it to the given channel if so."
-  ([discord-message-channel channel-id] (check-for-new-dutch-referee-blog-quiz-and-post-to-channel! discord-message-channel channel-id 24))
-  ([discord-message-channel
-    channel-id
-    time-period-hours]
-   (if-let [new-quizzes (drb/quizzes (tm/minus (tm/instant) (tm/hours time-period-hours)))]
-     (let [_          (log/info (str (count new-quizzes) " new Dutch referee blog quizz(es) found"))
-           message    (str "<:dfb:753779768306040863> A new **Dutch Referee Blog Laws of the Game Quiz** has been posted: "
-                           (:link (first new-quizzes))
-                           "\nPuzzled by an answer? Click the react and we'll discuss in " training-and-resources-discord-channel-link "!")
-           message-id (:id (mu/create-message! discord-message-channel
-                                               channel-id
-                                               :content message))]
-       (if message-id
-         (do
-           (mu/create-reaction! discord-message-channel channel-id message-id "1️⃣")
-           (mu/create-reaction! discord-message-channel channel-id message-id "2️⃣")
-           (mu/create-reaction! discord-message-channel channel-id message-id "3️⃣")
-           (mu/create-reaction! discord-message-channel channel-id message-id "4️⃣")
-           (mu/create-reaction! discord-message-channel channel-id message-id "5️⃣"))
-         (log/warn "No message id found for Dutch referee blog message - skipped adding reactions"))
-       nil)
-     (log/info "No new Dutch referee blog quizzes found"))))
-
-(defn check-for-new-cnra-quiz-and-post-to-channel!
-  "Checks whether any new CNRA quizzes has been posted in the last month, and posts them to the given channel if so."
-  [discord-message-channel channel-id]
-  (if-let [new-quizzes (cnra/quizzes (tm/minus (tm/local-date) (tm/months 1)))]
-    (doall
-      (map (fn [quiz]
-        (let [message (str "<:cnra:769311341751959562> The **"
-                           (:quiz-date quiz)
-                           " CNRA Quiz** has been posted, on the topic of **"
-                           (:topic quiz)
-                           "**: "
-                           (:link quiz)
-                           "\nPuzzled by an answer? React and we'll discuss in " training-and-resources-discord-channel-link ".")]
-          (mu/create-message! discord-message-channel
-                              channel-id
-                              :content message)))
-         new-quizzes))
-    (log/info "No new CNRA quizzes found")))
-
-(defn check-for-new-pro-insights-and-post-to-channel!
-  "Checks whether amy new PRO Insights have been posted in the last time-period-hours hours (defaults to 24), and posts them to the given channel if so."
-  ([discord-message-channel channel-id] (check-for-new-pro-insights-and-post-to-channel! discord-message-channel channel-id 24))
-  ([discord-message-channel
-    channel-id
-    time-period-hours]
-   (let [new-insights (pro/insights (tm/minus (tm/instant) (tm/hours time-period-hours)))]
-     (log/info (str (count new-insights) " new PRO Insight(s) found"))
-     (doall (map #(mu/create-message! discord-message-channel
-                                      channel-id
-                                      :content (str "<:pro:778688391608926278> A new **PRO Insight** has been posted, on the topic of **"
-                                                    (s/replace (:title %) "PRO Insight: " "")
-                                                    "**: "
-                                                    (:link %)
-                                                    "\nDiscuss in " training-and-resources-discord-channel-link "!"))
-                 new-insights)))))
-
-(def ist-youtube-channel-id              "UCmzFaEBQlLmMTWS0IQ90tgA")
-(def memes-and-junk-discord-channel-link (mu/channel-link "683853455038742610"))
-
-(defn post-youtube-video-to-channel!
-  [discord-message-channel discord-channel-id youtube-channel-info-fn youtube-channel-id video]
-  (let [channel-title (org.jsoup.parser.Parser/unescapeEntities (:title (youtube-channel-info-fn youtube-channel-id)) true)
-        message       (str (:emoji (youtube-channel-info-fn youtube-channel-id))
-                           (if channel-title (str " A new **" channel-title "** video has been posted: **") " A new video has been posted: **")
-                           (org.jsoup.parser.Parser/unescapeEntities (:title video) true)
-                           "**: https://www.youtube.com/watch?v=" (:id video)
-                           "\nDiscuss in "
-                           (if (= youtube-channel-id ist-youtube-channel-id) memes-and-junk-discord-channel-link training-and-resources-discord-channel-link)
-                           ".")]
-     (mu/create-message! discord-message-channel
-                         discord-channel-id
-                         :content message)))
-
-(defn check-for-new-youtube-videos-and-post-to-channel!
-  "Checks whether any new videos have been posted to the given YouTube channel in the last day, and posts it to the given Discord channel if so."
-  [youtube-api-token discord-message-channel discord-channel-id youtube-channel-id youtube-channel-info-fn]
-  (let [channel-title (:title (youtube-channel-info-fn youtube-channel-id))]
-    (if-let [new-videos (yt/videos youtube-api-token
-                                   (tm/minus (tm/instant) (tm/days 1))
-                                   youtube-channel-id)]
-      (doall (map (partial post-youtube-video-to-channel! discord-message-channel discord-channel-id youtube-channel-info-fn youtube-channel-id) new-videos))
-      (log/info (str "No new videos found in YouTube channel " (if channel-title channel-title (str "-unknown (" youtube-channel-id ")-")))))))

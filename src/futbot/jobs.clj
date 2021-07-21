@@ -23,7 +23,10 @@
             [chime.core            :as chime]
             [futbot.util           :as u]
             [futbot.config         :as cfg]
-            [futbot.core           :as core]))
+            [futbot.matches        :as match]
+            [futbot.quizzes        :as quiz]
+            [futbot.videos         :as vid]
+            [futbot.posts          :as post]))
 
 (defn close-job
   "Closes a timed job defined by the defjob macro."
@@ -48,82 +51,75 @@
 
 ; Run the GC 2 minutes after startup, then every hour after that
 (declare gc-job)
-(defjob gc-job
-        (tm/plus (tm/instant) (tm/minutes 2))
-        (tm/hours 1)
-        (System/gc))
+(defjob  gc-job
+         (tm/plus (tm/instant) (tm/minutes 2))
+         (tm/hours 1)
+         (System/gc))
 
 ; Schedule match reminders for the day
 (declare schedule-match-reminders-job)
-(defjob schedule-match-reminders-job
-        (tm/plus (tm/truncate-to (tm/instant) :days) (tm/days 1))
-        (tm/days 1)
-        (core/schedule-todays-match-reminders! cfg/football-data-api-token
-                                               cfg/discord-message-channel
-                                               cfg/match-reminder-duration
-                                               cfg/match-reminder-discord-channel-id
-                                               cfg/muted-leagues
-                                               #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id)))
+(defjob  schedule-match-reminders-job
+         (tm/plus (tm/truncate-to (tm/instant) :days) (tm/days 1))
+         (tm/days 1)
+         (match/schedule-todays-match-reminders! cfg/config))
 
 ; Check for new Dutch Referee Blog Quizzes at 9am Amsterdam each day. This job runs in Europe/Amsterdam timezone, since that's where the Dutch Referee Blog is located
 (declare dutch-referee-blog-quiz-job)
-(defjob dutch-referee-blog-quiz-job
-        (let [now              (u/in-tz "Europe/Amsterdam" (tm/zoned-date-time))
-              today-at-nine-am (u/in-tz "Europe/Amsterdam" (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
-          (if (tm/before? now today-at-nine-am)
-            today-at-nine-am
-            (tm/plus today-at-nine-am (tm/days 1))))
-        (tm/days 1)
-        (core/check-for-new-dutch-referee-blog-quiz-and-post-to-channel! cfg/discord-message-channel cfg/quiz-channel-id))
+(defjob  dutch-referee-blog-quiz-job
+         (let [now              (u/in-tz "Europe/Amsterdam" (tm/zoned-date-time))
+               today-at-nine-am (u/in-tz "Europe/Amsterdam" (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
+           (if (tm/before? now today-at-nine-am)
+             today-at-nine-am
+             (tm/plus today-at-nine-am (tm/days 1))))
+         (tm/days 1)
+         (quiz/check-for-new-dutch-referee-blog-quiz-and-post! cfg/config))
 
 ; Check for new CNRA Quizzes at midnight Los Angeles on the 16th of the month. This job runs in America/Los_Angeles timezone, since that's where CNRA is located
 (declare cnra-quiz-job)
-(defjob cnra-quiz-job
-        (let [now                                (u/in-tz "America/Los_Angeles" (tm/zoned-date-time))
-              sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
-          (if (tm/before? now sixteenth-of-the-month-at-midnight)
-            sixteenth-of-the-month-at-midnight
-            (tm/plus sixteenth-of-the-month-at-midnight (tm/months 1))))
-        (tm/months 1)
-        (core/check-for-new-cnra-quiz-and-post-to-channel! cfg/discord-message-channel cfg/quiz-channel-id))
+(defjob  cnra-quiz-job
+         (let [now                                (u/in-tz "America/Los_Angeles" (tm/zoned-date-time))
+               sixteenth-of-the-month-at-midnight (u/in-tz "America/Los_Angeles" (tm/plus (tm/truncate-to (tm/adjust now :first-day-of-month) :days) (tm/days 15)))]
+           (if (tm/before? now sixteenth-of-the-month-at-midnight)
+             sixteenth-of-the-month-at-midnight
+             (tm/plus sixteenth-of-the-month-at-midnight (tm/months 1))))
+         (tm/months 1)
+         (quiz/check-for-new-cnra-quiz-and-post! cfg/config))
 
-; Check for new PRO Insights at 9am New York each day. This job runs in America/New_York timezone, since that's where PRO is located
-(declare pro-insights-job)
-(defjob pro-insights-job
-        (let [now              (u/in-tz "America/New_York" (tm/zoned-date-time))
-              today-at-nine-am (u/in-tz "America/New_York" (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
-          (if (tm/before? now today-at-nine-am)
-            today-at-nine-am
-            (tm/plus today-at-nine-am (tm/days 1))))
-        (tm/days 1)
-        (core/check-for-new-pro-insights-and-post-to-channel! cfg/discord-message-channel cfg/quiz-channel-id))
+; Check for new PRO posts at 9am New York each day. This job runs in America/New_York timezone, since that's where PRO is located
+(declare pro-job)
+(defjob  pro-job
+         (let [now              (u/in-tz "America/New_York" (tm/zoned-date-time))
+               today-at-nine-am (u/in-tz "America/New_York" (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
+           (if (tm/before? now today-at-nine-am)
+             today-at-nine-am
+             (tm/plus today-at-nine-am (tm/days 1))))
+         (tm/days 1)
+         (post/check-for-new-pro-posts-and-post! cfg/config))
 
 ; YouTube jobs are a bit messy, since the total number is defined in config, not hardcoded as the jobs above are
 (defn schedule-youtube-job
   [job-time youtube-channel-id]
-  (let [youtube-channel-name (get-in cfg/youtube-channels-info [youtube-channel-id :title] (str "-unknown (" youtube-channel-id ")-"))]
+  (let [youtube-channel-name (get-in (:youtube-channels cfg/config) [youtube-channel-id :title] (str "-unknown (" youtube-channel-id ")-"))]
     (log/info (str "Scheduling YouTube channel " youtube-channel-name " job; first run will be at " job-time))
     (chime/chime-at (chime/periodic-seq job-time (tm/days 1))
                     (fn [_]
                       (try
                         (log/info (str "YouTube channel " youtube-channel-name " job started..."))
-                        (core/check-for-new-youtube-videos-and-post-to-channel! cfg/youtube-api-token
-                                                                                cfg/discord-message-channel
-                                                                                cfg/video-channel-id
-                                                                                youtube-channel-id
-                                                                                cfg/youtube-channels-info)
+                        (vid/check-for-new-youtube-videos-and-post! cfg/config
+                                                                    youtube-channel-id)
                         (log/info (str "YouTube channel " youtube-channel-name " job finished"))
                         (catch Exception e
                           (u/log-exception e (str "Unexpected exception in YouTube channel " youtube-channel-name " job"))))))))
 
 ; Each YouTube job is run once per day, and they're equally spaced throughout the day to spread out the load
-(declare youtube-jobs)
+(declare  youtube-jobs)
 (defstate youtube-jobs
-          :start (let [interval (int (/ (* 24 60) (count cfg/youtube-channels)))
-                       now      (tm/instant)
-                       midnight (tm/truncate-to now :days)]
-                   (loop [f      (first cfg/youtube-channels)
-                          r      (rest cfg/youtube-channels)
+          :start (let [youtube-channel-ids (keys (:youtube-channels cfg/config))
+                       interval            (int (/ (* 24 60) (count youtube-channel-ids)))
+                       now                 (tm/instant)
+                       midnight            (tm/truncate-to now :days)]
+                   (loop [f      (first youtube-channel-ids)
+                          r      (rest  youtube-channel-ids)
                           index  1
                           result []]
                      (let [job-time (tm/plus midnight (tm/minutes (* index interval)))

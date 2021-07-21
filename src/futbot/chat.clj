@@ -33,9 +33,9 @@
   "Generates a fake IST video title"
   [_ event-data]
   (let [channel-id (:channel-id event-data)]
-    (if (or (mu/direct-message? event-data)             ; Only respond if message was sent via DM or
-            (some #{channel-id} cfg/ist-channel-ids))   ; one of the allowed IST channels.
-      (mu/create-message! cfg/discord-message-channel
+    (if (or (mu/direct-message? event-data)                       ; Only respond if message was sent via DM or
+            (some #{channel-id} (:ist-channel-ids cfg/config)))   ; one of the allowed IST channels.
+      (mu/create-message! (:discord-message-channel cfg/config)
                           channel-id
                           :embed (assoc (mu/embed-template)
                                           :description (str "**" (ist/gen-title) "**")
@@ -47,24 +47,25 @@
   "Moves a conversation to the specified channel"
   [args event-data]
   (when (not (mu/direct-message? event-data))   ; Only respond if the message was sent to a real channel in a server (i.e. not in a DM)
-    (let [guild-id   (:guild-id event-data)
-          channel-id (:channel-id event-data)
-          message-id (:id event-data)]
-      (mu/delete-message! cfg/discord-message-channel channel-id message-id)
+    (let [guild-id                (:guild-id event-data)
+          channel-id              (:channel-id event-data)
+          message-id              (:id event-data)
+          discord-message-channel (:discord-message-channel cfg/config)]
+      (mu/delete-message! discord-message-channel channel-id message-id)
       (if (not (s/blank? args))
         (if-let [target-channel-id (second (re-find df/channel-mention args))]
           (if (not= channel-id target-channel-id)
-            (let [target-message-id  (:id (mu/create-message! cfg/discord-message-channel
+            (let [target-message-id  (:id (mu/create-message! discord-message-channel
                                                               target-channel-id
                                                               :embed (assoc (mu/embed-template)
                                                                             :description (str "Continuing the conversation from " (mu/channel-link channel-id) "..."))))
                   target-message-url (mu/message-url guild-id target-channel-id target-message-id)
-                  source-message-id  (:id (mu/create-message! cfg/discord-message-channel
+                  source-message-id  (:id (mu/create-message! discord-message-channel
                                                               channel-id
                                                               :embed (assoc (mu/embed-template)
                                                                             :description (str "Let's continue this conversation in " (mu/channel-link target-channel-id) " ([link](" target-message-url "))."))))
                   source-message-url (mu/message-url guild-id channel-id source-message-id)]
-              (mu/edit-message! cfg/discord-message-channel
+              (mu/edit-message! discord-message-channel
                                 target-channel-id
                                 target-message-id
                                 :embed (assoc (mu/embed-template)
@@ -76,7 +77,7 @@
 (defn privacy-command!
   "Provides a link to the futbot privacy policy"
   [_ event-data]
-  (mu/create-message! cfg/discord-message-channel
+  (mu/create-message! (:discord-message-channel cfg/config)
                       (:channel-id event-data)
                       :embed (assoc (mu/embed-template)
                                     :description "[futbot's privacy policy is available here](https://github.com/pmonks/futbot/blob/main/PRIVACY.md).")))
@@ -85,7 +86,7 @@
   "Provides technical status of futbot"
   [_ event-data]
   (let [now (tm/instant)]
-    (mu/create-message! cfg/discord-message-channel
+    (mu/create-message! (:discord-message-channel cfg/config)
                         (:channel-id event-data)
                         :embed (assoc (mu/embed-template)
                                       :title "futbot Status"
@@ -106,7 +107,7 @@
   "Requests that the JVM perform a GC cycle."
   [_ event-data]
   (System/gc)
-  (mu/create-message! cfg/discord-message-channel
+  (mu/create-message! (:discord-message-channel cfg/config)
                       (:channel-id event-data)
                       :content "Garbage collection requested."))
 
@@ -117,19 +118,19 @@
     (if level
       (do
         (cfg/set-log-level! level (if logger logger "futbot"))
-        (mu/create-message! cfg/discord-message-channel
+        (mu/create-message! (:discord-message-channel cfg/config)
                             (:channel-id event-data)
                             :content (str "Logging level " (s/upper-case level) " set" (if logger (str " for logger '" logger "'") "for logger 'futbot'") ".")))
-      (mu/create-message! cfg/discord-message-channel
-                            (:channel-id event-data)
-                            :content "Logging level not provided; must be one of: ERROR, WARN, INFO, DEBUG, TRACE"))))
+      (mu/create-message! (:discord-message-channel cfg/config)
+                          (:channel-id event-data)
+                          :content "Logging level not provided; must be one of: ERROR, WARN, INFO, DEBUG, TRACE"))))
 
 (defn debug-logging-command!
   "Enables debug logging, which turns on TRACE for 'discljord' and DEBUG for 'futbot'."
   [_ event-data]
   (cfg/set-log-level! "TRACE" "discljord")
   (cfg/set-log-level! "DEBUG" "futbot")
-  (mu/create-message! cfg/discord-message-channel
+  (mu/create-message! (:discord-message-channel cfg/config)
                       (:channel-id event-data)
                       :content "Debug logging enabled (TRACE for 'discljord' and DEBUG for 'futbot'."))
 
@@ -137,7 +138,7 @@
   "Resets all log levels to their configured defaults."
   [_ event-data]
   (cfg/reset-logging!)
-  (mu/create-message! cfg/discord-message-channel
+  (mu/create-message! (:discord-message-channel cfg/config)
                       (:channel-id event-data)
                       :content "Logging configuration reset."))
 
@@ -164,7 +165,7 @@
 (defn help-command!
   "Displays this help message"
   [_ event-data]
-  (mu/create-message! cfg/discord-message-channel
+  (mu/create-message! (:discord-message-channel cfg/config)
                       (:channel-id event-data)
                       :embed (assoc (mu/embed-template)
                                     :description (str "I understand the following command in " (mu/channel-link "683853455038742610") " or a DM:\n"

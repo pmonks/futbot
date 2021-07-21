@@ -25,18 +25,19 @@
   [event-data re]
   (let [content (:content event-data)]
     (if (and re content (re-find re content))
-      (let [message-id  (:id event-data)
-            channel-id  (:channel-id event-data)
-            author-id   (:id (:author event-data))
-            author-name (mu/nick-or-user-name event-data)
-            msg         (get cfg/blocklist re)]
+      (let [discord-message-channel (:discord-message-channel cfg/config)
+            message-id              (:id event-data)
+            channel-id              (:channel-id event-data)
+            author-id               (:id (:author event-data))
+            author-name             (mu/nick-or-user-name event-data)
+            msg                     (get (:blocklist cfg/config) re)]
         (log/info "Deleting message" message-id "sent by" author-id (str "(" author-name ")") "in channel" channel-id "as it matched blocklist entry" (str re))
-        (mu/delete-message! cfg/discord-message-channel channel-id message-id)
-        (mu/send-dm!        cfg/discord-message-channel author-id msg)
+        (mu/delete-message! discord-message-channel channel-id message-id)
+        (mu/send-dm!        discord-message-channel author-id msg)
 
         ; Send admin message
-        (mu/create-message! cfg/discord-message-channel
-                            cfg/blocklist-notification-discord-channel-id
+        (mu/create-message! discord-message-channel
+                            (:blocklist-notification-channel-id cfg/config)
                             :embed (assoc (mu/embed-template)
                                             :color       15158332    ; RED
                                             :title       "⚠️ Blocklist Violation!"
@@ -50,11 +51,12 @@
   "Check the given event against the blocklist."
   [event-data]
   (when-not (mu/direct-message? event-data)    ; Don't check DMs
-    (loop [f      (first cfg/blocklist-res)
-           r      (rest  cfg/blocklist-res)
-           result false]
-      (if (and f (not result))
-        (recur (first r)
-               (rest r)
-               (check-blocklist-entry! event-data f))
-        result))))
+    (let [blocklist-regexes (keys (:blocklist cfg/config))]
+      (loop [f      (first blocklist-regexes)
+             r      (rest  blocklist-regexes)
+             result false]
+        (if (and f (not result))
+          (recur (first r)
+                 (rest r)
+                 (check-blocklist-entry! event-data f))
+          result)))))

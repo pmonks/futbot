@@ -28,7 +28,7 @@
             [discljord.events      :as de]
             [futbot.util           :as u]
             [futbot.jobs           :as job]    ; This is required, so that mount schedules all jobs
-            [futbot.core           :as core]
+            [futbot.matches        :as match]
             [futbot.chat           :as chat])
   (:gen-class))
 
@@ -65,19 +65,10 @@
       ; Start the bot
       (mnt/with-args options)
       (mnt/start)
-      (core/schedule-todays-match-reminders! cfg/football-data-api-token
-                                             cfg/discord-message-channel
-                                             cfg/match-reminder-duration
-                                             cfg/match-reminder-discord-channel-id
-                                             cfg/muted-leagues
-                                             #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id))
-      (core/schedule-in-progress-match-summaries! cfg/football-data-api-token
-                                                  cfg/discord-message-channel
-                                                  cfg/match-reminder-discord-channel-id
-                                                  cfg/muted-leagues
-                                                  #(u/getrn cfg/country-to-channel % cfg/default-reminder-channel-id))
+      (match/schedule-todays-match-reminders! cfg/config)
+      (match/schedule-in-progress-match-summaries! cfg/config)
       (log/info "futbot started")
-      (de/message-pump! cfg/discord-event-channel chat/handle-discord-event))   ; This must go last, as it blocks
+      (de/message-pump! (:discord-event-channel cfg/config) chat/handle-discord-event))   ; This must go last, as it blocks
     (catch Exception e
       (u/log-exception e)
       (u/exit -1)))

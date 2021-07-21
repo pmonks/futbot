@@ -4,7 +4,7 @@
   :discord-api-token          #env DISCORD_API_TOKEN
   :discord-event-channel-size 100
 
-  :match-reminder-discord-channel-id "686396574104158228"   ; League Discussions > #live-updates
+  :match-reminder-channel-id "686396574104158228"   ; League Discussions > #live-updates
 
   :match-reminder-duration-mins 15
 
@@ -30,31 +30,44 @@
 
   ; To determine custom emoji tags, go into a chat and type "\:emojishortcut:" - Discord will automatically convert it into the "extended" form shown below, which is required for a bot to send custom emoji
 
-  :quiz-channel-id  "771086596644274216"  ; Refereeing > quizzes-and-videos
-  :video-channel-id "771086596644274216"  ; Refereeing > quizzes-and-videos
+  :education-and-resources-channel-id  "686439362291826694"  ; Refereeing > education-and-resources
+  :quiz-channel-id                     "771086596644274216"  ; Refereeing > quizzes-and-videos
+  :video-channel-id                    #ref [:quiz-channel-id]
+  :post-channel-id                     #ref [:quiz-channel-id]
+  :memes-channel-id                    "683853455038742610"  ; Lounge > memes-and-junk
 
-  :ist-channel-ids ["683853455038742610"   ; General > Memes and Junk
-                    "701813682430279712"   ; General > bots
-                    "723309028725227532"]  ; Admin > Testing
+  :ist-channel-ids [#ref [:memes-channel-id]
+                    "701813682430279712"     ; General > bots
+                    "723309028725227532"]    ; Admin > Testing
 
   :youtube-api-token #env YOUTUBE_API_TOKEN
-  :youtube-channels {
-    "UCxdPyM0KXNhXGUChb1FaJSA" "<:frva:791780784754655233>"      ; Football Victoria Referees
-    "UCosXVB8eY3iF26k6iTHW9gw" "<:concacaf:791778812736045097>"  ; CONCACAF Center of Refereeing Excellence
-    "UCDWmPEiV6UehDyq-0yoigmQ" "<:pro:778688391608926278>"       ; PROreferees
-    "UCkWdcTQDOPPHXQ6asE9R1Sg" "<:csa:814941184232914975>"       ; CSA Referee
-    "UCRvL3eeBF3MFGFn6vnqR0nw" nil                               ; WASRC Webinars
-    "UCcMv5IAlVBy-7oHt7pdiLxQ" nil                               ; RWISOA Referees
-;    "UCH4fZCsZ3_4rPIzEeLbcLGA" nil                               ; Ahmed Habib's Referee Channel - disabled as he seems to have stopped focusing on refereeing material
-    "UCjlAAUxk70KurpcLWcFL8Mg" nil                               ; Victor Karimi's Referee Channel
-    "UCfWpYhMIs2xqq7-v9HDAxuQ" "<:cnra:769311341751959562>"      ; Matthew Buckman (CNRA)
-    "UCjOMOGOifZ1NwpAgCXv0-rw" "<:refsix:791761342234624030>"    ; REFSIX
-    "UCmzFaEBQlLmMTWS0IQ90tgA" "<:ist:733173880403001394>"       ; IST
-  }
   :default-youtube-emoji "<:youtube:771103353454460938>"
+  :youtube-channels {
+    "UCxdPyM0KXNhXGUChb1FaJSA" {:emoji "<:frva:791780784754655233>"     :channel-id #ref [:video-channel-id]}  ; Football Victoria Referees
+    "UCosXVB8eY3iF26k6iTHW9gw" {:emoji "<:concacaf:791778812736045097>" :channel-id #ref [:video-channel-id]}  ; CONCACAF Center of Refereeing Excellence
+    "UCkWdcTQDOPPHXQ6asE9R1Sg" {:emoji "<:csa:814941184232914975>"      :channel-id #ref [:video-channel-id]}  ; CSA Referee
+    "UCRvL3eeBF3MFGFn6vnqR0nw" {:emoji #ref [:default-youtube-emoji]    :channel-id #ref [:video-channel-id]}  ; WASRC Webinars
+    "UCcMv5IAlVBy-7oHt7pdiLxQ" {:emoji #ref [:default-youtube-emoji]    :channel-id #ref [:video-channel-id]}  ; RWISOA Referees
+    "UCjlAAUxk70KurpcLWcFL8Mg" {:emoji #ref [:default-youtube-emoji]    :channel-id #ref [:video-channel-id]}  ; Victor Karimi's Referee Channel
+    "UCfWpYhMIs2xqq7-v9HDAxuQ" {:emoji "<:cnra:769311341751959562>"     :channel-id #ref [:video-channel-id]}  ; Matthew Buckman (CNRA)
+    "UCjOMOGOifZ1NwpAgCXv0-rw" {:emoji "<:refsix:791761342234624030>"   :channel-id #ref [:video-channel-id]}  ; REFSIX
+    "UCmzFaEBQlLmMTWS0IQ90tgA" {:emoji "<:ist:733173880403001394>"      :channel-id #ref [:memes-channel-id]}  ; IST goes to Lounge > memes-and-junk
+  }
+
+  :usa-channel-id "723567903164596274"   ; Note: this is just a convenienace; it isn't used in the code
+  :pro-category-to-channel-map {
+    "PRO Insight"               #ref [:post-channel-id]
+    "The Definitive Angle"      #ref [:post-channel-id]
+    "VAR a Fondo"               #ref [:post-channel-id]
+    "Inside Video Review"       #ref [:post-channel-id]
+    "MLS Assignments"           #ref [:usa-channel-id]
+    "NWSL Assignments"          #ref [:usa-channel-id]
+    "International assignments" #ref [:usa-channel-id]
+    "USL Assignments"           #ref [:usa-channel-id]
+  }
 
   :blocklist {
     "(?i)refereestore\\s*\\.\\s*com" "Hi there! Just a quick head's up that I deleted your message as it contained a link to refereestore DOT com. References to that site are banned on this Discord server, as the owner of that business has a well-documented public history of serious bigotry, and we have a zero tolerance policy for such attitudes here. Please contact the admin team if you have any questions, and have a nice day! 😃"
   }
-  :blocklist-notification-discord-channel-id "686270565828264063"  ; Admin > admin-commands
+  :blocklist-notification-channel-id "686270565828264063"  ; Admin > admin-commands
 }

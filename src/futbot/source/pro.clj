@@ -20,16 +20,25 @@
   (:require [java-time :as tm]
             [remus     :as rss]))
 
-(def pro-blog-rss-feed-url "http://proreferees.com/feed/atom/")   ; I prefer atom...
-(def pro-insight-category  "PRO Insight")
+(def pro-blog-feed-url "http://proreferees.com/feed/atom/")   ; I prefer atom...
 
-(defn insights
-  "Returns a sequence of maps representing all of the PRO Insights posted to PRO's atom feed, optionally since the given date, or nil if there aren't any."
-  ([] (insights nil))
-  ([since]
-    (seq
-      (when-let [all-pro-insights (filter #(some #{pro-insight-category} (map :name (:categories %)))
-                                          (:entries (:feed (rss/parse-url pro-blog-rss-feed-url))))]
-        (if since
-          (filter #(tm/after? (tm/instant (:published-date %)) (tm/instant since)) all-pro-insights)
-          all-pro-insights)))))
+(defn posts
+  "Returns a sequence of maps representing all of PRO's posts, optionally for the given categories and/or published since the given date, or nil if there aren't any."
+  [& {:keys [categories since]}]
+  (when-let [blog-entries (seq (:entries (:feed (rss/parse-url pro-blog-feed-url))))]
+    (let [blog-entries (if categories
+                         (filter #(some categories (map :name (:categories %))) blog-entries)
+                         blog-entries)
+          blog-entries (if since
+                         (filter #(tm/after? (tm/instant (:published-date %)) (tm/instant since)) blog-entries)
+                         blog-entries)]
+      (seq blog-entries))))
+
+(def categories-of-interest #{"PRO Insight"
+                              "The Definitive Angle"
+                              "VAR a Fondo"})
+
+(defn posts-of-interest-since
+  "Returns a sequence of maps representing all of PRO's posts, optionally for the given categories and/or published since the given date, or nil if there aren't any."
+  [since]
+  (posts :categories categories-of-interest :since since))
