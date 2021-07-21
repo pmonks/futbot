@@ -137,7 +137,7 @@
     nil))
 
 (defn post-match-summary-to-channel!
-  [{:keys [football-data-api-token discord-message-channel match-summary-channel-id] :as config}
+  [{:keys [football-data-api-token discord-message-channel match-reminder-channel-id] :as config}
    match-id
    retry-number
    & _]
@@ -169,7 +169,7 @@
                                                                :description description)]
                                       (log/info (str "Sending summary for match " match-id "..."))
                                       (mu/create-message! discord-message-channel
-                                                          match-summary-channel-id
+                                                          match-reminder-channel-id
                                                           :embed embed)
                                       (log/info (str "Finished sending summary for match " match-id)))
           :else (log/warn (str "Unexpected status (" status ") for match " match-id "."))))
