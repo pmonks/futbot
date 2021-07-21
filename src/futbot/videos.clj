@@ -25,18 +25,19 @@
 (def ist-youtube-channel-id "UCmzFaEBQlLmMTWS0IQ90tgA")
 
 (defn post-youtube-video!
-  [{:keys [discord-message-channel video-channel-id youtube-channels memes-channel-id education-and-resources-channel-id]}
+  [{:keys [discord-message-channel youtube-channels education-and-resources-channel-id]}
    youtube-channel-id
    video]
-  (let [channel-title (org.jsoup.parser.Parser/unescapeEntities (:title (get youtube-channels youtube-channel-id)) true)
-        message       (str (:emoji (get youtube-channels youtube-channel-id))
+  (let [channel-info  (get youtube-channels youtube-channel-id)
+        channel-title (org.jsoup.parser.Parser/unescapeEntities (:title channel-info) true)
+        message       (str (:emoji channel-info)
                            (if channel-title (str " A new **" channel-title "** video has been posted: **") " A new video has been posted: **")
                            (org.jsoup.parser.Parser/unescapeEntities (:title video) true)
                            "**: https://www.youtube.com/watch?v=" (:id video)
-                           "\nDiscuss in " (mu/channel-link (if (= youtube-channel-id ist-youtube-channel-id) memes-channel-id education-and-resources-channel-id))
-                           ".")]
+                           (when-not (= youtube-channel-id ist-youtube-channel-id)
+                             (str "\nDiscuss in " (mu/channel-link education-and-resources-channel-id) ".")))]
      (mu/create-message! discord-message-channel
-                         video-channel-id
+                         (:channel-id channel-info)
                          :content message)))
 
 (defn check-for-new-youtube-videos-and-post!

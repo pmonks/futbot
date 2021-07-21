@@ -85,16 +85,16 @@
          (tm/months 1)
          (quiz/check-for-new-cnra-quiz-and-post! cfg/config))
 
-; Check for new PRO Insights at 9am New York each day. This job runs in America/New_York timezone, since that's where PRO is located
-(declare pro-insights-job)
-(defjob  pro-insights-job
+; Check for new PRO posts at 9am New York each day. This job runs in America/New_York timezone, since that's where PRO is located
+(declare pro-job)
+(defjob  pro-job
          (let [now              (u/in-tz "America/New_York" (tm/zoned-date-time))
                today-at-nine-am (u/in-tz "America/New_York" (tm/plus (tm/truncate-to now :days) (tm/hours 9)))]
            (if (tm/before? now today-at-nine-am)
              today-at-nine-am
              (tm/plus today-at-nine-am (tm/days 1))))
          (tm/days 1)
-         (post/check-for-new-pro-insights-and-post! cfg/config))
+         (post/check-for-new-pro-posts-and-post! cfg/config))
 
 ; YouTube jobs are a bit messy, since the total number is defined in config, not hardcoded as the jobs above are
 (defn schedule-youtube-job

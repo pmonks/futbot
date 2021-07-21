@@ -17,24 +17,30 @@
 ;
 
 (ns futbot.posts
-  (:require [clojure.string        :as s]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
             [java-time             :as tm]
             [futbot.message-util   :as mu]
             [futbot.source.pro     :as pro]))
 
-(defn check-for-new-pro-insights-and-post!
+(defn- post-pro-post!
+  [{:keys [discord-message-channel post-channel-id pro-category-to-channel-map education-and-resources-channel-id]}
+   post]
+  (let [categories (map :category post)
+        channel-id (if-let [first-channel-id (first (filter identity (map (partial get pro-category-to-channel-map) categories)))]
+                     first-channel-id
+                     post-channel-id)]
+    (mu/create-message! discord-message-channel
+                        channel-id
+                        :content (str "<:pro:778688391608926278> A new **PRO article** has been posted: **"
+                                      (:title post)
+                                      "**: "
+                                      (:link post)
+                                      (when (= channel-id post-channel-id ) (str "\nDiscuss in " (mu/channel-link education-and-resources-channel-id) "."))))))
+
+(defn check-for-new-pro-posts-and-post!
   "Checks whether amy new PRO Insights have been posted in the last time-period-hours hours (defaults to 24), and posts them to the given channel if so."
-  ([config] (check-for-new-pro-insights-and-post! config 24))
-  ([{:keys [discord-message-channel post-channel-id education-and-resources-channel-id]}
-    time-period-hours]
-   (let [new-insights (pro/insights (tm/minus (tm/instant) (tm/hours time-period-hours)))]
-     (log/info (str (count new-insights) " new PRO Insight(s) found"))
-     (doall (map #(mu/create-message! discord-message-channel
-                                      post-channel-id
-                                      :content (str "<:pro:778688391608926278> A new **PRO Insight** has been posted, on the topic of **"
-                                                    (s/replace (:title %) "PRO Insight: " "")
-                                                    "**: "
-                                                    (:link %)
-                                                    "\nDiscuss in " (mu/channel-link education-and-resources-channel-id) "!"))
-                 new-insights)))))
+  ([config] (check-for-new-pro-posts-and-post! config 24))
+  ([config time-period-hours]
+   (let [new-posts (pro/posts-of-interest-since (tm/minus (tm/instant) (tm/hours time-period-hours)))]
+     (log/info (str (count new-posts) " new PRO post(s) found"))
+     (doall (map (partial post-pro-post! config) new-posts)))))

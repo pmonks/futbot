@@ -95,11 +95,7 @@
                      :youtube-api-token                  youtube-api-token
                      :youtube-channels                   (into {}
                                                                (for [[youtube-channel-id youtube-channel-info] (:youtube-channels raw-config)]
-                                                                 [youtube-channel-id (into ; First populate with defaults, where needed
-                                                                                           (assoc youtube-channel-info
-                                                                                                  :emoji              (u/getrn youtube-channel-info :emoji              (:default-youtube-emoji raw-config))
-                                                                                                  :discord-channel-id (u/getrn youtube-channel-info :discord-channel-id video-channel-id))
-                                                                                           ; Then augment with Youtube API channel info
+                                                                 [youtube-channel-id (into youtube-channel-info
                                                                                            (try
                                                                                              (yt/channel-info youtube-api-token youtube-channel-id)
                                                                                              (catch Exception e
