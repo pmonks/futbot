@@ -54,135 +54,65 @@
     (when (and s re)
       (s/split s (re-pattern re)))))
 
-(declare config)
+(defn validated-config-value
+  [m k]
+  (let [result (get m k)]
+    (if-not (s/blank? result)
+      result
+      (throw (ex-info (str "Config key '"(name k)"' not provided") {})))))
+
+(declare  config)
 (defstate config
-          :start (if-let [config-file (:config-file (mnt/args))]
-                   (a/read-config config-file)
-                   (a/read-config (io/resource "config.edn"))))
-
-
-(declare football-data-api-token)
-(defstate football-data-api-token
-          :start (let [token (:football-data-api-token config)]
-                   (if-not (s/blank? token)
-                     token
-                     (throw (ex-info "football-data.org API token not provided" {})))))
-
-(declare discord-api-token)
-(defstate discord-api-token
-          :start (let [token (:discord-api-token config)]
-                   (if-not (s/blank? token)
-                     token
-                     (throw (ex-info "Discord API token not provided" {})))))
-
-(declare discord-event-channel)
-(defstate discord-event-channel
-          :start (async/chan (:discord-event-channel-size config))
-          :stop  (async/close! discord-event-channel))
-
-(declare discord-connection-channel)
-(defstate discord-connection-channel
-          :start (if-let [connection (dc/connect-bot! discord-api-token discord-event-channel :intents #{:guilds :guild-messages :direct-messages})]
-                   connection
-                   (throw (ex-info "Failed to connect bot to Discord" {})))
-          :stop  (dc/disconnect-bot! discord-connection-channel))
-
-(declare discord-message-channel)
-(defstate discord-message-channel
-          :start (if-let [connection (dm/start-connection! discord-api-token)]
-                   connection
-                   (throw (ex-info "Failed to connect to Discord message channel" {})))
-          :stop  (dm/stop-connection! discord-message-channel))
-
-(declare match-reminder-discord-channel-id)
-(defstate match-reminder-discord-channel-id
-          :start (let [channel-id (:match-reminder-discord-channel-id config)]
-                   (if-not (s/blank? channel-id)
-                     channel-id
-                     (throw (ex-info "Match reminder Discord channel id not provided" {})))))
-
-(declare match-reminder-duration)
-(defstate match-reminder-duration
-          :start (tm/minutes (if-let [duration (:match-reminder-duration-mins config)]
-                               duration
-                               15)))  ; Default is 15 minutes
-
-(declare country-to-channel)
-(defstate country-to-channel
-          :start (:country-to-channel-map config))
-
-(declare default-reminder-channel-id)
-(defstate default-reminder-channel-id
-          :start (let [channel-id (:default-reminder-channel-id config)]
-                   (if-not (s/blank? channel-id)
-                     channel-id
-                     (throw (ex-info "Default country Discord channel id not provided" {})))))
-
-(declare muted-leagues)
-(defstate muted-leagues
-          :start (:muted-leagues config))
-
-(declare quiz-channel-id)
-(defstate quiz-channel-id
-          :start (let [channel-id (:quiz-channel-id config)]
-                   (if-not (s/blank? channel-id)
-                     channel-id
-                     (throw (ex-info "Quiz Discord channel id not provided" {})))))
-
-(declare video-channel-id)
-(defstate video-channel-id
-          :start (let [channel-id (:video-channel-id config)]
-                   (if-not (s/blank? channel-id)
-                     channel-id
-                     (throw (ex-info "Video Discord channel id not provided" {})))))
-
-(declare ist-channel-ids)
-(defstate ist-channel-ids
-          :start (:ist-channel-ids config))
-
-(declare youtube-api-token)
-(defstate youtube-api-token
-          :start (let [token (:youtube-api-token config)]
-                   (if-not (s/blank? token)
-                     token
-                     (throw (ex-info "YouTube API token not provided" {})))))
-
-(declare default-youtube-emoji)
-(defstate default-youtube-emoji
-          :start (:default-youtube-emoji config))
-
-(declare youtube-channels-emoji)
-(defstate youtube-channels-emoji
-          :start (:youtube-channels config))
-
-(declare youtube-channels)
-(defstate youtube-channels
-          :start (keys youtube-channels-emoji))
-
-(declare youtube-channels-info)
-(defstate youtube-channels-info
-          :start (apply assoc nil (mapcat (fn [youtube-channel-id]
-                                            [youtube-channel-id (into {:emoji (u/getrn youtube-channels-emoji youtube-channel-id default-youtube-emoji)}
-                                                                      (try
-                                                                        (yt/channel-info youtube-api-token youtube-channel-id)
-                                                                        (catch Exception e
-                                                                          (log/warn e (str "Error retrieving YouTube channel info for " youtube-channel-id
-                                                                                           ": status code=" (:status (ex-data e))
-                                                                                           ", message="     (:message (:error (:body (ex-data e))))))
-                                                                          nil)))])
-                                          youtube-channels)))
-
-(declare blocklist)
-(defstate blocklist
-          :start (u/mapfonk re-pattern (:blocklist config)))   ; Pre-compile all regexes as we load them from the config file
-
-(declare blocklist-res)
-(defstate blocklist-res
-          :start (keys blocklist))
-
-(declare blocklist-notification-discord-channel-id)
-(defstate blocklist-notification-discord-channel-id
-          :start (:blocklist-notification-discord-channel-id config))
+          :start (let [raw-config            (if-let [config-file (:config-file (mnt/args))]
+                                               (a/read-config config-file)
+                                               (a/read-config (io/resource "config.edn")))
+                       discord-api-token     (validated-config-value raw-config :discord-api-token)
+                       discord-event-channel (async/chan (u/getrn raw-config :discord-event-channel-size 100))
+                       video-channel-id      (validated-config-value raw-config :video-channel-id)
+                       youtube-api-token     (validated-config-value raw-config :youtube-api-token)]
+                   {
+                     :football-data-api-token            (validated-config-value raw-config :football-data-api-token)
+                     :discord-event-channel              discord-event-channel
+                     :discord-connection-channel         (if-let [connection (dc/connect-bot! discord-api-token
+                                                                                              discord-event-channel
+                                                                                              :intents #{:guilds :guild-messages :direct-messages})]
+                                                           connection
+                                                           (throw (ex-info "Failed to connect bot to Discord" {})))
+                     :discord-message-channel            (if-let [connection (dm/start-connection! discord-api-token)]
+                                                           connection
+                                                           (throw (ex-info "Failed to connect to Discord message channel" {})))
+                     :match-reminder-channel-id          (validated-config-value raw-config :match-reminder-channel-id)
+                     :match-reminder-duration            (tm/minutes (u/getrn raw-config :match-reminder-duration-mins 15))
+                     :country-to-channel                 (:country-to-channel-map raw-config)
+                     :default-reminder-channel-id        (validated-config-value raw-config :default-reminder-channel-id)
+                     :muted-leagues                      (:muted-leagues raw-config)
+                     :education-and-resources-channel-id (validated-config-value raw-config :education-and-resources-channel-id)
+                     :quiz-channel-id                    (validated-config-value raw-config :quiz-channel-id)
+                     :video-channel-id                   video-channel-id
+                     :post-channel-id                    (validated-config-value raw-config :post-channel-id)
+                     :memes-channel-id                   (validated-config-value raw-config :memes-channel-id)
+                     :ist-channel-ids                    (:ist-channel-ids raw-config)
+                     :youtube-api-token                  youtube-api-token
+                     :youtube-channels                   (into {}
+                                                               (for [[youtube-channel-id youtube-channel-info] (:youtube-channels raw-config)]
+                                                                 [youtube-channel-id (into ; First populate with defaults, where needed
+                                                                                           (assoc youtube-channel-info
+                                                                                                  :emoji              (u/getrn youtube-channel-info :emoji              (:default-youtube-emoji raw-config))
+                                                                                                  :discord-channel-id (u/getrn youtube-channel-info :discord-channel-id video-channel-id))
+                                                                                           ; Then augment with Youtube API channel info
+                                                                                           (try
+                                                                                             (yt/channel-info youtube-api-token youtube-channel-id)
+                                                                                             (catch Exception e
+                                                                                               (log/warn e (str "Error retrieving YouTube channel info for " youtube-channel-id
+                                                                                                                ": status code=" (:status (ex-data e))
+                                                                                                                ", message="     (:message (:error (:body (ex-data e))))))
+                                                                                               nil)))]))
+                     :blocklist                          (u/mapfonk re-pattern (:blocklist raw-config))
+                     :blocklist-notification-channel-id  (:blocklist-notification-channel-id raw-config)
+                   })
+          :stop (async/close!        (:discord-event-channel      config))
+                (dc/disconnect-bot!  (:discord-connection-channel config))
+                (dm/stop-connection! (:discord-message-channel    config)))
 
 
 ; Note: do NOT use mount for these, since they're used before mount has started

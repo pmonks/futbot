@@ -4,7 +4,7 @@
   :discord-api-token          #env DISCORD_API_TOKEN
   :discord-event-channel-size 100
 
-  :match-reminder-discord-channel-id "686396574104158228"   ; League Discussions > #live-updates
+  :match-reminder-channel-id "686396574104158228"   ; League Discussions > #live-updates
 
   :match-reminder-duration-mins 15
 
@@ -30,10 +30,13 @@
 
   ; To determine custom emoji tags, go into a chat and type "\:emojishortcut:" - Discord will automatically convert it into the "extended" form shown below, which is required for a bot to send custom emoji
 
-  :quiz-channel-id  "771086596644274216"  ; Refereeing > quizzes-and-videos
-  :video-channel-id "771086596644274216"  ; Refereeing > quizzes-and-videos
+  :education-and-resources-channel-id  "686439362291826694"  ; Refereeing > education-and-resources
+  :quiz-channel-id                     "771086596644274216"  ; Refereeing > quizzes-and-videos
+  :video-channel-id                    #ref [:quiz-channel-id]
+  :post-channel-id                     #ref [:quiz-channel-id]
+  :memes-channel-id                    "683853455038742610"  ; Lounge > memes-and-junk
 
-  :ist-channel-ids ["683853455038742610"   ; General > Memes and Junk
+  :ist-channel-ids ["683853455038742610"   ; Lounge > Memes and Junk
                     "701813682430279712"   ; General > bots
                     "723309028725227532"]  ; Admin > Testing
 
@@ -56,5 +59,5 @@
   :blocklist {
     "(?i)refereestore\\s*\\.\\s*com" "Hi there! Just a quick head's up that I deleted your message as it contained a link to refereestore DOT com. References to that site are banned on this Discord server, as the owner of that business has a well-documented public history of serious bigotry, and we have a zero tolerance policy for such attitudes here. Please contact the admin team if you have any questions, and have a nice day! 😃"
   }
-  :blocklist-notification-discord-channel-id "686270565828264063"  ; Admin > admin-commands
+  :blocklist-notification-channel-id "686270565828264063"  ; Admin > admin-commands
 }
