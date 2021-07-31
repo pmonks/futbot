@@ -34,7 +34,7 @@
     http-kit/http-kit                   {:mvn/version "2.5.3"}
     cheshire/cheshire                   {:mvn/version "5.10.1"}
     rm-hull/markov-chains               {:mvn/version "0.1.1"}
-    remus/remus                         {:mvn/version "0.2.1"}
+    remus/remus                         {:mvn/version "0.2.2"}
     org.jsoup/jsoup                     {:mvn/version "1.14.1"}}
  :aliases
    {; clj -M:run -c /path/to/config.edn
@@ -51,7 +51,7 @@
 
     ; clj -X:uberjar
     :uberjar
-      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.267"}}
+      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
        :exec-fn      hf.depstar/uberjar
        :exec-args    {:jar        "./target/futbot-standalone.jar"
                       :jar-type   :uber
@@ -67,7 +67,7 @@
 
     ; clj -M:kondo
     :kondo
-      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.06.18"}}
+      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.07.28"}}
        :main-opts  ["-m" "clj-kondo.main" "--lint" "src" "resources"]}
 
     ; clj -M:eastwood
@@ -77,5 +77,5 @@
 
     ; clj -M:outdated
     :outdated
-      {:extra-deps {com.github.liquidz/antq {:mvn/version "0.16.0"}}
+      {:extra-deps {com.github.liquidz/antq {:mvn/version "0.16.1"}}
        :main-opts  ["-m" "antq.core"]}}}
