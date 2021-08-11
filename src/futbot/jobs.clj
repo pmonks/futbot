@@ -99,7 +99,7 @@
 ; YouTube jobs are a bit messy, since the total number is defined in config, not hardcoded as the jobs above are
 (defn schedule-youtube-job
   [job-time youtube-channel-id]
-  (let [youtube-channel-name (get-in (:youtube-channels cfg/config) [youtube-channel-id :title] (str "-unknown (" youtube-channel-id ")-"))]
+  (let [youtube-channel-name (get-in cfg/config [:youtube-channels youtube-channel-id :title] (str "-unknown (" youtube-channel-id ")-"))]
     (log/info (str "Scheduling YouTube channel " youtube-channel-name " job; first run will be at " job-time))
     (chime/chime-at (chime/periodic-seq job-time (tm/days 1))
                     (fn [_]
