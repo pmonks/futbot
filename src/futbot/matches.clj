@@ -249,7 +249,7 @@
       (if (tm/before? now reminder-time)
         (do
           (log/info (str "Scheduling reminder for match " (:id match) " at " reminder-time))
-          (chime/chime-at [reminder-time] (partial config (:id match))))
+          (chime/chime-at [reminder-time] (partial post-match-reminder-to-channel! config (:id match))))
         (log/info (str "Reminder time " reminder-time " for match " (:id match) " has already passed - not scheduling a reminder.")))
       (log/info (str "Match " (:id match) " is in a muted league - not scheduling a reminder.")))))
 
