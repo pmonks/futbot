@@ -123,3 +123,23 @@
   [guild-id channel-id message-id]
   (when (and guild-id channel-id message-id)
     (str "https://discord.com/channels/" guild-id "/" channel-id "/" message-id)))
+
+(defmulti timestamp-tag
+  "Convenience method that creates a Discord 'dynamic timestamp' tag for the provided date value and (optional) Discord format specifier (a character; one of \\d \\f \\t \\D \\F \\R \\T - see https://www.reddit.com/r/discordapp/comments/ohmxrc/new_inline_dynamic_timestamps_that_anyone_can_type/ for examples)."
+  (fn [i & _] (class i)))
+
+(defmethod timestamp-tag Long
+  ([i]        (timestamp-tag i nil))
+  ([i format] (str "<t:" i (when format (str ":" format)) ">")))
+
+(defmethod timestamp-tag java.time.Instant
+  ([^java.time.Instant i]        (timestamp-tag i nil))
+  ([^java.time.Instant i format] (timestamp-tag (.getEpochSecond i) format)))
+
+(defmethod timestamp-tag java.util.Date
+  ([^java.util.Date i]        (timestamp-tag i nil))
+  ([^java.util.Date i format] (timestamp-tag (long (/ (.getTime i) 1000)) format)))
+
+(defmethod timestamp-tag java.time.ZonedDateTime
+  ([^java.time.ZonedDateTime i]        (timestamp-tag i nil))
+  ([^java.time.ZonedDateTime i format] (timestamp-tag (.toEpochSecond i) format)))
