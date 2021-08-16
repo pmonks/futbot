@@ -194,11 +194,16 @@
 
 
 ; Table of "public" commands; those that can be used in any channel, group or DM
-(def public-command-dispatch-table
-  {"ist"   #'ist-command!
-   "move"  #'move-command!
+(def global-command-dispatch-table
+  {"move"  #'move-command!
    "epoch" #'epoch-command!
    "dmath" #'dmath-command!})
+
+(def memes-command-dispatch-table
+  {"ist" #'ist-command!})
+
+(def public-command-dispatch-table
+  (into global-command-dispatch-table memes-command-dispatch-table))
 
 (declare help-command!)
 
@@ -220,10 +225,13 @@
   (mu/create-message! (:discord-message-channel cfg/config)
                       (:channel-id event-data)
                       :embed (assoc (mu/embed-template)
-                                    :description (str "I understand the following command in " (mu/channel-link "683853455038742610") " or a DM:\n"
+                                    :description (str "I understand the following command(s) in any channel or DM:\n"
                                                       (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
-                                                                        (sort-by key public-command-dispatch-table)))
-                                                      "\n\nAnd the following commands only in a DM:\n"
+                                                                        (sort-by key global-command-dispatch-table)))
+                                                      "\n\nAnd the following command(s) in " (mu/channel-link "683853455038742610") " or a DM:\n"
+                                                      (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
+                                                                        (sort-by key memes-command-dispatch-table)))
+                                                      "\n\nAnd the following command(s) only in a DM:\n"
                                                       (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
                                                                         (sort-by key private-command-dispatch-table)))))))
 
