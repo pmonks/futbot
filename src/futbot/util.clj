@@ -78,14 +78,15 @@
 (defn replace-all
   "Takes a sequence of replacements, and applies all of them to the given string, in the order provided.  Each replacement in the sequence is a pair of values to be passed to clojure.string/replace (the 2nd and 3rd arguments)."
   [string replacements]
-  (loop [s string
-         f (first replacements)
-         r (rest  replacements)]
-    (if f
-      (recur (s/replace s (first f) (second f))
-             (first r)
-             (rest  r))
-      s)))
+  (when (and string (seq replacements))
+    (loop [s string
+           f (first replacements)
+           r (rest  replacements)]
+      (if f
+        (recur (s/replace s (first f) (second f))
+               (first r)
+               (rest  r))
+        s))))
 
 (defn to-ascii
   "Converts the given string to ASCII, mapping a small number of Unicode characters to their ASCII equivalents."

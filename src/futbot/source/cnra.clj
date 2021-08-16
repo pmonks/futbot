@@ -36,21 +36,22 @@
 (defn- para-to-quiz
   [^org.jsoup.nodes.Element p]
   (try
-    (let [text              (u/replace-all (.text p)
-                                           [[#"[–‑‒–—]" "-"]])  ; Normalise Unicode "dash" characters
-         [month-year topic] (s/split text #" - ")
-         fifteenth-of-month (u/to-ascii (str "15 " month-year))
-         date               (tm/local-date "dd MMMM yyyy" fifteenth-of-month)
-         link               (if-let [anchor-tag (.selectFirst p "a")]  ; Note: assumes the quiz is always the first link in the paragraph
-                              (.attr anchor-tag "href")
-                              (log/warn "Unable to find quiz link in CNRA quiz paragraph: " p))]
-      (when link
-        {
-          :date      date
-          :quiz-date month-year
-          :topic     (s/lower-case topic)
-          :link      link
-        }))
+    (let [text (u/replace-all (s/trim (.text p))
+                              [[#"[–‑‒–—]" "-"]])]  ; Normalise Unicode "dash" characters
+      (when-not (s/blank? text)
+        (let [[month-year topic] (s/split text #" - ")
+              fifteenth-of-month (u/to-ascii (str "15 " month-year))
+              date               (tm/local-date "dd MMMM yyyy" fifteenth-of-month)
+              link               (if-let [anchor-tag (.selectFirst p "a")]  ; Note: assumes the quiz is always the first link in the paragraph
+                                   (.attr anchor-tag "href")
+                                   (log/warn "Unable to find quiz link in CNRA quiz paragraph: " p))]
+          (when link
+            {
+              :date      date
+              :quiz-date month-year
+              :topic     (s/lower-case topic)
+              :link      link
+            }))))
     (catch Exception e
       (u/log-exception e (str "Error while parsing CNRA quiz paragraph: " p)))))
 

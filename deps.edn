@@ -35,7 +35,7 @@
     cheshire/cheshire                   {:mvn/version "5.10.1"}
     rm-hull/markov-chains               {:mvn/version "0.1.1"}
     remus/remus                         {:mvn/version "0.2.2"}
-    org.jsoup/jsoup                     {:mvn/version "1.14.1"}}
+    org.jsoup/jsoup                     {:mvn/version "1.14.2"}}
  :aliases
    {; clj -M:run -c /path/to/config.edn
     :run
@@ -77,5 +77,5 @@
 
     ; clj -M:outdated
     :outdated
-      {:extra-deps {com.github.liquidz/antq {:mvn/version "0.16.2"}}
+      {:extra-deps {com.github.liquidz/antq {:mvn/version "0.16.3"}}
        :main-opts  ["-m" "antq.core"]}}}
