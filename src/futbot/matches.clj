@@ -203,22 +203,18 @@
   (try
     (log/info (str "Sending reminder for match " match-id "..."))
     (if-let [{match :match} (fd/match football-data-api-token match-id)]
-      (let [starts-in-min      (try
-                                 (.toMinutes (tm/duration (tm/zoned-date-time)
-                                                          (u/in-tz "UTC" (tm/zoned-date-time (:utc-date match)))))
-                                 (catch Exception e
-                                   (.toMinutes ^java.time.Duration match-reminder-duration)))
+      (let [starts-at          (tm/instant (:utc-date match))
             match-summary      (str (get match-status-to-emoji (:status match) "❔")
                                     "  **" (get-in match [:home-team :name] "Unknown") "** vs **" (get-in match [:away-team :name] "Unknown") "**")
             match-channel-link (match-channel-link config match)
             description        (case (:status match)
-                                 "SCHEDULED" (str match-summary " starts in " starts-in-min " mins.\n\n"
+                                 "SCHEDULED" (str match-summary " starts " (mu/timestamp-tag starts-at \R) " (at " (mu/timestamp-tag starts-at \t) ").\n\n"
                                                   "[Find out how to watch here](https://www.livesoccertv.com/), and discuss in " match-channel-link ".")
-                                 "IN_PLAY"   (str match-summary ", which was originally due to start in " starts-in-min " mins, started early and is in progress.\n\n"
+                                 "IN_PLAY"   (str match-summary ", which was originally due to start at " (mu/timestamp-tag starts-at \t) ", started early and is in progress.\n\n"
                                                   "[Find out how to watch here](https://www.livesoccertv.com/), and discuss in " match-channel-link ".")
                                  "FINISHED"  (str match-summary " has finished.\n\n"
                                                   "Discuss in " match-channel-link ".")
-                                 (str match-summary ", which was due to start in " starts-in-min " minutes, has been " (s/lower-case (:status match)) ".\n"\n)
+                                 (str match-summary ", which was due to start " (mu/timestamp-tag starts-at \R) " (at " (mu/timestamp-tag starts-at \t) "), has been " (s/lower-case (:status match)) ".\n"\n)
                                       "Discuss in " match-channel-link ".")
             embed              (assoc (match-embed-template match)
                                       :description description
