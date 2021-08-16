@@ -95,19 +95,19 @@
   [args event-data]
   (let [channel-id (:channel-id event-data)]
     (try
-      (let [[b o v u]   (s/split (s/lower-case (s/trim args)) #"\s+")
-             base       (if (= b "now") (.getEpochSecond (tm/instant)) (u/parse-int b))
-             op         (case o
-                          "-" -
-                          "+" +
-                          nil)
-             val        (u/parse-int v)
-             multiplier (case u
-                          ("m" "min" "mins" "minutes") 60
-                          ("h" "hr" "hrs" "hours")     (* 60 60)
-                          ("d" "day" "days")           (* 60 60 24)
-                          ("w" "wk" "wks" "weeks")     (* 60 60 24 7)
-                          1)]  ; Default to seconds
+      (let [[b o v u]  (s/split (s/lower-case (s/trim args)) #"\s+")
+            base       (if (= b "now") (.getEpochSecond (tm/instant)) (u/parse-int b))
+            op         (case o
+                         "-" -
+                         "+" +
+                         nil)
+            val        (u/parse-int v)
+            multiplier (case u
+                         ("m" "min" "mins" "minutes") 60
+                         ("h" "hr" "hrs" "hours")     (* 60 60)
+                         ("d" "day" "days")           (* 60 60 24)
+                         ("w" "wk" "wks" "weeks")     (* 60 60 24 7)
+                         1)]  ; Default to seconds
         (if base
           (if (and op val multiplier)  ; Everything was provided - evaluate the expression
             (mu/create-message! (:discord-message-channel cfg/config)
