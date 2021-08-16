@@ -18,6 +18,7 @@
 
 (ns futbot.chat
   (:require [clojure.string        :as s]
+            [clojure.instant       :as inst]
             [clojure.tools.logging :as log]
             [java-time             :as tm]
             [discljord.formatting  :as df]
@@ -73,6 +74,55 @@
             (log/info "Cannot move a conversation to the same channel."))
           (log/warn "Could not find target channel in move command."))
         (log/warn "move-command! arguments missing a target channel.")))))
+
+(defn epoch-command!
+  "Displays the 'epoch seconds' value of the given date (in RFC-3339 format), or now if no value is provided."
+  [args event-data]
+  (let [channel-id (:channel-id event-data)]
+    (try
+      (let [d     (if (s/blank? args) (java.util.Date.) (inst/read-instant-date args))
+            epoch (long (/ (.getTime ^java.util.Date d) 1000))]
+        (mu/create-message! (:discord-message-channel cfg/config)
+                            channel-id
+                            :embed (assoc (mu/embed-template) :description (str "`" epoch "`"))))
+      (catch RuntimeException re
+        (mu/create-message! (:discord-message-channel cfg/config)
+                            channel-id
+                            :embed (assoc (mu/embed-template) :description (.getMessage re)))))))
+
+(defn dmath-command!
+  "Displays the result of the given date math expression e.g. now + 1 day"
+  [args event-data]
+  (let [channel-id (:channel-id event-data)]
+    (try
+      (let [[b o v u]   (s/split (s/lower-case (s/trim args)) #"\s+")
+             base       (if (= b "now") (.getEpochSecond (tm/instant)) (u/parse-int b))
+             op         (case o
+                          "-" -
+                          "+" +
+                          nil)
+             val        (u/parse-int v)
+             multiplier (case u
+                          ("m" "min" "mins" "minutes") 60
+                          ("h" "hr" "hrs" "hours")     (* 60 60)
+                          ("d" "day" "days")           (* 60 60 24)
+                          ("w" "wk" "wks" "weeks")     (* 60 60 24 7)
+                          1)]  ; Default to seconds
+        (if base
+          (if (and op val multiplier)  ; Everything was provided - evaluate the expression
+            (mu/create-message! (:discord-message-channel cfg/config)
+                                channel-id
+                                :embed (assoc (mu/embed-template) :description (str "`" (op base (* val multiplier)) "`")))
+            (if-not (or op val)  ; Only base was provided - display it
+              (mu/create-message! (:discord-message-channel cfg/config)
+                                  channel-id
+                                  :embed (assoc (mu/embed-template) :description (str "`" base "`")))
+              (throw (ex-info "Op, val or multiplier not provided" {}))))
+          (throw (ex-info "Base not provided" {}))))
+      (catch Exception e
+        (mu/create-message! (:discord-message-channel cfg/config)
+                            channel-id
+                            :embed (assoc (mu/embed-template) :description (str "Unable to parse date math expression: `" args "`")))))))
 
 (defn privacy-command!
   "Provides a link to the futbot privacy policy"
@@ -145,8 +195,10 @@
 
 ; Table of "public" commands; those that can be used in any channel, group or DM
 (def public-command-dispatch-table
-  {"ist"  #'ist-command!
-   "move" #'move-command!})
+  {"ist"   #'ist-command!
+   "move"  #'move-command!
+   "epoch" #'epoch-command!
+   "dmath" #'dmath-command!})
 
 (declare help-command!)
 
