@@ -25,7 +25,7 @@
     org.slf4j/jcl-over-slf4j            {:mvn/version "1.7.32"}
     org.slf4j/log4j-over-slf4j          {:mvn/version "1.7.32"}
     org.slf4j/jul-to-slf4j              {:mvn/version "1.7.32"}
-    clojure.java-time/clojure.java-time {:mvn/version "0.3.2"}
+    clojure.java-time/clojure.java-time {:mvn/version "0.3.3"}
     org.clojure/tools.cli               {:mvn/version "1.0.206"}
     aero/aero                           {:mvn/version "1.1.6"}
     mount/mount                         {:mvn/version "0.1.16"}
@@ -72,7 +72,7 @@
 
     ; clj -M:eastwood
     :eastwood
-      {:extra-deps {jonase/eastwood {:mvn/version "0.9.7"}}
+      {:extra-deps {jonase/eastwood {:mvn/version "0.9.9"}}
        :main-opts  ["-m" "eastwood.lint" {:source-paths ["src" "resources"]}]}
 
     ; clj -M:outdated
