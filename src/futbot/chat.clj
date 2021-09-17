@@ -95,19 +95,19 @@
   [args event-data]
   (let [channel-id (:channel-id event-data)]
     (try
-      (let [[b o v u]   (s/split (s/lower-case (s/trim args)) #"\s+")
-             base       (if (= b "now") (.getEpochSecond (tm/instant)) (u/parse-int b))
-             op         (case o
-                          "-" -
-                          "+" +
-                          nil)
-             val        (u/parse-int v)
-             multiplier (case u
-                          ("m" "min" "mins" "minutes") 60
-                          ("h" "hr" "hrs" "hours")     (* 60 60)
-                          ("d" "day" "days")           (* 60 60 24)
-                          ("w" "wk" "wks" "weeks")     (* 60 60 24 7)
-                          1)]  ; Default to seconds
+      (let [[b o v u]  (s/split (s/lower-case (s/trim args)) #"\s+")
+            base       (if (= b "now") (.getEpochSecond (tm/instant)) (u/parse-int b))
+            op         (case o
+                         "-" -
+                         "+" +
+                         nil)
+            val        (u/parse-int v)
+            multiplier (case u
+                         ("m" "min" "mins" "minutes") 60
+                         ("h" "hr" "hrs" "hours")     (* 60 60)
+                         ("d" "day" "days")           (* 60 60 24)
+                         ("w" "wk" "wks" "weeks")     (* 60 60 24 7)
+                         1)]  ; Default to seconds
         (if base
           (if (and op val multiplier)  ; Everything was provided - evaluate the expression
             (mu/create-message! (:discord-message-channel cfg/config)
@@ -194,11 +194,16 @@
 
 
 ; Table of "public" commands; those that can be used in any channel, group or DM
-(def public-command-dispatch-table
-  {"ist"   #'ist-command!
-   "move"  #'move-command!
+(def global-command-dispatch-table
+  {"move"  #'move-command!
    "epoch" #'epoch-command!
    "dmath" #'dmath-command!})
+
+(def memes-command-dispatch-table
+  {"ist" #'ist-command!})
+
+(def public-command-dispatch-table
+  (into global-command-dispatch-table memes-command-dispatch-table))
 
 (declare help-command!)
 
@@ -220,10 +225,13 @@
   (mu/create-message! (:discord-message-channel cfg/config)
                       (:channel-id event-data)
                       :embed (assoc (mu/embed-template)
-                                    :description (str "I understand the following command in " (mu/channel-link "683853455038742610") " or a DM:\n"
+                                    :description (str "I understand the following command(s) in any channel or DM:\n"
                                                       (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
-                                                                        (sort-by key public-command-dispatch-table)))
-                                                      "\n\nAnd the following commands only in a DM:\n"
+                                                                        (sort-by key global-command-dispatch-table)))
+                                                      "\n\nAnd the following command(s) in " (mu/channel-link "683853455038742610") " or a DM:\n"
+                                                      (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
+                                                                        (sort-by key memes-command-dispatch-table)))
+                                                      "\n\nAnd the following command(s) only in a DM:\n"
                                                       (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
                                                                         (sort-by key private-command-dispatch-table)))))))
 
