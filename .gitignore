@@ -19,3 +19,4 @@ titles-*.edn
 daily-schedule-*.pdf
 attic
 resources/logback-test.xml
+.clj-kondo/.cache
