@@ -39,11 +39,11 @@ clojure -A:deps -T:release help/doc"
   (ensure-command "hub")
   (ensure-command "xmlstarlet")
 
-  (let [current-branch (s/trim (:out (exec "git branch --show-current" {:out :capture :err :capture})))]
+  (let [current-branch (s/trim (:out (exec "git branch --show-current" {:out :capture})))]
     (when-not (= "dev" current-branch)
       (throw (ex-info (str "Must be on branch 'dev' to prepare a release, but current branch is '" current-branch "'.") {}))))
 
-  (let [git-status (exec "git status --short" {:out :capture :err :capture})]
+  (let [git-status (exec "git status --short" {:out :capture})]
     (when (or (not (s/blank? (:out git-status)))
               (not (s/blank? (:err git-status))))
       (throw (ex-info (str "Working directory is not clean:\n" (:out git-status) "Please commit, revert, or stash these changes before preparing a release.") git-status))))
@@ -69,7 +69,11 @@ clojure -A:deps -T:release help/doc"
 
   (println "ℹ️ Updating version in pom.xml...")
   (exec ["xmlstarlet" "ed" "--inplace" "-N" "pom=http://maven.apache.org/POM/4.0.0" "-u" "/pom:project/pom:version" "-v" version "pom.xml"])
-  (exec ["git" "commit" "-m" (str ":gem: Release v" version) "pom.xml"])
+
+  (let [diff (s/trim (:out (exec "git diff pom.xml" {:out :capture})))]
+    (if (s/blank? diff)
+      (println "⚠️ pom.xml version was not changed - skipping commit. This should only happen for multiple releases in a single day.")
+      (exec ["git" "commit" "-m" (str ":gem: Release v" version) "pom.xml"])))
 
   (println "ℹ️ Tagging release...")
   (exec ["git" "tag" "-f" "-a" (str "v" version) "-m" (str "Release v" version)])
@@ -82,7 +86,7 @@ clojure -A:deps -T:release help/doc"
                  :date (java.time.Instant/now)
                }
                w))
-  (exec ["git" "commit" "-m" (str ":gem: Release v" version) "resources/deploy-info.edn"])
+  (exec ["git" "commit" "-m" (str ":gem: Release v" version " (deploy info)") "resources/deploy-info.edn"])
 
   (println "ℹ️ Pushing changes...")
   (exec "git push")
