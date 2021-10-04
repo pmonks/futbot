@@ -43,14 +43,14 @@ clojure -A:deps -T:release help/doc"
     (when-not (= "dev" current-branch)
       (throw (ex-info (str "Must be on branch 'dev' to prepare a release, but current branch is '" current-branch "'.") {}))))
 
-  (exec "git fetch origin main:main")
-  (exec "git merge main")
-  (exec "git pull")
-
   (let [git-status (exec "git status --short" {:out :capture :err :capture})]
     (when (or (not (s/blank? (:out git-status)))
               (not (s/blank? (:err git-status))))
       (throw (ex-info (str "Working directory is not clean:\n" (:out git-status) "Please commit, revert, or stash these changes before preparing a release.") git-status))))
+
+  (exec "git fetch origin main:main")
+  (exec "git merge main")
+  (exec "git pull")
 
   (ci opts))
 
