@@ -68,7 +68,7 @@ clojure -A:deps -T:release help/doc"
   (read-line)
 
   (println "ℹ️ Updating version in pom.xml...")
-  (exec ["xmlstarlet" "ed" "--inplace" "-N" "pom='http://maven.apache.org/POM/4.0.0'" "-u" "'/pom:project/pom:version'" "-v" version "pom.xml"])
+  (exec ["xmlstarlet" "ed" "--inplace" "-N" "pom=http://maven.apache.org/POM/4.0.0" "-u" "/pom:project/pom:version" "-v" version "pom.xml"])
   (exec ["git" "commit" "-m" (str ":gem: Release v" version) "pom.xml"])
 
   (println "ℹ️ Tagging release...")
