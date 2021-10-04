@@ -67,7 +67,7 @@ clojure -A:deps -T:build help/doc"
            :main      'futbot.main)
     (bb/uber)))
 
-(defn check
+(defn compile
   "Check the code by compiling it."
   [opts]
   (bb/run-task (set-opts opts) [:check]))
@@ -99,5 +99,5 @@ clojure -A:deps -T:build help/doc"
   [opts]
   (-> opts
     (outdated)
-    (check)
+    (compile)
     (lint)))
