@@ -36,7 +36,7 @@ clojure -A:deps -T:release help/doc"
 (defn- ensure-command
   "Ensures that the given command is available."
   [command]
-  (exec ["command" "-v" command] {:out :capture :err :capture}))
+  (exec ["command" "-v" command] {:out :capture}))
 
 (defn check
   "Check that a release can be done from the current directory."
