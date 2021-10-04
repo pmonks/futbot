@@ -35,47 +35,59 @@
     cheshire/cheshire                   {:mvn/version "5.10.1"}
     rm-hull/markov-chains               {:mvn/version "0.1.1"}
     remus/remus                         {:mvn/version "0.2.2"}
-    org.jsoup/jsoup                     {:mvn/version "1.14.2"}}
+    org.jsoup/jsoup                     {:mvn/version "1.14.3"}}
  :aliases
-   {; clj -M:run -c /path/to/config.edn
+   {; ---- TOOL ALIASES ----
+
+    ; clj -T:build <taskname>
+    :build
+      {:deps       {io.github.seancorfield/build-clj {:git/tag "v0.5.0" :git/sha "2ceb95afd9c60072a7a0646a4bb4d53615c6770b"}}
+       :ns-default build}
+
+    ; clj -T:ist generate-markov :youtube-api-key "<YOUTUBE_API_KEY>"
+    :ist
+      {:deps       {io.github.seancorfield/build-clj {:git/tag "v0.5.0" :git/sha "2ceb95afd9c60072a7a0646a4bb4d53615c6770b"}}
+       :ns-default ist}
+
+    ; clj -T:run <taskname> :config-file "<PATH_TO_CONFIG_FILE>"
     :run
-      {:main-opts ["-m" "futbot.main"]}
+      {:deps       {io.github.seancorfield/build-clj {:git/tag "v0.5.0" :git/sha "2ceb95afd9c60072a7a0646a4bb4d53615c6770b"}}
+       :ns-default run}
 
-    ; clj -M:gen-ist-markov google-api-key
-    :gen-ist-markov
-      {:main-opts ["-m" "futbot.ist.main"]}
+    ; clj -T:release <taskname>
+    :release
+      {:deps       {io.github.seancorfield/build-clj {:git/tag "v0.5.0" :git/sha "2ceb95afd9c60072a7a0646a4bb4d53615c6770b"}}
+       :ns-default release}
 
-    ; clj -M:gen-daily-schedule football-data-token
-    :gen-daily-schedule
-      {:main-opts ["-m" "futbot.daily-schedule.main"]}
 
-    ; clj -X:uberjar
-    :uberjar
-      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.303"}}
-       :exec-fn      hf.depstar/uberjar
-       :exec-args    {:jar        "./target/futbot-standalone.jar"
-                      :jar-type   :uber
-                      :main-class "futbot.main"
-                      :aot        true}}
+    ; ---- MAIN FUNCTION ALIASES ----
 
     ; clj -M:check
     :check
       {:extra-deps {athos/clj-check {:git/url "https://github.com/athos/clj-check.git"
-                                     :sha     "518d5a1cbfcd7c952f548e6dbfcb9a4a5faf9062"}}
+                                     :git/sha "518d5a1cbfcd7c952f548e6dbfcb9a4a5faf9062"}}
        :main-opts  ["-m" "clj-check.check"]}
-
 
     ; clj -M:kondo
     :kondo
-      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.09.15"}}
+      {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.09.25"}}
        :main-opts  ["-m" "clj-kondo.main" "--lint" "src" "resources"]}
 
     ; clj -M:eastwood
     :eastwood
       {:extra-deps {jonase/eastwood {:mvn/version "0.9.9"}}
-       :main-opts  ["-m" "eastwood.lint" {:source-paths ["src" "resources"]}]}
+       :main-opts  ["-m" "eastwood.lint" "{:source-paths,[\"src\",\"resources\"]}"]}
 
     ; clj -M:outdated
     :outdated
-      {:extra-deps {com.github.liquidz/antq {:mvn/version "1.0.1"}}
-       :main-opts  ["-m" "antq.core"]}}}
+      {:extra-deps {com.github.liquidz/antq {:mvn/version "1.1.0"}}
+       :main-opts  ["-m" "antq.core"]}
+
+    ; clj -M:gen-ist-markov google-api-key
+    :gen-ist-markov
+      {:main-opts ["-m" "futbot.ist.main"]}
+
+    ; clj -M:main -c /path/to/config.edn
+    :main
+      {:main-opts ["-m" "futbot.main"]}
+   }}
