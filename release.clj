@@ -27,6 +27,12 @@ clojure -A:deps -T:release help/doc"
             [clojure.pprint  :as pp]
             [build           :refer [version ci exec]]))
 
+; When Clojure core is lame, it is super duper lame... 🙄
+(defmethod print-method java.time.Instant [^java.time.Instant inst writer]
+  (.write writer (str "#inst \"" inst "\"")))
+(defmethod print-method java.util.Date [^java.util.Date date writer]
+  (print-method (.toInstant date) writer))
+
 (defn- ensure-command
   "Ensures that the given command is available."
   [command]
