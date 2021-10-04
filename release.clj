@@ -70,9 +70,9 @@ clojure -A:deps -T:release help/doc"
   (println "ℹ️ Updating version in pom.xml...")
   (exec ["xmlstarlet" "ed" "--inplace" "-N" "pom=http://maven.apache.org/POM/4.0.0" "-u" "/pom:project/pom:version" "-v" version "pom.xml"])
 
-  (let [diff (s/trim (:out (exec "git diff pom.xml" {:out :capture})))]
+  (let [diff (s/trim (str (:out (exec "git diff pom.xml" {:out :capture}))))]
     (if (s/blank? diff)
-      (println "⚠️ pom.xml version was not changed - skipping commit. This should only happen for multiple releases in a single day.")
+      (println "⚠️ pom.xml version was not changed - skipping commit. This should only happen when there are multiple releases in a single day.")
       (exec ["git" "commit" "-m" (str ":gem: Release v" version) "pom.xml"])))
 
   (println "ℹ️ Tagging release...")
