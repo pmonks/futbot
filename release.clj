@@ -77,9 +77,9 @@ clojure -A:deps -T:release help/doc"
   (println "ℹ️ Updating deploy info...")
   (with-open [w (io/writer (io/file "resources/deploy-info.edn"))]
     (pp/pprint {
-                 :hash (:out (exec (str "git show-ref -s --tags v" version) {:out :capture}))
+                 :hash (s/trim (:out (exec (str "git show-ref -s --tags v" version) {:out :capture})))
                  :tag  (str "v" version)
-                 :date (str "#inst " (java.time.Instant/now))
+                 :date (java.time.Instant/now)
                }
                w))
   (exec ["git" "commit" "-m" (str ":gem: Release v" version) "resources/deploy-info.edn"])
