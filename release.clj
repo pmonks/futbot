@@ -39,6 +39,10 @@ clojure -A:deps -T:release help/doc"
   (ensure-command "hub")
   (ensure-command "xmlstarlet")
 
+  (let [current-branch (s/trim (:out (exec "git branch --show-current" {:out :capture :err :capture})))]
+    (when-not (= "dev" current-branch)
+      (throw (ex-info (str "Must be on branch 'dev' to prepare a release, but current branch is '" current-branch "'.") {}))))
+
   (exec "git fetch origin main:main")
   (exec "git merge main")
   (exec "git pull")
