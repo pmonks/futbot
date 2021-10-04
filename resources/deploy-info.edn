@@ -1,4 +1,3 @@
 {:hash "881029c8693495de7060f9559ddabe1da3a45cf7",
  :tag "v1.0.20211004",
- :date
- #object[java.time.Instant 0x4c79ca55 "2021-10-04T23:11:12.400931Z"]}
+ :date #inst "2021-10-04T23:11:12.400931Z"}
