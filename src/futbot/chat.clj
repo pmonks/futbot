@@ -119,7 +119,7 @@
                                   :embed (assoc (mu/embed-template) :description (str "`" base "`")))
               (throw (ex-info "Op, val or multiplier not provided" {}))))
           (throw (ex-info "Base not provided" {}))))
-      (catch Exception e
+      (catch Exception _
         (mu/create-message! (:discord-message-channel cfg/config)
                             channel-id
                             :embed (assoc (mu/embed-template) :description (str "Unable to parse date math expression: `" args "`")))))))

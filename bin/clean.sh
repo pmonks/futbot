@@ -1,3 +1,2 @@
 #!/usr/bin/env bash
-rm -rf .cpcache
-rm -rf target
+clojure -Srepro -J-Dclojure.main.report=stderr -T:build clean

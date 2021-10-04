@@ -36,7 +36,7 @@
   (cond (integer?  x) x
         (string?   x) (try
                         (Long/parseLong (s/trim x))
-                        (catch NumberFormatException nfe
+                        (catch NumberFormatException _
                           nil))
         (float?    x) (int (Math/round ^Float x))
         (double?   x) (int (Math/round ^Double x))
