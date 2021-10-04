@@ -20,11 +20,5 @@ jobs:
         with:
           tools-deps: latest
 
-      - name: Download dependencies (kondo)
-        run: clojure -Srepro -J-Dclojure.main.report=stderr -A:kondo -P
-
-      - name: Download dependencies (eastwood)
-        run: clojure -Srepro -J-Dclojure.main.report=stderr -A:eastwood -P
-
       - name: Compile and lint code
         run: clojure -Srepro -J-Dclojure.main.report=stderr -T:build lint
