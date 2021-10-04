@@ -63,6 +63,10 @@ clojure -A:deps -T:release help/doc"
   (println "ℹ️ Checking that a release can be made...")
   (check opts)
 
+  (println "⏸ All checks ok, press any key to continue, or Ctrl+C to quit...")
+  (flush)
+  (read-line)
+
   (println "ℹ️ Updating version in pom.xml...")
   (exec ["xmlstarlet" "ed" "--inplace" "-N" "pom='http://maven.apache.org/POM/4.0.0'" "-u" "'/pom:project/pom:version'" "-v" version "pom.xml"])
   (exec ["git" "commit" "-m" (str ":gem: Release v" version) "pom.xml"])
