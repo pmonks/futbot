@@ -17,7 +17,7 @@
 ;
 
 (ns release
-  "Release script for futbot.
+  "Release script for futbot (note: Unix specific, will NOT work on Windows).
 
 For more information, run:
 
@@ -29,14 +29,15 @@ clojure -A:deps -T:release help/doc"
 
 ; When Clojure core is lame, it is super duper lame... 🙄
 (defmethod print-method java.time.Instant [^java.time.Instant inst writer]
-  (.write writer (str "#inst \"" inst "\"")))
-(defmethod print-method java.util.Date [^java.util.Date date writer]
-  (print-method (.toInstant date) writer))
+  (print-method (java.util.Date/from inst) writer))
 
 (defn- ensure-command
   "Ensures that the given command is available."
   [command]
-  (exec ["command" "-v" command] {:out :capture}))
+  (try
+    (exec ["command" "-v" command] {:out :capture})
+    (catch clojure.lang.ExceptionInfo _
+      (throw (ex-info (str "Command " command " was not found. Please install it then try again.") {})))))
 
 (defn check
   "Check that a release can be done from the current directory."
