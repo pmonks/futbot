@@ -1,16 +1,2 @@
 #!/usr/bin/env bash
-
-set -e
-set -o pipefail
-
-echo "ℹ️ Downloading dependencies..."
-clojure -Srepro -J-Dclojure.main.report=stderr -P
-
-echo "ℹ️ Updating pom.xml..."
-clojure -Srepro -J-Dclojure.main.report=stderr -Spom
-
-echo "ℹ️ Compiling code..."
-clojure -Srepro -J-Dclojure.main.report=stderr -T:build compile
-
-echo "ℹ️ Building uberjar..."
 clojure -Srepro -J-Dclojure.main.report=stderr -T:build uber
