@@ -42,25 +42,25 @@
     ; clj -T:build <taskname>
     :build
       {:deps       {org.github.pmonks/pbr {:git/url "https://github.com/pmonks/pbr.git"
-                                           :git/sha "156e19e981ccf3c0dad9f2eb2c03bb053cc5b71e"}}
+                                           :git/sha "8ad81ea1208f7a3b39bdb523cd11def49be9f94a"}}
        :ns-default build}
 
     ; clj -T:ist generate-markov :youtube-api-key "<YOUTUBE_API_KEY>"
     :ist
       {:deps       {org.github.pmonks/pbr {:git/url "https://github.com/pmonks/pbr.git"
-                                           :git/sha "156e19e981ccf3c0dad9f2eb2c03bb053cc5b71e"}}
+                                           :git/sha "8ad81ea1208f7a3b39bdb523cd11def49be9f94a"}}
        :ns-default ist}
 
     ; clj -T:run <taskname> :config-file "<PATH_TO_CONFIG_FILE>"
     :run
       {:deps       {org.github.pmonks/pbr {:git/url "https://github.com/pmonks/pbr.git"
-                                           :git/sha "156e19e981ccf3c0dad9f2eb2c03bb053cc5b71e"}}
+                                           :git/sha "8ad81ea1208f7a3b39bdb523cd11def49be9f94a"}}
        :ns-default run}
 
     ; clj -T:release <taskname>
     :release
       {:deps       {org.github.pmonks/pbr {:git/url "https://github.com/pmonks/pbr.git"
-                                           :git/sha "156e19e981ccf3c0dad9f2eb2c03bb053cc5b71e"}}
+                                           :git/sha "8ad81ea1208f7a3b39bdb523cd11def49be9f94a"}}
        :ns-default release}
 
 
