@@ -41,22 +41,26 @@
 
     ; clj -T:build <taskname>
     :build
-      {:deps       {io.github.seancorfield/build-clj {:git/tag "v0.5.0" :git/sha "2ceb95afd9c60072a7a0646a4bb4d53615c6770b"}}
+      {:deps       {org.github.pmonks/pbr {:git/url "https://github.com/pmonks/pbr.git"
+                                           :git/sha "d8409584ca3226fe86b1c11fd58129d79fc1f8a7"}}
        :ns-default build}
 
     ; clj -T:ist generate-markov :youtube-api-key "<YOUTUBE_API_KEY>"
     :ist
-      {:deps       {io.github.seancorfield/build-clj {:git/tag "v0.5.0" :git/sha "2ceb95afd9c60072a7a0646a4bb4d53615c6770b"}}
+      {:deps       {org.github.pmonks/pbr {:git/url "https://github.com/pmonks/pbr.git"
+                                           :git/sha "d8409584ca3226fe86b1c11fd58129d79fc1f8a7"}}
        :ns-default ist}
 
     ; clj -T:run <taskname> :config-file "<PATH_TO_CONFIG_FILE>"
     :run
-      {:deps       {io.github.seancorfield/build-clj {:git/tag "v0.5.0" :git/sha "2ceb95afd9c60072a7a0646a4bb4d53615c6770b"}}
+      {:deps       {org.github.pmonks/pbr {:git/url "https://github.com/pmonks/pbr.git"
+                                           :git/sha "d8409584ca3226fe86b1c11fd58129d79fc1f8a7"}}
        :ns-default run}
 
     ; clj -T:release <taskname>
     :release
-      {:deps       {io.github.seancorfield/build-clj {:git/tag "v0.5.0" :git/sha "2ceb95afd9c60072a7a0646a4bb4d53615c6770b"}}
+      {:deps       {org.github.pmonks/pbr {:git/url "https://github.com/pmonks/pbr.git"
+                                           :git/sha "d8409584ca3226fe86b1c11fd58129d79fc1f8a7"}}
        :ns-default release}
 
 
