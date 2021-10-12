@@ -23,7 +23,7 @@ For more information, run:
 
 clojure -A:deps -T:ist help/doc"
   (:require [org.corfield.build :as bb]
-            [build              :refer [set-opts]]))
+            [build              :as b]))
 
 (defn generate-markov
   "(Re)generate the IST Markov chain."
@@ -31,6 +31,6 @@ clojure -A:deps -T:ist help/doc"
   (when-not (:youtube-api-key opts)
     (throw (ex-info ":youtube-api-key missing from tool invocation" (into {} opts))))
   (-> opts
-      (set-opts)
+      (b/set-opts)
       (assoc :main-opts [(str (:youtube-api-key opts))])
       (bb/run-task [:gen-ist-markov])))

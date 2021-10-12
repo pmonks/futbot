@@ -22,35 +22,28 @@
 For more information, run:
 
 clojure -A:deps -T:build help/doc"
-  (:require [clojure.string          :as s]
-            [clojure.tools.build.api :as b]
-            [org.corfield.build      :as bb]))
+  (:require [org.corfield.build :as bb]
+            [org.pmonks.pbr     :as pbr]))
 
 (def lib       'org.github.pmonks/fubot)
 (def version   (format "1.0.%s" (.format (java.text.SimpleDateFormat. "yyyyMMdd") (java.util.Date.))))
 (def uber-file "./target/futbot-standalone.jar")
+(def main      'futbot.main)
 
 ; Utility fns
 (defn set-opts
   [opts]
   (assoc opts
-         :lib     lib
-         :version version))
-
-(defmulti exec "Executes the given command line, expressed as either a string, or a sequential (vector or list)." (fn [& args] (sequential? (first args))))
-
-(defmethod exec true
-  ([command-line] (exec command-line nil))
-  ([command-line opts]
-    (let [result (b/process (into {:command-args command-line} opts))]
-      (if (not= 0 (:exit result))
-        (throw (ex-info (str "Command '" (s/join " " command-line) "' failed (" (:exit result) ").") result))
-        result))))
-
-(defmethod exec false
-  ([command-line] (exec command-line nil))
-  ([command-line opts]
-    (exec (s/split command-line #"\s+") opts)))
+         :lib       lib
+         :version   version
+         :uber-file uber-file
+         :main      main
+         :pom {:description      "A Discord bot that delivers football (soccer) information to Discord."
+               :url              "https://github.com/pmonks/futbot"
+               :licenses         [:license   {:name "Apache License 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}]
+               :developers       [:developer {:id "pmonks" :name "Peter Monks" :email "pmonks+futbot@gmail.com"}]
+               :scm              {:url "https://github.com/pmonks/futbot" :connection "scm:git:git://github.com/pmonks/futbot.git" :developer-connection "scm:git:ssh://git@github.com/pmonks/futbot.git"}
+               :issue-management {:system "github" :url "https://github.com/pmonks/futbot/issues"}}))
 
 ; Development-time tasks
 (defn clean
@@ -63,11 +56,10 @@ clojure -A:deps -T:build help/doc"
   [opts]
   (-> opts
     (set-opts)
-    (assoc :uber-file uber-file
-           :main      'futbot.main)
+    (pbr/pom)
     (bb/uber)))
 
-(defn compile
+(defn check
   "Check the code by compiling it."
   [opts]
   (bb/run-task (set-opts opts) [:check]))
@@ -99,5 +91,5 @@ clojure -A:deps -T:build help/doc"
   [opts]
   (-> opts
     (outdated)
-    (compile)
+    (check)
     (lint)))
