@@ -54,12 +54,6 @@
       {:deps       {com.github.pmonks/pbr {:git/tag "v1.0.36" :git/sha "535c28df659deda7a483fb5e68692023988fcb82"}}
        :ns-default run}
 
-    ; clj -T:release <taskname>
-    :release
-      {:deps       {com.github.pmonks/pbr {:git/tag "v1.0.36" :git/sha "535c28df659deda7a483fb5e68692023988fcb82"}}
-       :ns-default release}
-
-
     ; ---- MAIN FUNCTION ALIASES ----
 
     ; clj -M:check
