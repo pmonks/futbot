@@ -23,9 +23,9 @@ For more information, run:
 
 clojure -A:deps -T:build help/doc"
   (:require [org.corfield.build :as bb]
-            [org.pmonks.pbr     :as pbr]))
+            [pbr.tasks          :as pbr]))
 
-(def lib       'org.github.pmonks/fubot)
+(def lib       'com.github.pmonks/fubot)
 (def version   (format "1.0.%s" (.format (java.text.SimpleDateFormat. "yyyyMMdd") (java.util.Date.))))
 (def uber-file "./target/futbot-standalone.jar")
 (def main      'futbot.main)
@@ -34,17 +34,18 @@ clojure -A:deps -T:build help/doc"
 (defn set-opts
   [opts]
   (assoc opts
-         :lib       lib
-         :version   version
-         :uber-file uber-file
-         :main      main
-         :write-pom true
-         :pom {:description      "A Discord bot that delivers football (soccer) information to Discord."
-               :url              "https://github.com/pmonks/futbot"
-               :licenses         [:license   {:name "Apache License 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}]
-               :developers       [:developer {:id "pmonks" :name "Peter Monks" :email "pmonks+futbot@gmail.com"}]
-               :scm              {:url "https://github.com/pmonks/futbot" :connection "scm:git:git://github.com/pmonks/futbot.git" :developer-connection "scm:git:ssh://git@github.com/pmonks/futbot.git"}
-               :issue-management {:system "github" :url "https://github.com/pmonks/futbot/issues"}}))
+         :lib              lib
+         :version          version
+         :uber-file        uber-file
+         :main             main
+         :deploy-info-file "./resources/deploy-info.edn"
+         :write-pom        true
+         :pom              {:description      "A Discord bot that delivers football (soccer) information to Discord."
+                            :url              "https://github.com/pmonks/futbot"
+                            :licenses         [:license   {:name "Apache License 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}]
+                            :developers       [:developer {:id "pmonks" :name "Peter Monks" :email "pmonks+futbot@gmail.com"}]
+                            :scm              {:url "https://github.com/pmonks/futbot" :connection "scm:git:git://github.com/pmonks/futbot.git" :developer-connection "scm:git:ssh://git@github.com/pmonks/futbot.git"}
+                            :issue-management {:system "github" :url "https://github.com/pmonks/futbot/issues"}}))
 
 ; Development-time tasks
 (defn clean
@@ -70,6 +71,11 @@ clojure -A:deps -T:build help/doc"
   [opts]
   (bb/run-task (set-opts opts) [:outdated]))
 
+(defn licenses
+  "Display all dependencies' licenses."
+  [opts]
+  (pbr/licenses opts))
+
 (defn kondo
   "Run the clj-kondo linter."
   [opts]
@@ -94,3 +100,18 @@ clojure -A:deps -T:build help/doc"
     (outdated)
     (check)
     (lint)))
+
+(defn check-release
+  "Check that a release can be done from the current directory."
+  [opts]
+  (-> opts
+      (set-opts)
+      (ci)
+      (pbr/check-release)))
+
+(defn release
+  "Release a new version of the bot."
+  [opts]
+  (-> opts
+      (set-opts)
+      (pbr/release)))
