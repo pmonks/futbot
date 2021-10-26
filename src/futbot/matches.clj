@@ -103,6 +103,7 @@
   "YELLOW_CARD"     "🟨"
   "YELLOW_RED_CARD" "🟨🟥"
   "RED_CARD"        "🟥"
+  "CANCELLED_CARD"  "⬜️❌"
   })
 
 (defn- match-event-row
