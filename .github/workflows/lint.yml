@@ -3,7 +3,17 @@ name: lint
 on: [push, pull_request]
 
 jobs:
+  skip_check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+
   lint:
+    needs: skip_check
+    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -12,7 +22,7 @@ jobs:
       - name: Install Java LTS
         uses: actions/setup-java@v2
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 11
 
       - name: Install Clojure CLI
@@ -20,5 +30,5 @@ jobs:
         with:
           tools-deps: latest
 
-      - name: Run linters
+      - name: Compile and lint code
         run: clojure -Srepro -J-Dclojure.main.report=stderr -T:build lint
