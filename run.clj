@@ -22,9 +22,9 @@
 For more information, run:
 
 clojure -A:deps -T:run help/doc"
-  (:require [org.corfield.build :as bb]
-            [pbr.convenience    :as pbrc]
-            [build              :as b]))
+  (:require [org.corfield.build    :as bb]
+            [tools-convenience.api :as tc]
+            [build                 :as b]))
 
 (defn source
   "Run the bot from source with the given config file."
@@ -39,17 +39,19 @@ clojure -A:deps -T:run help/doc"
 (defn uber
   "Build the bot's uberjar, and run it with the given config file."
   [opts]
+  (tc/ensure-command "java")
   (if-let [config-file (:config-file opts)]
     (do
       (b/uber opts)
-      (pbrc/exec ["java" "-jar" b/uber-file "-c" (str config-file)]))
+      (tc/exec ["java" "-jar" b/uber-file "-c" (str config-file)]))
     (throw (ex-info ":config-file missing from tool invocation" (into {} opts)))))
 
 (defn heroku
   "Build the bot's uberjar, and run it with the given config file in a pseudo-Heroku environment (i.e. with constrained memory)."
   [opts]
+  (tc/ensure-command "java")
   (if-let [config-file (:config-file opts)]
     (do
       (b/uber opts)
-      (pbrc/exec ["java" "-XX:NativeMemoryTracking=summary" "-Xmx300m" "-Dclojure.server.repl={:port 5555 :accept clojure.core.server/repl}" "-jar" b/uber-file "-c" (str config-file)]))
+      (tc/exec ["java" "-XX:NativeMemoryTracking=summary" "-Xmx300m" "-Dclojure.server.repl={:port 5555 :accept clojure.core.server/repl}" "-jar" b/uber-file "-c" (str config-file)]))
     (throw (ex-info ":config-file missing from tool invocation" (into {} opts)))))
