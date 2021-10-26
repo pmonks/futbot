@@ -117,6 +117,7 @@ clojure -A:deps -T:build help/doc"
 (defn release
   "Release a new version of the bot."
   [opts]
+  (check-release opts)
   (-> opts
       (set-opts)
       (pbr/release)))
