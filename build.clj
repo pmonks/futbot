@@ -22,8 +22,10 @@
 For more information, run:
 
 clojure -A:deps -T:build help/doc"
-  (:require [org.corfield.build :as bb]
-            [pbr.tasks          :as pbr]))
+  (:require [org.corfield.build   :as bb]
+            [tools-pom.tasks      :as pom]
+            [tools-licenses.tasks :as lic]
+            [pbr.tasks            :as pbr]))
 
 (def lib       'com.github.pmonks/fubot)
 (def version   (format "1.0.%s" (.format (java.text.SimpleDateFormat. "yyyyMMdd") (java.util.Date.))))
@@ -40,6 +42,7 @@ clojure -A:deps -T:build help/doc"
          :main             main
          :deploy-info-file "./resources/deploy-info.edn"
          :write-pom        true
+         :validate-pom     true
          :pom              {:description      "A Discord bot that delivers football (soccer) information to Discord."
                             :url              "https://github.com/pmonks/futbot"
                             :licenses         [:license   {:name "Apache License 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}]
@@ -58,7 +61,7 @@ clojure -A:deps -T:build help/doc"
   [opts]
   (-> opts
     (set-opts)
-    (pbr/pom)
+    (pom/pom)
     (bb/uber)))
 
 (defn check
@@ -70,13 +73,6 @@ clojure -A:deps -T:build help/doc"
   "Check for outdated dependencies."
   [opts]
   (bb/run-task (set-opts opts) [:outdated]))
-
-(defn licenses
-  "Display all dependencies' licenses."
-  [opts]
-  (-> opts
-      (set-opts)
-      (pbr/licenses)))
 
 (defn kondo
   "Run the clj-kondo linter."
@@ -102,6 +98,13 @@ clojure -A:deps -T:build help/doc"
     (outdated)
     (check)
     (lint)))
+
+(defn licenses
+  "Attempts to list all licenses for the transitive set of dependencies of the project, using SPDX license expressions."
+  [opts]
+  (-> opts
+    (set-opts)
+    (lic/licenses)))
 
 (defn check-release
   "Check that a release can be done from the current directory."
