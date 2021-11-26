@@ -209,7 +209,7 @@
                                     "  **" (get-in match [:home-team :name] "Unknown") "** vs **" (get-in match [:away-team :name] "Unknown") "**")
             match-channel-link (match-channel-link config match)
             description        (case (:status match)
-                                 "SCHEDULED" (str match-summary " starts " (mu/timestamp-tag starts-at \R) " (at " (mu/timestamp-tag starts-at \t) ").\n\n"
+                                 "SCHEDULED" (str match-summary " kick off " (mu/timestamp-tag starts-at \R) " (at " (mu/timestamp-tag starts-at \t) " local time).\n\n"
                                                   "[Find out how to watch here](https://www.livesoccertv.com/), and discuss in " match-channel-link ".")
                                  "IN_PLAY"   (str match-summary ", which was originally due to start at " (mu/timestamp-tag starts-at \t) ", started early and is in progress.\n\n"
                                                   "[Find out how to watch here](https://www.livesoccertv.com/), and discuss in " match-channel-link ".")
