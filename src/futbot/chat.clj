@@ -22,7 +22,6 @@
             [clojure.tools.logging :as log]
             [java-time             :as tm]
             [discljord.formatting  :as df]
-            [discljord.messaging   :as dm]
             [futbot.util           :as u]
             [futbot.message-util   :as mu]
             [futbot.config         :as cfg]
