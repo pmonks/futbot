@@ -273,7 +273,7 @@
                           (secret-command-fn args event-data))
                         (help-command! nil event-data))))))   ; If the requested private command doesn't exist, provide help
               ; If any unrecognised message was sent to a DM channel, provide help
-              (when-not (:guild-id event-data)
+              (when (mu/direct-message? event-data)
                 (help-command! nil event-data)))))
         (catch Exception e
           (u/log-exception e))))))
@@ -285,9 +285,5 @@
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
       (try
         (blk/check-blocklist! event-data)       ; Check if the updated message violates the blocklist
-        (when (bit-test (:flags event-data) 5)  ; 5 = HAS_THREAD - see https://discord.com/developers/docs/resources/channel#message-object-message-flags
-          (let [thread-id (:id event-data)]
-            (when-not @(dm/join-thread! (:discord-connection-channel cfg/config) thread-id)
-              (log/warn "Failed to join thread '" thread-id "'."))))
         (catch Exception e
           (u/log-exception e))))))
