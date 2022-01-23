@@ -22,15 +22,11 @@
 For more information, run:
 
 clojure -A:deps -T:ist help/doc"
-  (:require [org.corfield.build :as bb]
-            [build              :as b]))
+  (:require [futbot.ist.main :as ist]))
 
 (defn generate-markov
   "(Re)generate the IST Markov chain."
   [opts]
-  (when-not (:youtube-api-key opts)
-    (throw (ex-info ":youtube-api-key missing from tool invocation" (into {} opts))))
-  (-> opts
-      (b/set-opts)
-      (assoc :main-opts [(str (:youtube-api-key opts))])
-      (bb/run-task [:gen-ist-markov])))
+  (if-let [youtube-api-key (:youtube-api-key opts)]
+    (ist/-main youtube-api-key)
+    (throw (ex-info ":youtube-api-key missing from tool invocation" (into {} opts)))))
