@@ -1,3 +1,4 @@
-{:hash "d30a2f0699425ff92654442839a7764b3c733cfb",
- :date #inst "2021-12-19T19:33:05.621-00:00",
- :tag "1.0.20211219"}
+{:hash "4ff078875c5d8889bbf807becca60e1fb10a3cd8",
+ :date #inst "2022-01-23T18:21:57.435-00:00",
+ :repo "https://github.com/pmonks/futbot.git",
+ :tag "1.0.20220123"}
