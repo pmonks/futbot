@@ -272,7 +272,7 @@
                           (secret-command-fn args event-data))
                         (help-command! nil event-data))))))   ; If the requested private command doesn't exist, provide help
               ; If any unrecognised message was sent to a DM channel, provide help
-              (when-not (:guild-id event-data)
+              (when (mu/direct-message? event-data)
                 (help-command! nil event-data)))))
         (catch Exception e
           (u/log-exception e))))))
@@ -283,6 +283,6 @@
   (when (mu/human-message? event-data)
     (future    ; Spin off the actual processing, so we don't clog the Discord event queue
       (try
-        (blk/check-blocklist! event-data)  ; Check if the updated message violates the blocklist
+        (blk/check-blocklist! event-data)       ; Check if the updated message violates the blocklist
         (catch Exception e
           (u/log-exception e))))))

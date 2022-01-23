@@ -1,7 +1,7 @@
-| | | | |
-|---:|:---:|:---:|:---:|
-| [**main**](https://github.com/pmonks/futbot/tree/main) | [![Build](https://github.com/pmonks/futbot/workflows/build/badge.svg?branch=main)](https://github.com/pmonks/futbot/actions?query=workflow%3Abuild) | [![Lint](https://github.com/pmonks/futbot/workflows/lint/badge.svg?branch=main)](https://github.com/pmonks/futbot/actions?query=workflow%3Alint) | [![Dependencies](https://github.com/pmonks/futbot/workflows/dependencies/badge.svg?branch=main)](https://github.com/pmonks/futbot/actions?query=workflow%3Adependencies) |
-| [**dev**](https://github.com/pmonks/futbot/tree/dev)  | [![Build](https://github.com/pmonks/futbot/workflows/build/badge.svg?branch=dev)](https://github.com/pmonks/futbot/actions?query=workflow%3Abuild) | [![Lint](https://github.com/pmonks/futbot/workflows/lint/badge.svg?branch=dev)](https://github.com/pmonks/futbot/actions?query=workflow%3Alint) | [![Dependencies](https://github.com/pmonks/futbot/workflows/dependencies/badge.svg?branch=dev)](https://github.com/pmonks/futbot/actions?query=workflow%3Adependencies) |
+| | | |
+|---:|:---:|:---:|
+| [**main**](https://github.com/pmonks/futbot/tree/main) | [![CI](https://github.com/pmonks/futbot/workflows/CI/badge.svg?branch=main)](https://github.com/pmonks/futbot/actions?query=workflow%3ACI+branch%3Amain) | [![Dependencies](https://github.com/pmonks/futbot/workflows/dependencies/badge.svg?branch=main)](https://github.com/pmonks/futbot/actions?query=workflow%3Adependencies+branch%3Amain) |
+| [**dev**](https://github.com/pmonks/futbot/tree/dev) | [![CI](https://github.com/pmonks/futbot/workflows/CI/badge.svg?branch=dev)](https://github.com/pmonks/futbot/actions?query=workflow%3ACI+branch%3Adev) | [![Dependencies](https://github.com/pmonks/futbot/workflows/dependencies/badge.svg?branch=dev)](https://github.com/pmonks/futbot/actions?query=workflow%3Adependencies+branch%3Adev) |
 
 [![Open Issues](https://img.shields.io/github/issues/pmonks/futbot.svg)](https://github.com/pmonks/futbot/issues)
 [![License](https://img.shields.io/github/license/pmonks/futbot.svg)](https://github.com/pmonks/futbot/blob/main/LICENSE)
