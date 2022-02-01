@@ -16,18 +16,13 @@
 ; SPDX-License-Identifier: Apache-2.0
 ;
 
-(def lib       'com.github.pmonks/fubot)
-(def version   (format "1.0.%s" (.format (java.text.SimpleDateFormat. "yyyyMMdd") (java.util.Date.))))
-(def uber-file "./target/futbot-standalone.jar")
-(def main      'futbot.main)
-
 (defn set-opts
   [opts]
   (assoc opts
-         :lib              lib
-         :version          version
-         :uber-file        uber-file
-         :main             main
+         :lib              'com.github.pmonks/fubot
+         :version          (format "1.0.%s" (.format (java.text.SimpleDateFormat. "yyyyMMdd") (java.util.Date.)))
+         :uber-file        "./target/futbot-standalone.jar"
+         :main             'futbot.main
          :deploy-info-file "./resources/deploy-info.edn"
          :write-pom        true
          :validate-pom     true
