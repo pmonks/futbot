@@ -51,7 +51,7 @@
     "UCjlAAUxk70KurpcLWcFL8Mg" {:emoji #ref [:default-youtube-emoji]    :channel-id #ref [:video-channel-id]}  ; Victor Karimi's Referee Channel
     "UCfWpYhMIs2xqq7-v9HDAxuQ" {:emoji "<:cnra:769311341751959562>"     :channel-id #ref [:video-channel-id]}  ; Matthew Buckman (CNRA)
     "UCjOMOGOifZ1NwpAgCXv0-rw" {:emoji "<:refsix:791761342234624030>"   :channel-id #ref [:video-channel-id]}  ; REFSIX
-    "UCmzFaEBQlLmMTWS0IQ90tgA" {:emoji "<:ist:733173880403001394>"      :channel-id #ref [:memes-channel-id]}  ; IST goes to Lounge > memes-and-junk
+;    "UCmzFaEBQlLmMTWS0IQ90tgA" {:emoji "<:ist:733173880403001394>"      :channel-id #ref [:memes-channel-id]}  ; IST goes to Lounge > memes-and-junk - DISABLED
   }
 
   :usa-channel-id "723567903164596274"   ; Note: this is just a convenienace; it isn't used in the code
