@@ -54,7 +54,7 @@
 ;    "UCmzFaEBQlLmMTWS0IQ90tgA" {:emoji "<:ist:733173880403001394>"      :channel-id #ref [:memes-channel-id]}  ; IST goes to Lounge > memes-and-junk - DISABLED
   }
 
-  :usa-channel-id "723567903164596274"   ; Note: this is just a convenienace; it isn't used in the code
+  :usa-channel-id "723567903164596274"   ; Note: this is just a convenience; it isn't used in the code
   :pro-category-to-channel-map {
     "PRO Insight"               #ref [:post-channel-id]
     "The Definitive Angle"      #ref [:post-channel-id]
