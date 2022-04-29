@@ -37,7 +37,8 @@
   :memes-channel-id                    "683853455038742610"  ; Lounge > memes-and-junk
 
   :ist-channel-ids [#ref [:memes-channel-id]
-                    "701813682430279712"     ; General > bots
+                    "939972121487089796"     ; Lounge > live-chat
+                    "701813682430279712"     ; Server > bots
                     "723309028725227532"]    ; Admin > Testing
 
   :youtube-api-token #env YOUTUBE_API_TOKEN
