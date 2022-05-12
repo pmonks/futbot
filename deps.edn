@@ -37,12 +37,11 @@
     remus/remus                         {:mvn/version "0.2.2"}
     org.jsoup/jsoup                     {:mvn/version "1.14.3"}
 
-    ; Transitive dependencies that are old & have CVEs
+    ; Transitive dependency versions overrides - the default ones are old & have CVEs
     org.clojure/core.async              {:mvn/version "1.5.648"}
     clj-http/clj-http                   {:mvn/version "3.12.3"}
-    org.eclipse.jetty.websocket/websocket-client {:mvn/version "9.4.46.v20220331"}
-    com.rometools/rome                  {:mvn/version "1.18.0"}
-  }
+    stylefruits/gniazdo                 {:mvn/version "1.2.1"}
+    com.rometools/rome                  {:mvn/version "1.18.0"}}
  :aliases
    {:build {:deps       {io.github.seancorfield/build-clj {:git/tag "v0.8.0" :git/sha "9bd8b8a"}
                          com.github.pmonks/pbr            {:mvn/version "RELEASE"}}
