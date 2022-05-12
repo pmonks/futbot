@@ -15,12 +15,9 @@
     "ENG" "683856416351846441"                       ; League Discussions > #england
     "DEU" "687660279189995554"                       ; League Discussions > #germany
     "ITA" "687660332981944321"                       ; League Discussions > #italy
-    "ESP" "687659858476138582"                       ; League Discussions > #spain
-    "USA" "683856451583869019"                       ; League Discussions > #north-america
-    "CAN" "683856451583869019"                       ; League Discussions > #north-america
-    "MEX" "683856451583869019"                       ; League Discussions > #north-america
+    "USA" "683856451583869019"                       ; League Discussions > #united-states
   }
-  :default-reminder-channel-id "710316975393341511"  ; League Discussions > #other (fallback)
+  :default-reminder-channel-id "710316975393341511"  ; League Discussions > #other-leagues (fallback)
 
   :muted-leagues [
     "Championship"   ; England 2nd division
