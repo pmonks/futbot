@@ -1,8 +1,11 @@
 {
   :football-data-api-token #env FOOTBALL_DATA_API_TOKEN
 
+  :discord-application-id     #env DISCORD_APP_ID
   :discord-api-token          #env DISCORD_API_TOKEN
   :discord-event-channel-size 100
+
+  :guild-id "683853455034548236"
 
   :match-reminder-channel-id "686396574104158228"   ; League Discussions > #live-updates
 
@@ -15,12 +18,9 @@
     "ENG" "683856416351846441"                       ; League Discussions > #england
     "DEU" "687660279189995554"                       ; League Discussions > #germany
     "ITA" "687660332981944321"                       ; League Discussions > #italy
-    "ESP" "687659858476138582"                       ; League Discussions > #spain
-    "USA" "683856451583869019"                       ; League Discussions > #north-america
-    "CAN" "683856451583869019"                       ; League Discussions > #north-america
-    "MEX" "683856451583869019"                       ; League Discussions > #north-america
+    "USA" "683856451583869019"                       ; League Discussions > #united-states
   }
-  :default-reminder-channel-id "710316975393341511"  ; League Discussions > #other (fallback)
+  :default-reminder-channel-id "710316975393341511"  ; League Discussions > #other-leagues (fallback)
 
   :muted-leagues [
     "Championship"   ; England 2nd division
@@ -37,7 +37,8 @@
   :memes-channel-id                    "683853455038742610"  ; Lounge > memes-and-junk
 
   :ist-channel-ids [#ref [:memes-channel-id]
-                    "701813682430279712"     ; General > bots
+                    "939972121487089796"     ; Lounge > live-chat
+                    "701813682430279712"     ; Server > bots
                     "723309028725227532"]    ; Admin > Testing
 
   :youtube-api-token #env YOUTUBE_API_TOKEN

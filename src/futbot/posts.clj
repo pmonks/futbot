@@ -17,10 +17,10 @@
 ;
 
 (ns futbot.posts
-  (:require [clojure.tools.logging :as log]
-            [java-time             :as tm]
-            [futbot.message-util   :as mu]
-            [futbot.source.pro     :as pro]))
+  (:require [clojure.tools.logging       :as log]
+            [java-time                   :as tm]
+            [futbot.discord.message-util :as mu]
+            [futbot.source.pro           :as pro]))
 
 (defn- post-pro-post!
   [{:keys [discord-message-channel post-channel-id pro-category-to-channel-map education-and-resources-channel-id]}

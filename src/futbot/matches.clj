@@ -22,7 +22,7 @@
             [java-time                   :as tm]
             [chime.core                  :as chime]
             [futbot.util                 :as u]
-            [futbot.message-util         :as mu]
+            [futbot.discord.message-util :as mu]
             [futbot.source.football-data :as fd]
             [futbot.leagues              :as lg]
             [futbot.flags                :as fl]))
@@ -36,9 +36,10 @@
   "ASSISTANT_REFEREE_N2"       [3 "AR2"]
   "FOURTH_OFFICIAL"            [4 "4O"]
   "VIDEO_ASSISANT_REFEREE_N1"  [5 "VAR1"]    ; Typo in football-data.org (as of 2021-04-05)
-  "VIDEO_ASSISTANT_REFEREE_N1" [5 "VAR1"]    ; Placeholder in case Daniel fixes it without telling us
+  "VIDEO_ASSISTANT_REFEREE_N1" [5 "VAR1"]    ; Fixed as of 2022-03-28
   "VIDEO_ASSISANT_REFEREE_N2"  [6 "VAR2"]    ; Typo in football-data.org (as of 2021-04-05)
-  "VIDEO_ASSISTANT_REFEREE_N2" [6 "VAR2"]})  ; Placeholder in case Daniel fixes it without telling us
+  "VIDEO_ASSISTANT_REFEREE_N2" [6 "VAR2"]    ; Fixed as of 2022-03-28
+  "VIDEO_ASSISTANT_REFEREE_N3" [7 "VAR3"]})
 
 (def ^:private shrug-text   "¯\\_(ツ)_/¯")
 (def ^:private shrug-reacts ["<:shrug_east:802047895304929310>"

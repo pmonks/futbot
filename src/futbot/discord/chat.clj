@@ -16,17 +16,18 @@
 ; SPDX-License-Identifier: Apache-2.0
 ;
 
-(ns futbot.chat
-  (:require [clojure.string        :as s]
-            [clojure.instant       :as inst]
-            [clojure.tools.logging :as log]
-            [java-time             :as tm]
-            [discljord.formatting  :as df]
-            [futbot.util           :as u]
-            [futbot.message-util   :as mu]
-            [futbot.config         :as cfg]
-            [futbot.source.ist     :as ist]
-            [futbot.blocklist      :as blk]))
+(ns futbot.discord.chat
+  (:require [clojure.string              :as s]
+            [clojure.instant             :as inst]
+            [clojure.tools.logging       :as log]
+            [java-time                   :as tm]
+            [discljord.formatting        :as df]
+            [futbot.util                 :as u]
+            [futbot.discord.message-util :as mu]
+            [futbot.discord.routing      :as rt]
+            [futbot.config               :as cfg]
+            [futbot.source.ist           :as ist]
+            [futbot.blocklist            :as blk]))
 
 (def prefix "!")
 
@@ -39,9 +40,9 @@
       (mu/create-message! (:discord-message-channel cfg/config)
                           channel-id
                           :embed (assoc (mu/embed-template)
-                                          :description (str "**" (ist/gen-title) "**")
-                                          :footer      {:text     "Disclaimer: this is a generated fake"
-                                                        :icon_url "https://yt3.ggpht.com/ytc/AAUvwnjhzwc9yNfyfX8C1N820yMhaS27baWlSz2wqaRE=s176-c-k-c0x00ffffff-no-rj"}))
+                                        :description (str "**" (ist/gen-title) "**")
+                                        :footer      {:text     "Disclaimer: this is a generated fake"
+                                                      :icon_url "https://yt3.ggpht.com/ytc/AAUvwnjhzwc9yNfyfX8C1N820yMhaS27baWlSz2wqaRE=s176-c-k-c0x00ffffff-no-rj"}))
       (log/info (str "Ignoring " prefix "ist command in channel " channel-id)))))
 
 (defn move-command!
@@ -235,16 +236,7 @@
                                                       (s/join "\n" (map #(str " • **`" prefix (key %) "`** - " (:doc (meta (val %))))
                                                                         (sort-by key private-command-dispatch-table)))))))
 
-; Responsive fns
-(defmulti handle-discord-event
-  "Discord event handler"
-  (fn [event-type _] event-type))
-
-; Default Discord event handler (noop)
-(defmethod handle-discord-event :default
-  [_ _])
-
-(defmethod handle-discord-event :message-create
+(defmethod rt/handle-discord-event :message-create
   [_ event-data]
   ; Only respond to messages sent from a human
   (when (mu/human-message? event-data)
@@ -277,7 +269,7 @@
         (catch Exception e
           (u/log-exception e))))))
 
-(defmethod handle-discord-event :message-update
+(defmethod rt/handle-discord-event :message-update
   [_ event-data]
   ; Only respond to messages sent from a human
   (when (mu/human-message? event-data)

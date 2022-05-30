@@ -18,18 +18,20 @@
 
 (ns futbot.main
   (:require [CLJ-2253]
-            [futbot.config         :as cfg]
-            [clojure.string        :as s]
-            [clojure.java.io       :as io]
-            [clojure.tools.cli     :as cli]
-            [clojure.tools.logging :as log]
-            [mount.core            :as mnt]
-            [java-time             :as tm]
-            [discljord.events      :as de]
-            [futbot.util           :as u]
-            [futbot.jobs           :as job]    ; This is required, so that mount schedules all jobs
-            [futbot.matches        :as match]
-            [futbot.chat           :as chat])
+            [futbot.config           :as cfg]
+            [clojure.string          :as s]
+            [clojure.java.io         :as io]
+            [clojure.tools.cli       :as cli]
+            [clojure.tools.logging   :as log]
+            [mount.core              :as mnt]
+            [java-time               :as tm]
+            [discljord.events        :as de]
+            [futbot.util             :as u]
+            [futbot.jobs             :as job]    ; This is required, so that mount schedules all jobs
+            [futbot.matches          :as match]
+            [futbot.discord.routing  :as rt]
+            [futbot.discord.commands :as cmd]    ; This is required, so that all application commands get registered
+            [futbot.discord.chat     :as chat])  ; This is required, so that all message event responders get registered
   (:gen-class))
 
 (def ^:private cli-opts
@@ -68,7 +70,7 @@
       (match/schedule-todays-match-reminders! cfg/config)
       (match/schedule-in-progress-match-summaries! cfg/config)
       (log/info "futbot started")
-      (de/message-pump! (:discord-event-channel cfg/config) chat/handle-discord-event))   ; This must go last, as it blocks
+      (de/message-pump! (:discord-event-channel cfg/config) rt/handle-discord-event))   ; This must go last, as it blocks
     (catch Exception e
       (u/log-exception e)
       (u/exit -1)))

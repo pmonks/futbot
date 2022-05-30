@@ -2,8 +2,11 @@
 {
   :football-data-api-token    #env FOOTBALL_DATA_API_TOKEN
 
+  :discord-application-id     #env DISCORD_APP_ID
   :discord-api-token          #env DISCORD_API_TOKEN
   :discord-event-channel-size #or [#env DISCORD_EVENT_CHANNEL_SIZE 100]   ; Default = 100 queue slots
+
+  :guild-id #env GUILD_ID
 
   :match-reminder-channel-id    #env MATCH_REMINDER_CHANNEL_ID
   :match-reminder-duration-mins #or [#env MATCH_REMINDER_DURATION 15]

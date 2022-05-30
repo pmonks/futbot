@@ -31,7 +31,7 @@
   (let [{:keys [status headers body error]} @(http/get cnra-quiz-page-url)]
     (if error
       (throw (ex-info (str "Error while retrieving CNRA quiz page " cnra-quiz-page-url) {:status status :headers headers :body body} error))
-      (org.jsoup.Jsoup/parse body))))
+      (org.jsoup.Jsoup/parse ^String body))))
 
 (defn- para-to-quiz
   [^org.jsoup.nodes.Element p]
