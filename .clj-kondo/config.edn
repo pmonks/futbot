@@ -1,1 +1,1 @@
-{:linters {:unused-namespace {:exclude [futbot.jobs]}}}
+{:linters {:unused-namespace {:exclude [futbot.jobs futbot.discord.commands futbot.discord.chat]}}}

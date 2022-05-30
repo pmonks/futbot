@@ -40,7 +40,7 @@
 (Thread/setDefaultUncaughtExceptionHandler
  (reify Thread$UncaughtExceptionHandler
    (uncaughtException [_ t e]
-     (u/log-exception e (str "Uncaught exception on " (.getName t))))))
+     (u/log-exception e (str "Uncaught exception in thread " (.getName t))))))
 
 ; See https://github.com/http-kit/http-kit#enabling-client-sni-support-disabled-by-default
 (alter-var-root #'http/*default-client* (fn [_] sni-client/default-client))
@@ -72,6 +72,7 @@
                        youtube-api-token     (validated-config-value raw-config :youtube-api-token)]
                    {
                      :football-data-api-token            (validated-config-value raw-config :football-data-api-token)
+                     :discord-application-id             (validated-config-value raw-config :discord-application-id)
                      :discord-event-channel              discord-event-channel
                      :discord-connection-channel         (if-let [connection (dc/connect-bot! discord-api-token
                                                                                               discord-event-channel

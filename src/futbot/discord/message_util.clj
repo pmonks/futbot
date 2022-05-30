@@ -16,7 +16,7 @@
 ; SPDX-License-Identifier: Apache-2.0
 ;
 
-(ns futbot.message-util
+(ns futbot.discord.message-util
   (:require [clojure.tools.logging :as log]
             [java-time             :as tm]
             [discljord.messaging   :as dm]
@@ -33,13 +33,19 @@
 (def embed-template-colour   9215480)
 (def embed-template-logo-url "https://cdn.jsdelivr.net/gh/pmonks/futbot/futbot.png")
 
+(defn embed-template-no-footer
+  "Generates a default template for embeds, without a footer."
+  []
+  {:color embed-template-colour})
+
+
 (defn embed-template
   "Generates a default template for embeds."
- []
- {:color     embed-template-colour
-  :footer    {:text "futbot"
-              :icon_url embed-template-logo-url}
-  :timestamp (str (tm/instant))})
+  []
+  (merge (embed-template-no-footer)
+         {:footer    {:text "futbot"
+                      :icon_url embed-template-logo-url}
+          :timestamp (str (tm/instant))}))
 
 (defn create-message!
   "A version of discljord.message/create-message! that throws errors."
@@ -60,7 +66,7 @@
   (check-response-and-throw @(dm/delete-message! discord-message-channel channel-id message-id)))
 
 (defn create-reaction!
-  "A version of discljord.message/create-reaction! that throws errors."
+  "A version of discljord.message/create-reaction! that throws errors. Note: for custom emoji, use the name and snowflake of the emoji, but not the <> tag delimiters (e.g. YC:698349911028269078)."
   [discord-message-channel channel-id message-id reaction]
   (log/debug "Adding reaction" reaction "to message-id" message-id)
   (check-response-and-throw @(dm/create-reaction! discord-message-channel channel-id message-id reaction)))
@@ -83,6 +89,15 @@
   (let [dm-channel (create-dm! discord-message-channel user-id)
         channel-id (:id dm-channel)]
     (create-message! discord-message-channel channel-id :content message)))
+
+(defn respond-to-interaction!
+  "Convenience method that creates a DM channel to the specified user and sends the given message to them."
+  [discord-message-channel interaction-id interaction-token response-type & args]
+  (check-response-and-throw @(apply dm/create-interaction-response! discord-message-channel
+                                                                    interaction-id
+                                                                    interaction-token
+                                                                    response-type  ; https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-interaction-callback-type
+                                                                    args)))
 
 (defn direct-message?
   "Was the given event sent via a Direct Message?"

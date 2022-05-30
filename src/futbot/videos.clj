@@ -17,10 +17,10 @@
 ;
 
 (ns futbot.videos
-  (:require [clojure.tools.logging :as log]
-            [java-time             :as tm]
-            [futbot.message-util   :as mu]
-            [futbot.source.youtube :as yt]))
+  (:require [clojure.tools.logging       :as log]
+            [java-time                   :as tm]
+            [futbot.discord.message-util :as mu]
+            [futbot.source.youtube       :as yt]))
 
 (def ist-youtube-channel-id "UCmzFaEBQlLmMTWS0IQ90tgA")
 

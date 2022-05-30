@@ -17,9 +17,9 @@
 ;
 
 (ns futbot.blocklist
-  (:require [clojure.tools.logging :as log]
-            [futbot.config         :as cfg]
-            [futbot.message-util   :as mu]))
+  (:require [clojure.tools.logging       :as log]
+            [futbot.config               :as cfg]
+            [futbot.discord.message-util :as mu]))
 
 (defn- check-blocklist-entry!
   [event-data re]
