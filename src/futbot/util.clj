@@ -136,16 +136,25 @@
                   (recur (/ size 1024) (inc index))))]
     (str (.format df (/ size (Math/pow 1024 index))) (nth units index))))
 
+(defn- unwrap-to-exinfo
+  "Unwraps the given throwable to the first ExceptionInfo instance, or returns nil."
+  [^java.lang.Throwable e]
+  (when e
+    (if (instance? clojure.lang.ExceptionInfo e)
+      e
+      (recur (.getCause e)))))
+
 (defn log-exception
   "Logs the given exception and (optional) message at ERROR level."
   ([^java.lang.Throwable e] (log-exception e nil))
   ([^java.lang.Throwable e msg]
-   (let [extra (ex-data e)
-         m     (case [(boolean msg) (boolean extra)]
-                 [true  true]  (str msg "; data: " extra)
-                 [true  false] msg
-                 [false true]  (str "Data: " extra)
-                 [false false] (if e (.getMessage e) "No exception information provided (this is probably a bug)"))]
+   (let [ei    (unwrap-to-exinfo e)
+         extra (ex-data ei)
+         m     (case [(s/blank? msg) (boolean extra)]
+                 [false  true]  (str msg "; data: " extra)
+                 [false  false] msg
+                 [true true]  (str "Data: " extra)
+                 [true false] (if e (.getMessage e) "No exception information provided (this is probably a bug)"))]
      (log/error e m))))
 
 (defn exit
