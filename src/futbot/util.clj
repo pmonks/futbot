@@ -64,6 +64,12 @@
           (for [[k v] m]
             [k (f v)]))))
 
+(defn is-url?
+  "Is s a valid URL?"
+  [^String s]
+  ; Note: UrlValidator.isValid() is null-safe (returns false when given null), so we don't need to guard that ourselves
+  (.isValid (org.apache.commons.validator.routines.UrlValidator/getInstance) s))
+
 (defn clojurise-json-key
   "Converts JSON string keys (e.g. \"fullName\") to Clojure keyword keys (e.g. :full-name)."
   [k]

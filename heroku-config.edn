@@ -1,8 +1,11 @@
 {
   :football-data-api-token #env FOOTBALL_DATA_API_TOKEN
 
+  :discord-application-id     #env DISCORD_APP_ID
   :discord-api-token          #env DISCORD_API_TOKEN
   :discord-event-channel-size 100
+
+  :guild-id "683853455034548236"
 
   :match-reminder-channel-id "686396574104158228"   ; League Discussions > #live-updates
 

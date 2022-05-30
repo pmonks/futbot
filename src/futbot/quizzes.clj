@@ -19,7 +19,7 @@
 (ns futbot.quizzes
   (:require [clojure.tools.logging            :as log]
             [java-time                        :as tm]
-            [futbot.message-util              :as mu]
+            [futbot.discord.message-util      :as mu]
             [futbot.source.dutch-referee-blog :as drb]
             [futbot.source.cnra               :as cnra]))
 

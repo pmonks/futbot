@@ -22,7 +22,7 @@
             [java-time                   :as tm]
             [chime.core                  :as chime]
             [futbot.util                 :as u]
-            [futbot.message-util         :as mu]
+            [futbot.discord.message-util :as mu]
             [futbot.source.football-data :as fd]
             [futbot.leagues              :as lg]
             [futbot.flags                :as fl]))
