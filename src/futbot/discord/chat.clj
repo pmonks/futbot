@@ -76,16 +76,21 @@
           (log/warn "Could not find target channel in move command."))
         (log/warn "move-command! arguments missing a target channel.")))))
 
+(def ^:private timestamp-format-reference "[Timestamp tag reference](https://discord.com/developers/docs/reference#message-formatting)")
+
 (defn epoch-command!
   "Displays the 'epoch seconds' value of the given date (in RFC-3339 format), or now if no value is provided."
   [args event-data]
   (let [channel-id (:channel-id event-data)]
     (try
-      (let [d     (if (s/blank? args) (java.util.Date.) (inst/read-instant-date args))
+      (let [d     (if (or (s/blank? args)
+                          (= "now" (s/trim (s/lower-case args))))
+                    (java.util.Date.)
+                    (inst/read-instant-date (s/trim args)))
             epoch (long (/ (.getTime ^java.util.Date d) 1000))]
         (mu/create-message! (:discord-message-channel cfg/config)
                             channel-id
-                            :embed (assoc (mu/embed-template) :description (str "`" epoch "`"))))
+                            :embed (assoc (mu/embed-template) :description (str "`" epoch "`\n" timestamp-format-reference))))
       (catch RuntimeException re
         (mu/create-message! (:discord-message-channel cfg/config)
                             channel-id
@@ -104,20 +109,20 @@
                          nil)
             val        (u/parse-int v)
             multiplier (case u
-                         ("m" "min" "mins" "minutes") 60
-                         ("h" "hr" "hrs" "hours")     (* 60 60)
-                         ("d" "day" "days")           (* 60 60 24)
-                         ("w" "wk" "wks" "weeks")     (* 60 60 24 7)
+                         ("m" "min" "mins" "minute" "minutes") 60
+                         ("h" "hr" "hrs" "hour" "hours")       (* 60 60)
+                         ("d" "day" "days")                    (* 60 60 24)
+                         ("w" "wk" "wks" "week" "weeks")       (* 60 60 24 7)
                          1)]  ; Default to seconds
         (if base
           (if (and op val multiplier)  ; Everything was provided - evaluate the expression
             (mu/create-message! (:discord-message-channel cfg/config)
                                 channel-id
-                                :embed (assoc (mu/embed-template) :description (str "`" (op base (* val multiplier)) "`")))
+                                :embed (assoc (mu/embed-template) :description (str "`" (op base (* val multiplier)) "`\n" timestamp-format-reference)))
             (if-not (or op val)  ; Only base was provided - display it
               (mu/create-message! (:discord-message-channel cfg/config)
                                   channel-id
-                                  :embed (assoc (mu/embed-template) :description (str "`" base "`")))
+                                  :embed (assoc (mu/embed-template) :description (str "`" base "`\n" timestamp-format-reference)))
               (throw (ex-info "Op, val or multiplier not provided" {}))))
           (throw (ex-info "Base not provided" {}))))
       (catch Exception _

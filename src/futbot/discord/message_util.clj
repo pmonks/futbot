@@ -90,14 +90,30 @@
         channel-id (:id dm-channel)]
     (create-message! discord-message-channel channel-id :content message)))
 
-(defn respond-to-interaction!
-  "Convenience method that creates a DM channel to the specified user and sends the given message to them."
+(defn bulk-overwrite-guild-application-commands!
+  "A version of discljord.message/create-dm! that throws errors."
+  [discord-message-channel application-id guild-id application-commands]
+  (check-response-and-throw @(dm/bulk-overwrite-guild-application-commands! discord-message-channel
+                                                                            application-id
+                                                                            guild-id
+                                                                            application-commands)))
+
+(defn create-interaction-response!
+  "A version of discljord.message/create-interaction-response! that throws errors."
   [discord-message-channel interaction-id interaction-token response-type & args]
   (check-response-and-throw @(apply dm/create-interaction-response! discord-message-channel
                                                                     interaction-id
                                                                     interaction-token
                                                                     response-type  ; https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-interaction-callback-type
                                                                     args)))
+
+(defn delete-original-interaction-response!
+  "A version of discljord.message/delete-original-interaction-response! that throws errors."
+  [discord-message-channel application-id interaction-token & args]
+  (check-response-and-throw @(apply dm/delete-original-interaction-response! discord-message-channel
+                                                                             application-id
+                                                                             interaction-token
+                                                                             args)))
 
 (defn direct-message?
   "Was the given event sent via a Direct Message?"

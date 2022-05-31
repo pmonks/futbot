@@ -82,6 +82,7 @@
                      :discord-message-channel            (if-let [connection (dm/start-connection! discord-api-token)]
                                                            connection
                                                            (throw (ex-info "Failed to connect to Discord message channel" {})))
+                     :guild-id                           (validated-config-value raw-config :guild-id)
                      :match-reminder-channel-id          (validated-config-value raw-config :match-reminder-channel-id)
                      :match-reminder-duration            (tm/minutes (u/getrn raw-config :match-reminder-duration-mins 15))
                      :country-to-channel                 (:country-to-channel-map raw-config)
