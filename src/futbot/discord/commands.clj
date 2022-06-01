@@ -220,6 +220,7 @@
    "futpoll"
    "Creates match incident poll(s)"
    :options [(scs/option "incident-clip" "A link to the video clip showing the incident" :string  :required true)
+             (scs/option "notes"         "Any notes you'd like included with the clip"   :string  :required false)
              (scs/option "poll-types"    "The type(s) of poll to post"                   :string  :required false
                          :choices [(scs/choice "Sanction (default)" "sanction")
                                    (scs/choice "Restart"            "restart")
@@ -235,11 +236,12 @@
         interaction             (rationalise-options-map _interaction)
         incident-clip           (get-in interaction [:args :incident-clip])]
     (if (u/is-url? incident-clip)
-      (let [poll-types (get-in interaction [:args :poll-types] "sanction")
+      (let [notes      (get-in interaction [:args :notes])
+            poll-types (get-in interaction [:args :poll-types] "sanction")
             channel-id (:channel-id interaction)]
         ; Incident clip message
         (mu/create-interaction-response! discord-message-channel id token channel-message
-                                         :data {:content incident-clip})   ; Put the incident clip in the content, so that the Discord client creates a preview for it - it won't do this if there's an embed
+                                         :data {:content (str (when-not (s/blank? notes) (str notes " ")) incident-clip)})   ; Put the incident clip in the content, so that the Discord client creates a preview for it - it won't do this if there's an embed
         ; Sanction poll message
         (when (s/includes? poll-types "sanction")
           (let [message-id (:id (mu/create-message! discord-message-channel channel-id
