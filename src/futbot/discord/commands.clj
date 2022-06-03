@@ -18,6 +18,7 @@
 
 (ns futbot.discord.commands
   (:require [clojure.string              :as s]
+            [clojure.java.io             :as io]
             [clojure.instant             :as inst]
             [java-time                   :as tm]
             [mount.core                  :as mnt :refer [defstate]]
@@ -219,9 +220,10 @@
   (scs/command
    "futpoll"
    "Creates match incident poll(s)"
-   :options [(scs/option "incident-clip" "A link to the video clip showing the incident" :string  :required true)
-             (scs/option "notes"         "Any notes you'd like included with the clip"   :string  :required false)
-             (scs/option "poll-types"    "The type(s) of poll to post"                   :string  :required false
+   :options [(scs/option "incident-link" "A link to a video that shows the incident"                                                        :string     :required false)
+             (scs/option "incident-clip" "A video clip of the incident"                                                                     :attachment :required false)
+             (scs/option "notes"         "Any notes you'd like added before the clip (e.g. a timestamp, specific things to look for, etc.)" :string     :required false)
+             (scs/option "poll-types"    "The type(s) of poll to include"                                                                   :string     :required false
                          :choices [(scs/choice "Sanction (default)" "sanction")
                                    (scs/choice "Restart"            "restart")
                                    (scs/choice "Offside"            "offside")
@@ -234,66 +236,81 @@
   _
   (let [discord-message-channel (:discord-message-channel cfg/config)
         interaction             (rationalise-options-map _interaction)
+        incident-link           (get-in interaction [:args :incident-link])
         incident-clip           (get-in interaction [:args :incident-clip])]
-    (if (u/is-url? incident-clip)
-      (let [notes      (get-in interaction [:args :notes])
-            poll-types (get-in interaction [:args :poll-types] "sanction")
-            channel-id (:channel-id interaction)]
-        ; Incident clip message
-        (mu/create-interaction-response! discord-message-channel id token channel-message
-                                         :data {:content (str (when-not (s/blank? notes) (str notes " ")) incident-clip)})   ; Put the incident clip in the content, so that the Discord client creates a preview for it - it won't do this if there's an embed
-        ; Sanction poll message
-        (when (s/includes? poll-types "sanction")
-          (let [message-id (:id (mu/create-message! discord-message-channel channel-id
-                                                    :embed (assoc (mu/embed-template-no-footer)
-                                                                  :description (str "❌ No foul\n"
-                                                                                    "✅ Foul (no sanction)\n"
-                                                                                    "<:YC:698349911028269078> Foul + caution\n"
-                                                                                    "<:RC:698350061922418738> Foul + send-off\n"
-                                                                                    "<:dive:808120608301908039> Simulation"))))]
-           (mu/create-reaction! discord-message-channel channel-id message-id "❌")
-           (mu/create-reaction! discord-message-channel channel-id message-id "✅")
-           (mu/create-reaction! discord-message-channel channel-id message-id "YC:698349911028269078")
-           (mu/create-reaction! discord-message-channel channel-id message-id "RC:698350061922418738")
-           (mu/create-reaction! discord-message-channel channel-id message-id "dive:808120608301908039")))
-        ; Restart poll message
-        (when (s/includes? poll-types "restart")
-          (let [message-id (:id (mu/create-message! discord-message-channel channel-id
-                                                    :embed (assoc (mu/embed-template-no-footer)
-                                                                  :description (str "<:whistle:753061925231001640> Kickoff\n"
-                                                                                    "🙌 Throw-in\n"
-                                                                                    "✋ Indirect free kick\n"
-                                                                                    "👉 Direct free kick\n"
-                                                                                    "⚪ Penalty kick\n"
-                                                                                    "⚽ Drop ball\n"
-                                                                                    "🥅 Goal kick\n"
-                                                                                    "🚩 Corner kick"))))]
-           (mu/create-reaction! discord-message-channel channel-id message-id "whistle:753061925231001640")
-           (mu/create-reaction! discord-message-channel channel-id message-id "🙌")
-           (mu/create-reaction! discord-message-channel channel-id message-id "✋")
-           (mu/create-reaction! discord-message-channel channel-id message-id "👉")
-           (mu/create-reaction! discord-message-channel channel-id message-id "⚪")   ; BE VERY CAREFUL HERE - the default ⚪️ emoji from macOS is not supported as a react in Discord!
-           (mu/create-reaction! discord-message-channel channel-id message-id "⚽")   ; BE VERY CAREFUL HERE - the default ⚽️ emoji from macOS is not supported as a react in Discord!
-           (mu/create-reaction! discord-message-channel channel-id message-id "🥅")
-           (mu/create-reaction! discord-message-channel channel-id message-id "🚩")))
-        ; Offside poll message
-        (when (s/includes? poll-types "offside")
-          (let [message-id (:id (mu/create-message! discord-message-channel channel-id
-                                                    :embed (assoc (mu/embed-template-no-footer)
-                                                                  :description (str "❌ Not offside\n"
-                                                                                    "<:ar:753060321601781819> Offside\n"
-                                                                                    "⚽ Interfering with play\n"
-                                                                                    "🏃 Interfering with an opponent\n"
-                                                                                    "🥅 Gaining an advantage"))))]
-           (mu/create-reaction! discord-message-channel channel-id message-id "❌")
-           (mu/create-reaction! discord-message-channel channel-id message-id "ar:753060321601781819")
-           (mu/create-reaction! discord-message-channel channel-id message-id "⚽")
-           (mu/create-reaction! discord-message-channel channel-id message-id "🏃")
-           (mu/create-reaction! discord-message-channel channel-id message-id "🥅"))))
-        ; Invalid link - warn the user with an ephemeral message
+    (if (and (s/blank? incident-link) (s/blank? incident-clip))
+      (mu/create-interaction-response! discord-message-channel id token channel-message
+                                       :data {:flags  ephemeral
+                                              :embeds [{:description (str "You must provide either an incident link, or an incident clip." )}]})
+      (if (and (not (s/blank? incident-link)) (not (u/is-url? incident-link)))
         (mu/create-interaction-response! discord-message-channel id token channel-message
                                          :data {:flags  ephemeral
-                                                :embeds [{:description (str "'" incident-clip "' is not a valid link. Please check it and try again." )}]}))))
+                                                :embeds [{:description (str "'" incident-link "' is not a valid link. Please check it and try again." )}]})
+        (let [notes      (get-in interaction [:args :notes])
+              poll-types (get-in interaction [:args :poll-types] "sanction")
+              channel-id (:channel-id interaction)]
+          ; Incident link or clip message (as the interaction response)
+          (if incident-link
+            (mu/create-interaction-response! discord-message-channel id token channel-message
+                                             :data {:content (str (when-not (s/blank? notes) (str notes " ")) incident-link)})
+            (let [attachment-url      (get-in interaction [:data :resolved :attachments incident-clip :url])
+                  attachment-filename (last (s/split attachment-url #"/"))]
+              (with-open [attachment-is (io/input-stream attachment-url)]
+                (mu/create-interaction-response! discord-message-channel id token channel-message
+                                                 (merge {:stream {:content  attachment-is
+                                                                  :filename attachment-filename}}
+                                                        (when-not (s/blank? notes) {:data {:content notes}}))))))
+
+          ; Sanction poll message (as a regular message)
+          (when (s/includes? poll-types "sanction")
+            (let [message-id (:id (mu/create-message! discord-message-channel channel-id
+                                                      :embed (assoc (mu/embed-template-no-footer)
+                                                                    :description (str "❌ No foul\n"
+                                                                                      "✅ Foul (no sanction)\n"
+                                                                                      "<:YC:698349911028269078> Foul + caution\n"
+                                                                                      "<:RC:698350061922418738> Foul + send-off\n"
+                                                                                      "<:dive:808120608301908039> Simulation"))))]
+             (mu/create-reaction! discord-message-channel channel-id message-id "❌")
+             (mu/create-reaction! discord-message-channel channel-id message-id "✅")
+             (mu/create-reaction! discord-message-channel channel-id message-id "YC:698349911028269078")
+             (mu/create-reaction! discord-message-channel channel-id message-id "RC:698350061922418738")
+             (mu/create-reaction! discord-message-channel channel-id message-id "dive:808120608301908039")))
+
+          ; Restart poll message (as a regular message)
+          (when (s/includes? poll-types "restart")
+            (let [message-id (:id (mu/create-message! discord-message-channel channel-id
+                                                      :embed (assoc (mu/embed-template-no-footer)
+                                                                    :description (str "<:whistle:753061925231001640> Kickoff\n"
+                                                                                      "🙌 Throw-in\n"
+                                                                                      "✋ Indirect free kick\n"
+                                                                                      "👉 Direct free kick\n"
+                                                                                      "⚪ Penalty kick\n"
+                                                                                      "⚽ Drop ball\n"
+                                                                                      "🥅 Goal kick\n"
+                                                                                      "🚩 Corner kick"))))]
+             (mu/create-reaction! discord-message-channel channel-id message-id "whistle:753061925231001640")
+             (mu/create-reaction! discord-message-channel channel-id message-id "🙌")
+             (mu/create-reaction! discord-message-channel channel-id message-id "✋")
+             (mu/create-reaction! discord-message-channel channel-id message-id "👉")
+             (mu/create-reaction! discord-message-channel channel-id message-id "⚪")   ; BE VERY CAREFUL HERE - the default ⚪️ emoji from macOS is not supported as a react in Discord!
+             (mu/create-reaction! discord-message-channel channel-id message-id "⚽")   ; BE VERY CAREFUL HERE - the default ⚽️ emoji from macOS is not supported as a react in Discord!
+             (mu/create-reaction! discord-message-channel channel-id message-id "🥅")
+             (mu/create-reaction! discord-message-channel channel-id message-id "🚩")))
+
+          ; Offside poll message (as a regular message)
+          (when (s/includes? poll-types "offside")
+            (let [message-id (:id (mu/create-message! discord-message-channel channel-id
+                                                      :embed (assoc (mu/embed-template-no-footer)
+                                                                    :description (str "❌ Not offside\n"
+                                                                                      "<:ar:753060321601781819> Offside\n"
+                                                                                      "⚽ Interfering with play\n"
+                                                                                      "🏃 Interfering with an opponent\n"
+                                                                                      "🥅 Gaining an advantage"))))]
+             (mu/create-reaction! discord-message-channel channel-id message-id "❌")
+             (mu/create-reaction! discord-message-channel channel-id message-id "ar:753060321601781819")
+             (mu/create-reaction! discord-message-channel channel-id message-id "⚽")
+             (mu/create-reaction! discord-message-channel channel-id message-id "🏃")
+             (mu/create-reaction! discord-message-channel channel-id message-id "🥅"))))))))
 
 ; Routing
 (def interaction-handlers
