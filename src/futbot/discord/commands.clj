@@ -221,7 +221,7 @@
    "futpoll"
    "Creates match incident poll(s)"
    :options [(scs/option "incident-link" "A link to a video that shows the incident"                                                        :string     :required false)
-             (scs/option "incident-clip" "A video clip of the incident"                                                                     :attachment :required false)
+             (scs/option "incident-clip" "A video clip of the incident (NO MORE THAN 8MB IN SIZE!)"                                         :attachment :required false)
              (scs/option "notes"         "Any notes you'd like added before the clip (e.g. a timestamp, specific things to look for, etc.)" :string     :required false)
              (scs/option "poll-types"    "The type(s) of poll to include"                                                                   :string     :required false
                          :choices [(scs/choice "Sanction (default)" "sanction")
