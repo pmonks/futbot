@@ -37,7 +37,7 @@
     cheshire/cheshire                   {:mvn/version "5.11.0"}
     rm-hull/markov-chains               {:mvn/version "0.1.1"}
     remus/remus                         {:mvn/version "0.2.2"}
-    org.jsoup/jsoup                     {:mvn/version "1.15.1"}
+    org.jsoup/jsoup                     {:mvn/version "1.15.2"}
 
     ; Transitive dependency versions overrides - the default ones are old & have CVEs
     org.clojure/core.async              {:mvn/version "1.5.648"}
