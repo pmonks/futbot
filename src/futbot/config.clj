@@ -140,8 +140,7 @@
 (defn reset-logging!
   "Resets all log levels to their configured defaults."
   []
-  (let [lc  ^ch.qos.logback.classic.LoggerContext (org.slf4j.LoggerFactory/getILoggerFactory)
-        ci  (ch.qos.logback.classic.util.ContextInitializer. lc)
-        url (.findURLOfDefaultConfigurationFile ci true)]
+  (let [lc ^ch.qos.logback.classic.LoggerContext (org.slf4j.LoggerFactory/getILoggerFactory)
+        ci (ch.qos.logback.classic.util.ContextInitializer. lc)]
     (.reset lc)
-    (.configureByResource ci url)))
+    (.autoConfig ci)))
