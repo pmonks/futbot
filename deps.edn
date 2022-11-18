@@ -22,9 +22,9 @@
     org.clojars.pmonks/clj-2253         {:mvn/version "0.1.0"}
     org.clojure/tools.logging           {:mvn/version "1.2.4"}
     ch.qos.logback/logback-classic      {:mvn/version "1.4.4"}
-    org.slf4j/jcl-over-slf4j            {:mvn/version "2.0.3"}
-    org.slf4j/log4j-over-slf4j          {:mvn/version "2.0.3"}
-    org.slf4j/jul-to-slf4j              {:mvn/version "2.0.3"}
+    org.slf4j/jcl-over-slf4j            {:mvn/version "2.0.4"}
+    org.slf4j/log4j-over-slf4j          {:mvn/version "2.0.4"}
+    org.slf4j/jul-to-slf4j              {:mvn/version "2.0.4"}
     commons-validator/commons-validator {:mvn/version "1.7"}
     clojure.java-time/clojure.java-time {:mvn/version "1.1.0"}
     org.clojure/tools.cli               {:mvn/version "1.0.214"}
@@ -45,7 +45,7 @@
     stylefruits/gniazdo                 {:mvn/version "1.2.1"}
     com.rometools/rome                  {:mvn/version "1.18.0"}}
  :aliases
-   {:build {:deps       {io.github.clojure/tools.build {:git/tag "v0.8.4" :git/sha "8c3cd69"}
+   {:build {:deps       {io.github.clojure/tools.build {:git/tag "v0.8.5" :git/sha "9c738da"}
                          com.github.pmonks/pbr         {:mvn/version "RELEASE"}}
             :ns-default pbr.build}
 
@@ -54,7 +54,7 @@
             :ns-default ist}
 
     ; clj -T:run <taskname> :config-file "<PATH_TO_CONFIG_FILE>"
-    :run   {:deps       {io.github.clojure/tools.build {:git/tag "v0.8.4" :git/sha "8c3cd69"}
+    :run   {:deps       {io.github.clojure/tools.build {:git/tag "v0.8.5" :git/sha "9c738da"}
                          com.github.pmonks/pbr         {:mvn/version "RELEASE"}
                          com.github.pmonks/futbot      {:local/root "."}}
             :ns-default run}
