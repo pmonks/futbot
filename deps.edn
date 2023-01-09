@@ -26,7 +26,7 @@
     org.slf4j/log4j-over-slf4j          {:mvn/version "2.0.6"}
     org.slf4j/jul-to-slf4j              {:mvn/version "2.0.6"}
     commons-validator/commons-validator {:mvn/version "1.7"}
-    clojure.java-time/clojure.java-time {:mvn/version "1.1.0"}
+    clojure.java-time/clojure.java-time {:mvn/version "1.2.0"}
     org.clojure/tools.cli               {:mvn/version "1.0.214"}
     aero/aero                           {:mvn/version "1.1.6"}
     mount/mount                         {:mvn/version "0.1.17"}
@@ -36,7 +36,7 @@
     http-kit/http-kit                   {:mvn/version "2.7.0-alpha1"}
     cheshire/cheshire                   {:mvn/version "5.11.0"}
     rm-hull/markov-chains               {:mvn/version "0.1.1"}
-    remus/remus                         {:mvn/version "0.2.2"}
+    remus/remus                         {:mvn/version "0.2.3"}
     org.jsoup/jsoup                     {:mvn/version "1.15.3"}
 
     ; Transitive dependency versions overrides - the default ones are old & have CVEs
