@@ -43,7 +43,7 @@
     org.clojure/core.async              {:mvn/version "1.6.673"}
     clj-http/clj-http                   {:mvn/version "3.12.3"}
     stylefruits/gniazdo                 {:mvn/version "1.2.1"}
-    com.rometools/rome                  {:mvn/version "1.19.0"}}
+    com.rometools/rome                  {:mvn/version "2.0.0"}}
  :aliases
    {:build {:deps       {io.github.clojure/tools.build {:git/tag "v0.9.3" :git/sha "e537cd1"}
                          com.github.pmonks/pbr         {:mvn/version "RELEASE"}}
