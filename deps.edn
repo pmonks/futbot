@@ -34,10 +34,10 @@
     com.github.discljord/discljord      {:mvn/version "1.3.1"}
     com.github.johnnyjayjay/slash       {:mvn/version "0.6.0-SNAPSHOT"}
     http-kit/http-kit                   {:mvn/version "2.7.0"}
-    cheshire/cheshire                   {:mvn/version "5.11.0"}
+    cheshire/cheshire                   {:mvn/version "5.12.0"}
     rm-hull/markov-chains               {:mvn/version "0.1.1"}
     remus/remus                         {:mvn/version "0.2.4"}
-    org.jsoup/jsoup                     {:mvn/version "1.16.1"}
+    org.jsoup/jsoup                     {:mvn/version "1.16.2"}
 
     ; Transitive dependency versions overrides - the default ones are old & have CVEs
     org.clojure/core.async              {:mvn/version "1.6.681"}
@@ -45,8 +45,7 @@
     stylefruits/gniazdo                 {:mvn/version "1.2.2"}
     com.rometools/rome                  {:mvn/version "2.1.0"}}
  :aliases
-   {:build {:deps       {io.github.clojure/tools.build {:git/tag "v0.9.5" :git/sha "24f2894"}
-                         com.github.pmonks/pbr         {:mvn/version "RELEASE"}}
+   {:build {:deps       {com.github.pmonks/pbr {:mvn/version "RELEASE"}}
             :ns-default pbr.build}
 
     ; clj -T:ist generate-markov :youtube-api-key "<YOUTUBE_API_KEY>"
@@ -54,9 +53,8 @@
             :ns-default ist}
 
     ; clj -T:run <taskname> :config-file "<PATH_TO_CONFIG_FILE>"
-    :run   {:deps       {io.github.clojure/tools.build {:git/tag "v0.9.5" :git/sha "24f2894"}
-                         com.github.pmonks/pbr         {:mvn/version "RELEASE"}
-                         com.github.pmonks/futbot      {:local/root "."}}
+    :run   {:deps       {com.github.pmonks/pbr    {:mvn/version "RELEASE"}
+                         com.github.pmonks/futbot {:local/root "."}}
             :ns-default run}
 
     ; clj -M:main -c "<PATH_TO_CONFIG_FILE>"
