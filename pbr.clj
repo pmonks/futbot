@@ -28,7 +28,7 @@
          :validate-pom     true
          :pom              {:description      "A Discord bot that delivers football (soccer) information to Discord."
                             :url              "https://github.com/pmonks/futbot"
-                            :licenses         [:license   {:name "Apache License 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}]
+                            :licenses         [:license   {:name "Apache-2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}]
                             :developers       [:developer {:id "pmonks" :name "Peter Monks" :email "pmonks+futbot@gmail.com"}]
                             :scm              {:url "https://github.com/pmonks/futbot" :connection "scm:git:git://github.com/pmonks/futbot.git" :developer-connection "scm:git:ssh://git@github.com/pmonks/futbot.git"}
                             :issue-management {:system "github" :url "https://github.com/pmonks/futbot/issues"}}))
